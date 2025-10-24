@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { Database } from 'sql.js';
 import type { TableSchema } from '../../types/database';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 
 interface SchemaViewerProps {
   db: Database;

@@ -1,5 +1,5 @@
 import type { QueryResult } from '../../types/database';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 
 interface ResultsTableProps {
   results: QueryResult[];

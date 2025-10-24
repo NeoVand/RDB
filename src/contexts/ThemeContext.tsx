@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
@@ -38,13 +38,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // Save to localStorage
     localStorage.setItem('theme', theme);
     
-    console.log('Theme changed to:', theme); // Debug log
+    console.log('Theme changed to:', theme);
   }, [theme]);
 
   const toggleTheme = () => {
     setTheme((prev) => {
       const newTheme = prev === 'light' ? 'dark' : 'light';
-      console.log('Toggling theme from', prev, 'to', newTheme); // Debug log
+      console.log('Toggling theme from', prev, 'to', newTheme);
       return newTheme;
     });
   };
@@ -56,11 +56,5 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-}
-
+// Export context for hook usage
+export { ThemeContext };

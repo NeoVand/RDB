@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Database } from 'sql.js';
 import type { DatabasePreset, QueryResult } from '../../types/database';
 import { initializeSqlJs } from '../../lib/database/initSqlJs';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 import { QueryEditor } from './QueryEditor';
 import { ResultsTable } from './ResultsTable';
 import { ErrorDisplay } from './ErrorDisplay';

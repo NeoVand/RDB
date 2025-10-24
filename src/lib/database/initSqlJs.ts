@@ -18,7 +18,11 @@ export async function initializeSqlJs(): Promise<SqlJsStatic> {
   }
 
   initPromise = initSqlJs({
-    locateFile: (file: string) => `/${file}`,
+    locateFile: (file: string) => {
+      // Get the base path from the document's base URL or use root
+      const base = document.querySelector('base')?.href || window.location.origin + import.meta.env.BASE_URL;
+      return new URL(file, base).href;
+    },
   }).then((sql) => {
     SQL = sql;
     return sql;
