@@ -19,7 +19,7 @@ function App() {
             </div>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">
-            Vibe Coders Interactive Guide To Relational Databases and SQL
+            Vibe Coder&apos;s Interactive Guide To Relational Databases and SQL
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             A course by Neo Mohsenvand
