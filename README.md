@@ -1,73 +1,85 @@
-# React + TypeScript + Vite
+# RDB: The Architect's Guide to Relational Databases
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive, single-page educational website for learning relational databases and SQL from first principles to advanced design.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Interactive SQL Playgrounds**: Embedded database playgrounds in each section with live query execution
+- **Comprehensive Content**: Complete guide covering fundamentals, normalization, SQL, ACID properties, and more
+- **Beautiful Visualizations**: Mermaid diagrams for ERDs, flowcharts, and conceptual illustrations
+- **Theme Support**: Dark and light modes with smooth transitions
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+- **In-Browser Database**: Powered by sql.js (SQLite compiled to WebAssembly) - no server required
 
-## React Compiler
+## Getting Started
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+### Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js 18+ and npm
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Installation
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+### Build
+
+```bash
+npm run build
+```
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+## Technology Stack
+
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **Tailwind CSS v4** - Styling
+- **sql.js** - SQLite in the browser via WebAssembly
+- **Mermaid** - Diagram generation
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── Content/         # Section, Subsection, diagrams, code examples
+│   ├── Layout/          # Header, Sidebar, MainLayout
+│   └── Playground/      # SQL playground components
+├── content/
+│   └── sections/        # Course content by part
+├── hooks/               # Custom React hooks (theme, scroll spy)
+├── lib/
+│   └── database/        # Database schemas, seeds, presets
+└── types/               # TypeScript type definitions
+```
+
+## Course Structure
+
+1. **Part I: The Foundation** - Understanding the relational model
+2. **Part II: Data Integrity** - Normalization and constraints
+3. **Part III: Mastering SQL** - CRUD operations and advanced queries
+4. **Part IV: Advanced Concepts** - ACID, performance, architecture
+5. **Part V: The Ecosystem** - Choosing the right database
+
+## License
+
+MIT
+
+## Credits
+
+Built with ❤️ using React, TypeScript, Tailwind CSS, and sql.js
