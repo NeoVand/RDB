@@ -7,28 +7,28 @@ interface CalloutProps {
 export function Callout({ children, type = 'info', title }: CalloutProps) {
   const styles = {
     info: {
-      container: 'bg-blue-50 dark:bg-blue-950/30 border-blue-500',
-      icon: 'text-blue-600 dark:text-blue-400',
-      title: 'text-blue-900 dark:text-blue-200',
-      text: 'text-blue-800 dark:text-blue-300',
+      container: 'bg-slate-50 dark:bg-slate-900/30 border-slate-400 dark:border-slate-600',
+      icon: 'text-slate-600 dark:text-slate-400',
+      title: 'text-slate-900 dark:text-slate-200',
+      text: 'text-slate-800 dark:text-slate-300',
     },
     warning: {
-      container: 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-500',
-      icon: 'text-yellow-600 dark:text-yellow-500',
-      title: 'text-yellow-900 dark:text-yellow-200',
-      text: 'text-yellow-800 dark:text-yellow-300',
+      container: 'bg-amber-50 dark:bg-amber-950/30 border-amber-500 dark:border-amber-700',
+      icon: 'text-amber-600 dark:text-amber-500',
+      title: 'text-amber-900 dark:text-amber-200',
+      text: 'text-amber-800 dark:text-amber-300',
     },
     success: {
-      container: 'bg-green-50 dark:bg-green-950/30 border-green-500',
-      icon: 'text-green-600 dark:text-green-400',
-      title: 'text-green-900 dark:text-green-200',
-      text: 'text-green-800 dark:text-green-300',
+      container: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 dark:border-emerald-700',
+      icon: 'text-emerald-600 dark:text-emerald-500',
+      title: 'text-emerald-900 dark:text-emerald-200',
+      text: 'text-emerald-800 dark:text-emerald-300',
     },
     tip: {
-      container: 'bg-purple-50 dark:bg-purple-950/30 border-purple-500',
-      icon: 'text-purple-600 dark:text-purple-400',
-      title: 'text-purple-900 dark:text-purple-200',
-      text: 'text-purple-800 dark:text-purple-300',
+      container: 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500 dark:border-indigo-700',
+      icon: 'text-indigo-600 dark:text-indigo-500',
+      title: 'text-indigo-900 dark:text-indigo-200',
+      text: 'text-indigo-800 dark:text-indigo-300',
     },
   };
 

@@ -82,9 +82,9 @@ export function Sidebar({ isOpen, onClose, activeId }: SidebarProps) {
             ${item.level === 1 ? 'font-semibold mt-3 first:mt-0' : 'ml-3 text-xs font-normal'}
             ${
               isActive
-                ? 'bg-blue-500 text-white'
+                ? 'bg-slate-200 dark:bg-slate-700 text-gray-900 dark:text-gray-100'
                 : hasActiveChild
-                ? 'text-blue-600 dark:text-blue-400 font-medium'
+                ? 'text-gray-900 dark:text-gray-200 font-medium'
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
             }
           `}

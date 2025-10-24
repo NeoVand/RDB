@@ -130,7 +130,16 @@ tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* Scrollbar */
+/* Scrollbar - Theme responsive */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(209 213 219) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgb(75 85 99) transparent;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -141,25 +150,28 @@ tbody tr:last-child td {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(209 213 219);
   border-radius: 4px;
 }
 
-.dark ::-webkit-scrollbar-thumb {
+html ::-webkit-scrollbar-thumb {
+  background-color: rgb(209 213 219);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
   background-color: rgb(75 85 99);
 }
 
-::-webkit-scrollbar-thumb:hover {
+html ::-webkit-scrollbar-thumb:hover {
   background-color: rgb(156 163 175);
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
+html.dark ::-webkit-scrollbar-thumb:hover {
   background-color: rgb(107 114 128);
 }
 
 /* Focus */
 *:focus-visible {
-  outline: 2px solid rgb(59 130 246);
+  outline: 2px solid rgb(100 116 139);
   outline-offset: 2px;
 }
 
@@ -168,7 +180,7 @@ tbody tr:last-child td {
   position: absolute;
   top: -2.5rem;
   left: 0;
-  background-color: rgb(37 99 235);
+  background-color: rgb(71 85 105);
   color: white;
   padding: 0.5rem 0.75rem;
   z-index: 50;

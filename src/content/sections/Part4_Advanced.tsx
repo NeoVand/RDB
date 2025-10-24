@@ -25,32 +25,60 @@ export function Part4_Advanced() {
 
         <Subsection title="The ACID Properties">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-            <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 p-4">
-              <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Atomicity</h4>
-              <p className="text-sm text-blue-700 dark:text-blue-400">
-                All operations in a transaction succeed or none do. It's an "all or nothing" proposition.
-              </p>
+            <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-300 text-sm mb-1">Atomicity</h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">
+                    All operations in a transaction succeed or none do. It's an "all or nothing" proposition.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-600 p-4">
-              <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">Consistency</h4>
-              <p className="text-sm text-green-700 dark:text-green-400">
-                Transactions can only bring the database from one valid state to another, maintaining all rules and constraints.
-              </p>
+            <div className="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-green-800 dark:text-green-300 text-sm mb-1">Consistency</h4>
+                  <p className="text-sm text-green-700 dark:text-green-400">
+                    Transactions can only bring the database from one valid state to another, maintaining all rules and constraints.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-600 p-4">
-              <h4 className="font-semibold text-purple-800 dark:text-purple-300 mb-2">Isolation</h4>
-              <p className="text-sm text-purple-700 dark:text-purple-400">
-                Concurrent transactions don't interfere with each other. Each appears to run in isolation.
-              </p>
+            <div className="bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-purple-800 dark:text-purple-300 text-sm mb-1">Isolation</h4>
+                  <p className="text-sm text-purple-700 dark:text-purple-400">
+                    Concurrent transactions don't interfere with each other. Each appears to run in isolation.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-600 p-4">
-              <h4 className="font-semibold text-orange-800 dark:text-orange-300 mb-2">Durability</h4>
-              <p className="text-sm text-orange-700 dark:text-orange-400">
-                Once a transaction is committed, it remains committed permanently, even after system failure.
-              </p>
+            <div className="bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-orange-800 dark:text-orange-300 text-sm mb-1">Durability</h4>
+                  <p className="text-sm text-orange-700 dark:text-orange-400">
+                    Once a transaction is committed, it remains committed permanently, even after system failure.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 

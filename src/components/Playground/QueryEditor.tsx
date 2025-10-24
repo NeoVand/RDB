@@ -90,7 +90,7 @@ export function QueryEditor({
               return (
                 <span 
                   key={wordIndex} 
-                  className={`font-semibold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}
+                  className={`font-semibold ${isDark ? 'text-cyan-400' : 'text-cyan-700'}`}
                 >
                   {word}
                 </span>

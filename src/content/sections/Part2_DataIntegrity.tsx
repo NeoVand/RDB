@@ -26,28 +26,49 @@ export function Part2_DataIntegrity() {
           <p>When a database is not properly normalized, it becomes susceptible to data anomalies:</p>
           
           <div className="space-y-3 my-4">
-            <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-600 p-4">
-              <h4 className="font-semibold text-red-800 dark:text-red-300">Insertion Anomaly</h4>
-              <p className="text-sm text-red-700 dark:text-red-400">
-                Cannot add a new record because unrelated data is not available. 
-                Example: Can't add a new sector until at least one company exists in it.
-              </p>
+            <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-red-800 dark:text-red-300 text-sm mb-1">Insertion Anomaly</h4>
+                  <p className="text-sm text-red-700 dark:text-red-400">
+                    Cannot add a new record because unrelated data is not available. 
+                    Example: Can't add a new sector until at least one company exists in it.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-600 p-4">
-              <h4 className="font-semibold text-yellow-800 dark:text-yellow-300">Update Anomaly</h4>
-              <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                Same information stored in multiple rows requires updating all copies. 
-                Example: Renaming 'Technology' to 'Information Technology' in every company record.
-              </p>
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-yellow-800 dark:text-yellow-300 text-sm mb-1">Update Anomaly</h4>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                    Same information stored in multiple rows requires updating all copies. 
+                    Example: Renaming 'Technology' to 'Information Technology' in every company record.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-600 p-4">
-              <h4 className="font-semibold text-orange-800 dark:text-orange-300">Deletion Anomaly</h4>
-              <p className="text-sm text-orange-700 dark:text-orange-400">
-                Deleting data unintentionally causes loss of other data. 
-                Example: Deleting the last company in 'Energy' sector loses the sector itself.
-              </p>
+            <div className="bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-orange-800 dark:text-orange-300 text-sm mb-1">Deletion Anomaly</h4>
+                  <p className="text-sm text-orange-700 dark:text-orange-400">
+                    Deleting data unintentionally causes loss of other data. 
+                    Example: Deleting the last company in 'Energy' sector loses the sector itself.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </Subsection>
