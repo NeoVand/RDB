@@ -67,7 +67,7 @@ export function Part1_Foundation() {
                 rel="noopener noreferrer"
                 className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
               >
-                Dr. Edgar F. Codd
+                Edgar F. Codd
               </a>, a British computer scientist 
               working at IBM's San Jose Research Laboratory. In 1970, he published a groundbreaking paper titled{' '}
               <a 
@@ -87,10 +87,10 @@ export function Part1_Foundation() {
             <div className="text-center flex-shrink-0">
               <img 
                 src="https://upload.wikimedia.org/wikipedia/en/5/58/Edgar_F_Codd.jpg" 
-                alt="Dr. Edgar F. Codd"
+                alt="Edgar F. Codd"
                 className="h-24 w-auto object-contain rounded border border-emerald-300 dark:border-emerald-600"
               />
-              <p className="text-xs mt-1 text-emerald-800 dark:text-emerald-200">Dr. Edgar F. Codd</p>
+              <p className="text-xs mt-1 mb-0 text-emerald-800 dark:text-emerald-200">Edgar F. Codd</p>
             </div>
           </div>
         </Callout>
@@ -261,18 +261,10 @@ export function Part1_Foundation() {
                 >
                   SEQUEL
                 </a>{' '}
-                (Structured English Query Language), designed to be so intuitive that non-programmers could use it. The name was 
-                later shortened to SQL due to trademark conflicts. First commercialized by{' '}
-                <a 
-                  href="https://en.wikipedia.org/wiki/Oracle_Database" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
-                >
-                  Oracle Corporation
-                </a>{' '}
-                in 1979 and IBM in 1981, SQL became an ANSI standard in 1986 and an ISO standard in 1987. Today, it's one of 
-                the most enduring programming languages - the syntax you'll learn here has remained remarkably consistent for over 40 years!
+            (Structured English Query Language), designed to be so intuitive that non-programmers could use it. The name was 
+            later shortened to SQL due to trademark conflicts. First commercialized by Oracle Corporation in 1979 and IBM in 1981, 
+            SQL became an ANSI standard in 1986 and an ISO standard in 1987. Today, it's one of the most enduring programming 
+            languages - the syntax you'll learn here has remained remarkably consistent for over 40 years!
               </div>
               <div className="flex gap-3 flex-shrink-0">
                 <div className="text-center">
@@ -281,7 +273,7 @@ export function Part1_Foundation() {
                     alt="Donald Chamberlin"
                     className="h-24 w-auto object-contain rounded border border-emerald-300 dark:border-emerald-600"
                   />
-                  <p className="text-xs mt-1 text-emerald-800 dark:text-emerald-200">D. Chamberlin</p>
+                  <p className="text-xs mt-1 mb-0 text-emerald-800 dark:text-emerald-200">D. Chamberlin</p>
                 </div>
                 <div className="text-center">
                   <img 
@@ -289,7 +281,7 @@ export function Part1_Foundation() {
                     alt="Raymond Boyce"
                     className="h-24 w-auto object-contain rounded border border-emerald-300 dark:border-emerald-600"
                   />
-                  <p className="text-xs mt-1 text-emerald-800 dark:text-emerald-200">R. Boyce</p>
+                  <p className="text-xs mt-1 mb-0 text-emerald-800 dark:text-emerald-200">R. Boyce</p>
                 </div>
               </div>
             </div>
@@ -377,6 +369,36 @@ SELECT * FROM Companies;`}
             </li>
           </ul>
 
+          <p className="mt-4">
+            Let's use SQL to check these dimensions. This query introduces a few new SQL concepts:
+          </p>
+
+          <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded p-4 my-3 space-y-3">
+            <div>
+              <code className="text-cyan-600 dark:text-cyan-400 font-semibold">COUNT(*)</code>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                An aggregate function that counts the number of rows. The{' '}
+                <code>*</code> means "count all rows."
+              </p>
+            </div>
+            <div>
+              <code className="text-cyan-600 dark:text-cyan-400 font-semibold">AS</code>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                Creates an alias (a temporary name) for a column in the results.{' '}
+                <code>COUNT(*) as cardinality</code> means 
+                "display the count result with the column name 'cardinality'."
+              </p>
+            </div>
+            <div>
+              <code className="text-cyan-600 dark:text-cyan-400 font-semibold">LIMIT</code>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                Restricts the number of rows returned.{' '}
+                <code>LIMIT 1</code> means "only return the first row." 
+                This is useful when you just want to see the structure without retrieving all data.
+              </p>
+            </div>
+          </div>
+
           <SQLPlayground
             preset={FINANCIAL_FULL_PRESET}
             defaultQuery={`-- Check the degree and cardinality
@@ -386,6 +408,11 @@ SELECT COUNT(*) as cardinality FROM Companies;
 -- The degree is the number of columns returned
 SELECT * FROM Companies LIMIT 1;`}
           />
+
+          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            Try running each query separately to see the results. The first query shows the cardinality (row count), 
+            and the second shows the degree (number of columns in the result).
+          </p>
         </Subsection>
       </Section>
 
@@ -394,6 +421,169 @@ SELECT * FROM Companies LIMIT 1;`}
           For the relational model to function, there must be a way to uniquely identify every single record 
           and a mechanism to link records from one table to another. This is accomplished through the use of <strong>keys</strong>.
         </p>
+
+        <p className="mt-4">
+          In database terminology, a <strong>key</strong> is one or more columns whose values can be used to identify 
+          rows in a table. Think of keys as the addressing system of your database - just as your home address uniquely 
+          identifies where you live, a key uniquely identifies a specific record in a table. But keys serve an even more 
+          powerful purpose: they also create the connections between tables that make the data truly "relational."
+        </p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-8">
+          {/* Role 1: Unique Identification */}
+          <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-6">
+            <h4 className="font-semibold text-lg text-gray-900 dark:text-white mb-4 text-center">
+              Role 1: Unique Identification
+            </h4>
+            <div className="flex flex-col items-center justify-center space-y-4 min-h-[200px]">
+              <div className="bg-green-100 dark:bg-green-900/30 border-2 border-green-500 dark:border-green-600 rounded-lg p-4 w-full max-w-xs text-center">
+                <div className="font-bold text-green-900 dark:text-green-100 text-lg">Primary Key</div>
+                <div className="text-sm text-green-800 dark:text-green-200 mt-1">CompanyID</div>
+              </div>
+              <div className="text-center text-gray-600 dark:text-gray-400">
+                <svg className="w-8 h-8 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm mt-2 font-medium">Uniquely identifies each row</p>
+              </div>
+              <div className="bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4 w-full max-w-xs text-center">
+                <div className="font-semibold text-gray-900 dark:text-white mb-2">Each Company Has Unique ID</div>
+                <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  <div>Apple → 101</div>
+                  <div>Microsoft → 102</div>
+                  <div>NVIDIA → 103</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Role 2: Creating Relationships */}
+          <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-6">
+            <h4 className="font-semibold text-lg text-gray-900 dark:text-white mb-4 text-center">
+              Role 2: Creating Relationships
+            </h4>
+            <div className="flex flex-col items-center justify-center space-y-4 min-h-[200px]">
+              <div className="bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500 dark:border-blue-600 rounded-lg p-4 w-full max-w-xs text-center">
+                <div className="font-bold text-blue-900 dark:text-blue-100 text-lg">Foreign Key</div>
+                <div className="text-sm text-blue-800 dark:text-blue-200 mt-1">SectorID</div>
+              </div>
+              <div className="text-center text-gray-600 dark:text-gray-400">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="text-sm bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-4 py-2 font-medium">
+                    Companies
+                  </div>
+                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  <div className="text-sm bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-4 py-2 font-medium">
+                    Sectors
+                  </div>
+                </div>
+                <p className="text-sm mt-3 font-medium">Links tables together</p>
+              </div>
+              <div className="bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4 w-full max-w-xs text-center">
+                <div className="font-semibold text-gray-900 dark:text-white mb-2">SectorID Creates Connection</div>
+                <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  <div>Apple (SectorID: 1) → Technology</div>
+                  <div>JPMorgan (SectorID: 2) → Finance</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="text-sm text-gray-600 dark:text-gray-400 -mt-4 max-w-4xl mx-auto">
+          <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Understanding This Diagram:</p>
+          <p className="leading-relaxed">
+            <strong>On the left side,</strong> you see how a <span className="text-green-600 dark:text-green-400 font-semibold">Primary Key</span> (CompanyID) 
+            uniquely identifies each row in the Companies table. Each company gets a unique ID number (101, 102, 103), ensuring no two companies 
+            can be confused with each other. <strong>On the right side,</strong> you see how a <span className="text-blue-600 dark:text-blue-400 font-semibold">Foreign Key</span> (SectorID) 
+            creates relationships between tables. The SectorID in the Companies table references a sector in the Sectors table, linking Apple 
+            to Technology (ID: 1) and JPMorgan to Finance (ID: 2). This is what makes databases "relational" - tables can refer to each other!
+          </p>
+        </div>
+
+        <p className="mt-4">
+          There are several types of keys, each serving a specific purpose in database design. At first glance, the terminology 
+          might seem overwhelming - Super Keys, Candidate Keys, Primary Keys, Foreign Keys, and more. <strong>Don't worry!</strong> We'll explain 
+          each one in detail throughout this section. For now, here's a comprehensive overview to give you the big picture:
+        </p>
+
+        <div className="my-8">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="bg-slate-100 dark:bg-slate-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left">Key Type</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left">Definition</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left">Example</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">Unique?</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">NULL OK?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Super Key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Any set of columns that uniquely identifies a row</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-mono text-xs">&#123;CompanyID, CompanyName&#125;</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✓</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✗</td>
+                </tr>
+                <tr className="bg-amber-50 dark:bg-amber-950/20">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-semibold text-amber-900 dark:text-amber-200">Candidate Key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Minimal super key (no redundant columns)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-mono text-xs">CompanyID OR StockTicker</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✓</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✗</td>
+                </tr>
+                <tr className="bg-green-50 dark:bg-green-950/20">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-semibold text-green-900 dark:text-green-200">Primary Key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">THE chosen candidate key for the table</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-mono text-xs">CompanyID</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✓</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✗</td>
+                </tr>
+                <tr className="bg-yellow-50 dark:bg-yellow-950/20">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-semibold text-yellow-900 dark:text-yellow-200">Alternate Key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Candidate keys NOT chosen as primary</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-mono text-xs">StockTicker (if CompanyID is PK)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✓</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✗</td>
+                </tr>
+                <tr className="bg-blue-50 dark:bg-blue-950/20">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-semibold text-blue-900 dark:text-blue-200">Foreign Key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">References another table's primary key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-mono text-xs">SectorID (in Companies table)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✗</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✓</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Composite Key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Key made of 2+ columns combined</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-mono text-xs">&#123;StudentID, ClassID&#125;</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✓</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✗</td>
+                </tr>
+                <tr className="bg-indigo-50 dark:bg-indigo-950/20">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-semibold text-indigo-900 dark:text-indigo-200">Natural Key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Has real-world business meaning</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-mono text-xs">email, StockTicker, ISBN</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✓</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✗</td>
+                </tr>
+                <tr className="bg-purple-50 dark:bg-purple-950/20">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-semibold text-purple-900 dark:text-purple-200">Surrogate Key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Artificial ID with no business meaning</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-mono text-xs">Auto-increment ID, UUID</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✓</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-center">✗</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 italic text-center">
+            The hierarchy: Super Key → Candidate Key → Primary Key (chosen) or Alternate Key (not chosen)
+          </p>
+        </div>
 
         <Subsection title="The Primary Key (PK): A Unique Identifier">
           <p>
@@ -408,6 +598,29 @@ SELECT * FROM Companies LIMIT 1;`}
             is to provide an unambiguous, stable identity for a single record.
           </Callout>
 
+          <p className="mt-4">
+            Let's see how primary keys work in practice. This query demonstrates using a primary key to retrieve a specific record:
+          </p>
+
+          <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded p-4 my-3">
+            <code className="text-cyan-600 dark:text-cyan-400 font-semibold">WHERE</code>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+              The <strong>WHERE clause</strong> is one of the most important parts of SQL - it filters rows based on conditions. 
+              Only rows that meet the condition are included in the result. In this example,{' '}
+              <code>WHERE CompanyID = 101</code> means 
+              "only return rows where the CompanyID column equals 101." Since CompanyID is a primary key, this will return exactly 
+              one row (the company with ID 101). Think of WHERE as asking "which rows?" - it's how you search and filter data.
+            </p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+              <strong>Common operators:</strong> <code>=</code> (equals),{' '}
+              <code>&lt;&gt;</code> (not equals),{' '}
+              <code>&gt;</code> (greater than),{' '}
+              <code>&lt;</code> (less than),{' '}
+              <code>&gt;=</code>,{' '}
+              <code>&lt;=</code>
+            </p>
+          </div>
+
           <SQLPlayground
             preset={FINANCIAL_FULL_PRESET}
             defaultQuery={`-- Primary keys uniquely identify each row
@@ -415,6 +628,11 @@ SELECT CompanyID, CompanyName, StockTicker
 FROM Companies
 WHERE CompanyID = 101;`}
           />
+
+          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            Try changing <code>101</code> to <code>102</code> or <code>103</code> to retrieve different companies. 
+            Because CompanyID is a primary key, each value will return exactly one unique company.
+          </p>
         </Subsection>
 
         <Subsection title="The Foreign Key (FK): The Bridge Between Tables">
@@ -422,6 +640,43 @@ WHERE CompanyID = 101;`}
             A <strong>foreign key</strong> is a column in one table whose values correspond to the values of 
             the primary key in another table. It is the fundamental mechanism that creates the "relation" in 
             a relational database, acting as a logical pointer from one table to another.
+          </p>
+
+          <p className="mt-3">
+            To see foreign keys in action, we need to query data from <em>multiple related tables</em>. This requires 
+            some new SQL syntax that we'll explore in detail in later sections, but let's introduce the basics now:
+          </p>
+
+          <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded p-4 my-3 space-y-3">
+            <div>
+              <code className="text-cyan-600 dark:text-cyan-400 font-semibold">Table Aliases (c, s)</code>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                When working with multiple tables, we use short aliases to make queries more readable.{' '}
+                <code>FROM Companies c</code> means "call the Companies table 'c' in this query." Then we can write{' '}
+                <code>c.CompanyName</code> instead of <code>Companies.CompanyName</code>. Think of it as a nickname for the table.
+              </p>
+            </div>
+            <div>
+              <code className="text-cyan-600 dark:text-cyan-400 font-semibold">JOIN</code>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                The <strong>JOIN clause</strong> combines rows from two or more tables based on a related column.{' '}
+                <code>JOIN Sectors s</code> means "combine the Companies table with the Sectors table, and call Sectors 's'." 
+                This is how we retrieve data that spans multiple tables.
+              </p>
+            </div>
+            <div>
+              <code className="text-cyan-600 dark:text-cyan-400 font-semibold">ON</code>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                The <strong>ON clause</strong> specifies the condition for joining tables - which columns should match.{' '}
+                <code>ON c.SectorID = s.SectorID</code> means "match rows where the SectorID in Companies equals the SectorID 
+                in Sectors." This is the foreign key relationship in action - connecting companies to their sectors!
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-3">
+            In the query below, we're combining the Companies table with the Sectors table to show each company alongside 
+            its sector name. The foreign key (SectorID) is what makes this connection possible:
           </p>
 
           <SQLPlayground
@@ -435,41 +690,103 @@ SELECT
 FROM Companies c
 JOIN Sectors s ON c.SectorID = s.SectorID;`}
           />
+
+          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            Notice how we can now display the sector name (from the Sectors table) alongside each company (from the Companies table). 
+            The foreign key SectorID creates this bridge between the two tables. We'll dive much deeper into JOINs in Part III!
+          </p>
         </Subsection>
 
-        <Subsection title="Natural vs. Surrogate Keys">
-          <div className="overflow-x-auto my-4">
-            <table className="min-w-full">
+        <Subsection title="Natural vs. Surrogate Keys: A Critical Design Decision">
+          <p>
+            When choosing a primary key for a table, database designers face a fundamental decision: should we use 
+            a <strong>natural key</strong> or a <strong>surrogate key</strong>?
+          </p>
+
+          <p className="mt-3">
+            A <strong>natural key</strong> is a column (or set of columns) that already exists in your data and has 
+            real-world business meaning. It "naturally" arises from the domain you're modeling. For example, when designing 
+            a Users table, the email address seems like a perfect primary key - it's already there, it's unique to each user, 
+            and it has meaning. Similarly, a stock ticker symbol (like "AAPL" for Apple) or an ISBN for books are natural 
+            keys because they're part of the real-world entity itself.
+          </p>
+
+          <p className="mt-3">
+            However, <strong>natural keys come with significant problems:</strong>
+          </p>
+
+          <ul className="list-disc pl-6 mt-2 space-y-2 text-gray-700 dark:text-gray-300">
+            <li>
+              <strong>They can change.</strong> A user might change their email address. A company might change its stock ticker 
+              if it moves to a different exchange. When a primary key changes, you must update that value everywhere it's 
+              referenced as a foreign key - a risky and expensive operation.
+            </li>
+            <li>
+              <strong>They might not always be unique.</strong> What seems unique today (like a Social Security Number) might 
+              have edge cases or exceptions you didn't anticipate.
+            </li>
+            <li>
+              <strong>They might be sensitive or complex.</strong> Using an email as a key means it appears throughout your 
+              database, potentially creating privacy or data management issues.
+            </li>
+            <li>
+              <strong>They might not exist yet.</strong> When designing a new system, you might not have determined what the 
+              "natural" identifier should be, causing analysis paralysis.
+            </li>
+          </ul>
+
+          <p className="mt-4">
+            A <strong>surrogate key</strong>, by contrast, is an artificial identifier created solely to serve as the 
+            primary key. It has no business meaning - it's just a unique number assigned by the database (like an 
+            auto-incrementing integer: 1, 2, 3...). While this might seem less intuitive, surrogate keys are <em>stable</em> 
+            and <em>permanent</em>. Once a company is assigned CompanyID = 123, that ID never changes, even if the company 
+            changes its name, ticker symbol, or any other attribute.
+          </p>
+
+          <div className="overflow-x-auto my-6">
+            <table className="min-w-full text-sm">
               <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Description</th>
-                  <th>Example</th>
-                  <th>Pros</th>
-                  <th>Cons</th>
+                <tr className="bg-slate-100 dark:bg-slate-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left">Type</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left">Description</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left">Example</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left">Pros</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left">Cons</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="font-semibold">Natural Key</td>
-                  <td>A key from existing attributes with real-world meaning</td>
-                  <td>Email address, Stock ticker, ISBN</td>
-                  <td>Meaningful, intuitive</td>
-                  <td>Can change, hard to update</td>
+                <tr className="bg-amber-50 dark:bg-amber-950/20">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-semibold text-amber-900 dark:text-amber-200">Natural Key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Key from existing attributes with real-world meaning</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-mono text-xs">Email, StockTicker, ISBN, SSN</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Meaningful, already exists, intuitive</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-red-700 dark:text-red-400">Can change, cascading updates, privacy concerns</td>
                 </tr>
-                <tr>
-                  <td className="font-semibold">Surrogate Key</td>
-                  <td>An artificial key with no business meaning</td>
-                  <td>Auto-increment ID, UUID</td>
-                  <td>Stable, efficient</td>
-                  <td>No inherent meaning</td>
+                <tr className="bg-green-50 dark:bg-green-950/20">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-semibold text-green-900 dark:text-green-200">Surrogate Key</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Artificial key with no business meaning</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 font-mono text-xs">Auto-increment ID, UUID, GUID</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-green-700 dark:text-green-400">Never changes, simple, efficient, stable</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">No inherent meaning, requires lookup</td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p>
-            <strong>Best Practice:</strong> Use surrogate keys (like CompanyID) as primary keys for internal 
-            relationships, while enforcing uniqueness on natural keys (like StockTicker) with UNIQUE constraints.
+
+          <Callout type="tip" title="Real-World Example: The Email Address Problem">
+            Imagine using email as a primary key in a Users table. User 12345 has email "john@gmail.com" which is referenced 
+            throughout your database - in Orders, Reviews, Favorites, etc. One day, John changes his email to "john.smith@proton.me". 
+            Now you must update his email in potentially hundreds or thousands of foreign key references across multiple tables. 
+            Miss one, and you have data integrity issues. With a surrogate key (UserID = 12345), John's email can change freely 
+            in one place, while all relationships remain stable.
+          </Callout>
+
+          <p className="mt-4">
+            <strong>The Best Practice:</strong> Use <strong>surrogate keys</strong> (like CompanyID) as primary keys for 
+            internal database relationships. This ensures stability and efficiency. However, you should <em>still</em> enforce 
+            uniqueness on natural keys using a <code>UNIQUE</code> constraint. For example, CompanyID is the primary key, 
+            but StockTicker has a UNIQUE constraint to prevent duplicate ticker symbols. This gives you the best of both worlds: 
+            stable internal references (surrogate) and business rule enforcement (natural with UNIQUE).
           </p>
         </Subsection>
       </Section>
@@ -482,17 +799,335 @@ JOIN Sectors s ON c.SectorID = s.SectorID;`}
 
         <Subsection title="Entity-Relationship Diagrams (ERDs)">
           <p>
-            An <strong>ERD</strong> is a graphical flowchart that visually represents the database schema. 
-            It consists of three main components:
+            An <strong>Entity-Relationship Diagram (ERD)</strong> is a visual blueprint that represents the structure of a database. 
+            It's one of the most important tools in database design, allowing designers, developers, and business stakeholders to 
+            communicate about data structures without writing code.
           </p>
-          <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-            <li><strong>Entities:</strong> Principal objects (drawn as rectangles) - Company, Sector, Financial Statement</li>
-            <li><strong>Attributes:</strong> Properties of entities - CompanyID, CompanyName, StockTicker</li>
-            <li><strong>Relationships:</strong> Connections between entities (lines with verbs)</li>
-          </ul>
+
+          <Callout type="success" title="Historical Note: The Birth of ERDs">
+            <div className="flex gap-4 items-start mb-0">
+              <div className="flex-1 mb-0">
+                Entity-Relationship diagrams were invented by{' '}
+                <a 
+                  href="https://en.wikipedia.org/wiki/Peter_Chen" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  Peter Chen
+                </a>, a computer scientist at MIT, in his 1976 paper{' '}
+                <a 
+                  href="https://dl.acm.org/doi/10.1145/320434.320440" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  "The Entity-Relationship Model: Toward a Unified View of Data"
+                </a>. 
+                Chen's notation provided a simple, intuitive way to model data that could be understood by both technical and 
+                non-technical audiences. Today, ERDs remain the standard tool for database design, with various notations 
+                including Chen's original, crow's foot (which we use here), and UML-style diagrams.
+              </div>
+              <div className="text-center flex-shrink-0">
+                <img 
+                  src="https://technologytransfer.it/wp-content/uploads/Peter_Chen.jpg" 
+                  alt="Peter Chen"
+                  className="h-24 w-auto object-contain rounded border border-emerald-300 dark:border-emerald-600"
+                />
+                <p className="text-xs mt-1 mb-0 text-emerald-800 dark:text-emerald-200">Peter Chen</p>
+              </div>
+            </div>
+          </Callout>
+
+          <p className="mt-4">
+            An ERD consists of three main building blocks. Let's start with the simplest: a <strong>single entity</strong>.
+          </p>
 
           <MermaidDiagram
-            caption="ERD for our Financial Data Model"
+            caption="Reading a Single Entity Diagram: The entity name (COMPANY) appears at the top of the box in bold. Each line inside represents an attribute (column) with three parts: the data type (int, varchar, date), the attribute name (CompanyID, CompanyName), and any constraints (PK for Primary Key). The optional notes on the right explain each attribute's purpose. This entity has 4 attributes, and CompanyID is marked as the primary key."
+            chart={`
+erDiagram
+    COMPANY {
+        int CompanyID PK "Primary Key - Unique ID"
+        varchar CompanyName "Company's legal name"
+        varchar StockTicker "Stock symbol"
+        date Founded "When company was established"
+    }
+            `}
+          />
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r my-4">
+            <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">The Three Components of ERDs:</p>
+            <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
+              <li><strong>Entities:</strong> The "things" we store data about (Company, Sector, Financial Statement). Drawn as rectangles/boxes.</li>
+              <li><strong>Attributes:</strong> The properties or characteristics of entities (CompanyID, CompanyName, StockTicker). Listed inside the entity box.</li>
+              <li><strong>Relationships:</strong> How entities connect to each other (a Company "belongs to" a Sector). Drawn as lines between entities.</li>
+            </ul>
+          </div>
+        </Subsection>
+
+        <Subsection title="Reading ERD Notation: Understanding Crow's Foot">
+          <p>
+            ERDs use symbols to show <strong>cardinality</strong> - how many instances of one entity can be related to instances 
+            of another. We use <strong>crow's foot notation</strong>, which gets its name from the symbol that resembles a bird's foot.
+          </p>
+
+          <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-lg p-6 my-6">
+            <p className="font-semibold text-gray-900 dark:text-white mb-4">Crow's Foot Symbols Reference:</p>
+            
+            <div className="space-y-4">
+              <div>
+                <p className="text-gray-700 dark:text-gray-300 font-semibold mb-3">
+                  Cardinality Markers:
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3">
+                    <code className="text-lg font-bold bg-white dark:bg-gray-800 px-2 py-1 rounded">||</code>
+                    <span className="text-gray-700 dark:text-gray-300">Exactly one (required)</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <code className="text-lg font-bold bg-white dark:bg-gray-800 px-2 py-1 rounded">|o</code>
+                    <span className="text-gray-700 dark:text-gray-300">Zero or one (optional)</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <code className="text-lg font-bold bg-white dark:bg-gray-800 px-2 py-1 rounded">|&#123;</code>
+                    <span className="text-gray-700 dark:text-gray-300">One or more (required, many)</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <code className="text-lg font-bold bg-white dark:bg-gray-800 px-2 py-1 rounded">o&#123;</code>
+                    <span className="text-gray-700 dark:text-gray-300">Zero or more (optional, many)</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pt-3 border-t border-slate-300 dark:border-slate-700">
+                <p className="text-gray-700 dark:text-gray-300 font-semibold mb-3">
+                  Line Types:
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <code className="text-lg font-bold bg-white dark:bg-gray-800 px-2 py-1 rounded">--</code>
+                    <span className="text-gray-700 dark:text-gray-300">Identifying relationship (solid line) - child cannot exist without parent</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <code className="text-lg font-bold bg-white dark:bg-gray-800 px-2 py-1 rounded">..</code>
+                    <span className="text-gray-700 dark:text-gray-300">Non-identifying relationship (dashed line) - child can exist independently</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-300 dark:border-slate-700">
+                <p className="text-gray-700 dark:text-gray-300 font-semibold mb-2">Examples:</p>
+                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-2">
+                  <div>
+                    <code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">COMPANY ||--o&#123; ORDER</code>
+                    <br />
+                    <span className="ml-1">One company has zero or more orders (identifying)</span>
+                  </div>
+                  <div>
+                    <code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">PERSON &#125;o..o&#123; ADDRESS</code>
+                    <br />
+                    <span className="ml-1">A person can have zero or more addresses (non-identifying)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-300 dark:border-slate-700">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Learn more:{' '}
+                  <a 
+                    href="https://docs.mermaidchart.com/mermaid-oss/syntax/entityRelationshipDiagram.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    Mermaid ERD Documentation
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="mt-4">
+            Now let's see the three fundamental relationship types in action:
+          </p>
+
+          <MermaidDiagram
+            caption="The Three Core Relationship Types: (Top) One-to-One (||--||): PERSON to PASSPORT - each person has exactly one passport, and each passport belongs to exactly one person. Notice the UNIQUE constraint on PersonID in PASSPORT enforces this. (Middle) One-to-Many (||--o{): COMPANY to ORDER - one company can have zero or more orders, but each order belongs to exactly one company. The || on the company side means 'exactly one' and o{ on the order side means 'zero or more.' (Bottom) Many-to-Many (}o--o{): STUDENT to COURSE - students can take multiple courses, and courses can have multiple students. The }o and o{ symbols both indicate 'zero or more.' This type requires a junction table to implement (not shown here, but explained next)."
+            chart={`
+erDiagram
+    PERSON ||--|| PASSPORT : "1:1 One-to-One"
+    COMPANY ||--o{ ORDER : "1:N One-to-Many"
+    STUDENT }o--o{ COURSE : "M:N Many-to-Many"
+    
+    PERSON {
+        int PersonID PK
+        varchar Name
+    }
+    PASSPORT {
+        int PassportID PK
+        int PersonID FK "UNIQUE"
+    }
+    
+    COMPANY {
+        int CompanyID PK
+        varchar CompanyName
+    }
+    ORDER {
+        int OrderID PK
+        int CompanyID FK
+    }
+    
+    STUDENT {
+        int StudentID PK
+        varchar StudentName
+    }
+    COURSE {
+        int CourseID PK
+        varchar CourseName
+    }
+            `}
+          />
+
+          <div className="mt-6 space-y-4">
+            <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-lg p-4">
+              <h5 className="font-semibold text-gray-900 dark:text-white mb-2">
+                One-to-One (1:1) <code className="text-sm">||--||</code>
+              </h5>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Each record in Table A relates to exactly one record in Table B, and vice versa. 
+                Example: Each Person has exactly one Passport, and each Passport belongs to exactly one Person. 
+                In the diagram, notice PersonID in PASSPORT has a UNIQUE constraint - this enforces the one-to-one relationship.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-lg p-4">
+              <h5 className="font-semibold text-gray-900 dark:text-white mb-2">
+                One-to-Many (1:N) <code className="text-sm">||--o&#123;</code>
+              </h5>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                The most common relationship type. One record in the "parent" table relates to zero or more records in the "child" table. 
+                Example: One Company can have many Orders, but each Order belongs to exactly one Company. 
+                The <code>||</code> means "exactly one company" and the <code>o&#123;</code> means "zero or more orders."
+              </p>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-lg p-4">
+              <h5 className="font-semibold text-gray-900 dark:text-white mb-2">
+                Many-to-Many (M:N) <code className="text-sm">&#125;o--o&#123;</code>
+              </h5>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Multiple records in Table A can relate to multiple records in Table B. 
+                Example: A Student can enroll in many Courses, and a Course can have many Students. 
+                The <code>&#125;o</code> and <code>o&#123;</code> both mean "zero or more," indicating the many-to-many nature. 
+                Important: This relationship requires a junction table (which we'll see in detail next).
+              </p>
+            </div>
+          </div>
+          <p className="mt-4">
+            For many-to-many relationships, we need a special <strong>junction table</strong> (also called a linking table or 
+            bridge table). But why? Let's understand the problem first.
+          </p>
+
+          <p className="mt-3">
+            <strong>The Problem:</strong> In a relational database, relationships are created using foreign keys. But where would 
+            you put the foreign key for a many-to-many relationship?
+          </p>
+
+          <ul className="list-disc pl-6 mt-2 space-y-2 text-gray-700 dark:text-gray-300">
+            <li>
+              <strong>Option 1 - Put ClassID in the STUDENTS table:</strong> Each student could only reference ONE class. 
+              This breaks the "many" part - a student can't enroll in multiple classes. ❌
+            </li>
+            <li>
+              <strong>Option 2 - Put StudentID in the CLASSES table:</strong> Each class could only reference ONE student. 
+              This also breaks the "many" part - a class can't have multiple students. ❌
+            </li>
+            <li>
+              <strong>Option 3 - Store multiple IDs in one column:</strong> Like "StudentIDs: 1,2,3,4,5" - this violates 
+              First Normal Form (atomicity) and makes querying impossible. ❌
+            </li>
+          </ul>
+
+          <p className="mt-4">
+            <strong>The Solution:</strong> A <strong>junction table</strong> sits between the two entities and has foreign keys 
+            to BOTH tables. This transforms one many-to-many (M:N) relationship into TWO one-to-many (1:N) relationships, which 
+            relational databases handle perfectly!
+          </p>
+
+          <MermaidDiagram
+            caption="Many-to-Many Implementation: How a Junction Table Solves the Problem"
+            chart={`
+erDiagram
+    STUDENTS ||--o{ ENROLLMENT : "enrolls in"
+    CLASSES ||--o{ ENROLLMENT : "has enrolled"
+    
+    STUDENTS {
+        int StudentID PK
+        varchar StudentName
+    }
+    ENROLLMENT {
+        int StudentID FK
+        int ClassID FK
+        varchar Grade
+        date EnrollmentDate
+    }
+    CLASSES {
+        int ClassID PK
+        varchar ClassName
+    }
+            `}
+          />
+
+          <p className="mt-4">
+            Notice how the many-to-many relationship between STUDENTS and CLASSES is implemented with the ENROLLMENT junction table. 
+            This table has foreign keys to both STUDENTS (StudentID) and CLASSES (ClassID), effectively creating two one-to-many 
+            relationships. The junction table can also store attributes about the relationship itself, like Grade and EnrollmentDate.
+          </p>
+
+          <p className="mt-4">
+            Let's query this many-to-many relationship using SQL. This query introduces one new keyword:
+          </p>
+
+          <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded p-4 my-3">
+            <code className="text-cyan-600 dark:text-cyan-400 font-semibold">ORDER BY</code>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+              The <strong>ORDER BY clause</strong> sorts the results.{' '}
+              <code>ORDER BY s.StudentName, c.ClassName</code> means 
+              "sort the results first by student name, then by class name within each student." By default, sorting is ascending 
+              (A to Z, 1 to 9). You can add{' '}
+              <code>DESC</code> for descending order. Multiple columns create a hierarchical sort.
+            </p>
+          </div>
+
+          <SQLPlayground
+            preset={ENROLLMENT_PRESET}
+            defaultQuery={`-- Query the many-to-many relationship
+-- Show which students are in which classes
+SELECT 
+  s.StudentName,
+  c.ClassName,
+  e.Grade
+FROM students s
+JOIN enrollment e ON s.StudentID = e.StudentID
+JOIN classes c ON e.ClassID = c.ClassID
+ORDER BY s.StudentName, c.ClassName;`}
+          />
+
+          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            Notice how we JOIN through the enrollment table to connect students with classes. This query crosses the 
+            many-to-many relationship, showing which students are enrolled in which classes along with their grades.
+          </p>
+        </Subsection>
+
+        <Subsection title="Our Complete Financial Database ERD">
+          <p>
+            Now that you understand entities, attributes, relationships, and crow's foot notation, here's the complete ERD for our 
+            financial database case study:
+          </p>
+
+          <MermaidDiagram
+            caption="Complete ERD: Our Financial Data Model with All Relationships"
             chart={`
 erDiagram
     SECTORS ||--o{ COMPANIES : "contains"
@@ -523,78 +1158,146 @@ erDiagram
     }
             `}
           />
+
+          <p className="mt-4">
+            This diagram tells a story: Business sectors (like Technology or Finance) contain companies. Each company files 
+            multiple financial statements over the years. Each statement contains multiple line items (Revenue, Net Income, etc.). 
+            The foreign keys (SectorID, CompanyID, StatementID) create these relationships, linking the data together.
+          </p>
         </Subsection>
 
-        <Subsection title="The Three Core Relationship Types">
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">One-to-One (1:1)</h4>
-              <p>A single record in one table corresponds to exactly one record in another table.</p>
-              <p className="text-sm italic text-gray-600 dark:text-gray-400">
-                Example: A Person ↔ Passport relationship
-              </p>
+        <Subsection title="Creating Your Own ERDs with Mermaid">
+          <p>
+            Now that you've learned to read ERDs, let's learn to create them! All the diagrams in this course are made with{' '}
+            <a 
+              href="https://mermaid.js.org/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+            >
+              Mermaid
+            </a>, 
+            a text-based diagramming tool that turns code into beautiful diagrams.
+          </p>
+
+          <div className="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-300 dark:border-indigo-700 rounded-lg p-6 my-8">
+            <h4 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-4">
+              Step 1: Creating a Single Entity
+            </h4>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <div>
+                <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-200 mb-3">The Mermaid Code:</p>
+                <div className="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+                  <div className="bg-gray-200 dark:bg-gray-800 px-3 py-1.5 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between">
+                    <span className="text-xs text-gray-600 dark:text-gray-400 font-mono">mermaid</span>
+                  </div>
+                  <pre className="text-gray-900 dark:text-gray-100 p-4 text-xs font-mono overflow-x-auto leading-relaxed">
+{`erDiagram
+    COMPANY {
+        int CompanyID PK
+        varchar CompanyName
+        varchar StockTicker
+    }`}
+                  </pre>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-200 mb-3">Creates This Diagram:</p>
+                <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+                  <InlineMermaid chart={`erDiagram
+    COMPANY {
+        int CompanyID PK
+        varchar CompanyName
+        varchar StockTicker
+    }`} />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">One-to-Many (1:N)</h4>
-              <p>
-                One record in a "parent" table can be linked to many records in a "child" table, 
-                but each child record can only be linked to one parent record.
-              </p>
-              <p className="text-sm italic text-gray-600 dark:text-gray-400">
-                Example: One Company → Many Financial Statements
-              </p>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Many-to-Many (M:N)</h4>
-              <p>
-                Multiple records in one table can be associated with multiple records in another table. 
-                This requires a <strong>junction table</strong> to implement.
-              </p>
-              <p className="text-sm italic text-gray-600 dark:text-gray-400">
-                Example: Many Students ↔ Many Classes (requires Enrollment junction table)
-              </p>
-            </div>
+            <p className="text-sm text-indigo-800 dark:text-indigo-200 mt-4">
+              Start with <code className="bg-indigo-100 dark:bg-indigo-900/50 px-1.5 py-0.5 rounded">erDiagram</code>, 
+              then define each entity with its attributes and data types.
+            </p>
           </div>
 
-          <MermaidDiagram
-            caption="Many-to-Many Relationship with Junction Table"
-            chart={`
-erDiagram
-    STUDENTS ||--o{ ENROLLMENT : "enrolls in"
-    CLASSES ||--o{ ENROLLMENT : "has enrolled"
-    
-    STUDENTS {
-        int StudentID PK
-        varchar StudentName
-    }
-    ENROLLMENT {
-        int StudentID FK
-        int ClassID FK
-        varchar Grade
-        date EnrollmentDate
-    }
-    CLASSES {
-        int ClassID PK
-        varchar ClassName
-    }
-            `}
-          />
+          <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-300 dark:border-purple-700 rounded-lg p-6 my-8">
+            <h4 className="text-lg font-semibold text-purple-900 dark:text-purple-100 mb-4">
+              Step 2: Adding Relationships
+            </h4>
 
-          <SQLPlayground
-            preset={ENROLLMENT_PRESET}
-            defaultQuery={`-- Query the many-to-many relationship
--- Show which students are in which classes
-SELECT 
-  s.StudentName,
-  c.ClassName,
-  e.Grade
-FROM students s
-JOIN enrollment e ON s.StudentID = e.StudentID
-JOIN classes c ON e.ClassID = c.ClassID
-ORDER BY s.StudentName, c.ClassName;`}
-          />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <div>
+                <p className="text-sm font-semibold text-purple-800 dark:text-purple-200 mb-3">The Mermaid Code:</p>
+                <div className="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+                  <div className="bg-gray-200 dark:bg-gray-800 px-3 py-1.5 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between">
+                    <span className="text-xs text-gray-600 dark:text-gray-400 font-mono">mermaid</span>
+                  </div>
+                  <pre className="text-gray-900 dark:text-gray-100 p-4 text-xs font-mono overflow-x-auto leading-relaxed">
+{`erDiagram
+    CUSTOMER ||--o{ ORDER : "places"
+    
+    CUSTOMER {
+        int CustomerID PK
+        varchar Name
+    }
+    ORDER {
+        int OrderID PK
+        int CustomerID FK
+    }`}
+                  </pre>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-purple-800 dark:text-purple-200 mb-3">Creates This Diagram:</p>
+                <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+                  <InlineMermaid chart={`erDiagram
+    CUSTOMER ||--o{ ORDER : "places"
+    
+    CUSTOMER {
+        int CustomerID PK
+        varchar Name
+    }
+    ORDER {
+        int OrderID PK
+        int CustomerID FK
+    }`} />
+                </div>
+              </div>
+            </div>
+
+            <p className="text-sm text-purple-800 dark:text-purple-200 mt-4">
+              The first line <code className="bg-purple-100 dark:bg-purple-900/50 px-1.5 py-0.5 rounded">CUSTOMER ||--o&#123; ORDER : "places"</code>{' '}
+              defines the relationship. The <code>||--o&#123;</code> is the crow's foot notation showing "one-to-many," 
+              and <code>"places"</code> describes the relationship in plain English.
+            </p>
+          </div>
+
+          <Callout type="tip" title="Try It Yourself!">
+            You can create and experiment with Mermaid diagrams using{' '}
+            <a 
+              href="https://mermaid.live/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+            >
+              Mermaid's live editor
+            </a>. 
+            Copy the code examples above, paste them into the editor, and modify them to create your own database designs. 
+            This is also incredibly useful when working with AI assistants - you can describe your database structure and 
+            ask the AI to generate the Mermaid ERD code for you!
+            <p className="mt-3">
+              For complete Mermaid ERD syntax reference, including advanced features, visit the{' '}
+              <a 
+                href="https://docs.mermaidchart.com/mermaid-oss/syntax/entityRelationshipDiagram.html" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+              >
+                Mermaid ERD Documentation
+              </a>.
+            </p>
+          </Callout>
         </Subsection>
       </Section>
     </>
