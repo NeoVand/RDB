@@ -50,7 +50,16 @@ export function Part1_Foundation() {
       </Section>
 
       <Section id="section1" title="What is a Relational Database?" level={2}>
+        <p className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+          Why do 90% of the world's applications still use relational databases after 50 years?
+        </p>
         <p>
+          From your bank account to your favorite social media platform, from hospital medical records to airline reservations, 
+          from e-commerce transactions to streaming services - relational databases power the infrastructure of modern life. 
+          Despite the emergence of NoSQL alternatives, relational databases remain the dominant choice for mission-critical 
+          applications that require data consistency, complex relationships, and transactional guarantees.
+        </p>
+        <p className="mt-3">
           At its core, a <strong>relational database</strong> is a type of database that stores and provides 
           access to data points that are <em>related</em> to one another. Its primary objective is to organize 
           structured information in a way that makes it easy to see and understand how different pieces of 
@@ -789,6 +798,46 @@ JOIN Sectors s ON c.SectorID = s.SectorID;`}
             stable internal references (surrogate) and business rule enforcement (natural with UNIQUE).
           </p>
         </Subsection>
+
+        <Subsection title="Common Misconceptions About Keys">
+          <p>
+            Before moving forward, let's address some common misconceptions that often confuse beginners:
+          </p>
+
+          <Callout type="warning" title="Myths vs Reality">
+            <div className="space-y-3">
+              <div>
+                <p className="font-semibold text-amber-900 dark:text-amber-200">Myth: "Primary keys must be integers"</p>
+                <p className="text-sm text-amber-800 dark:text-amber-300">
+                  <strong>Reality:</strong> Primary keys can be any data type (text, UUID, composite). However, simple integers are 
+                  preferred because they're compact, efficient for indexing, and fast for joins.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-amber-900 dark:text-amber-200">Myth: "You can never change a primary key value"</p>
+                <p className="text-sm text-amber-800 dark:text-amber-300">
+                  <strong>Reality:</strong> You CAN change them, but it triggers cascading updates to all foreign key references - 
+                  a risky, expensive operation. This is precisely why surrogate keys (which never need to change) are best practice.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-amber-900 dark:text-amber-200">Myth: "Foreign key constraints are optional - they just slow things down"</p>
+                <p className="text-sm text-amber-800 dark:text-amber-300">
+                  <strong>Reality:</strong> While technically optional, foreign key constraints are essential for data integrity in 
+                  production systems. The slight performance cost is vastly outweighed by the protection against orphaned records and 
+                  referential integrity violations. Never skip them in real applications.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-amber-900 dark:text-amber-200">Myth: "Every table needs an auto-increment ID"</p>
+                <p className="text-sm text-amber-800 dark:text-amber-300">
+                  <strong>Reality:</strong> Junction tables often use composite keys (two foreign keys combined). Pure lookup tables 
+                  might use natural keys. The "always use auto-increment ID" rule is a good default, but not universal.
+                </p>
+              </div>
+            </div>
+          </Callout>
+        </Subsection>
       </Section>
 
       <Section id="section3" title="Modeling the Real World - Entities and Relationships" level={2}>
@@ -1159,11 +1208,30 @@ erDiagram
             `}
           />
 
-          <p className="mt-4">
-            This diagram tells a story: Business sectors (like Technology or Finance) contain companies. Each company files 
-            multiple financial statements over the years. Each statement contains multiple line items (Revenue, Net Income, etc.). 
-            The foreign keys (SectorID, CompanyID, StatementID) create these relationships, linking the data together.
-          </p>
+          <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-lg p-5 my-4">
+            <p className="font-semibold text-gray-900 dark:text-white mb-3">How to Read This Multi-Table ERD:</p>
+            <ol className="list-decimal pl-5 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+              <li>
+                <strong>Start at the top:</strong> SECTORS is the root entity. One sector (like "Technology") contains many companies.
+              </li>
+              <li>
+                <strong>Follow the relationships:</strong> The <code>||--o&#123;</code> symbols show "one-to-many." Read left-to-right: 
+                "One SECTOR contains zero or more COMPANIES."
+              </li>
+              <li>
+                <strong>Trace the foreign keys:</strong> COMPANIES has <code>SectorID FK</code> - this creates the link back to SECTORS. 
+                The FK points to the PK in the parent table.
+              </li>
+              <li>
+                <strong>Continue the chain:</strong> One COMPANY files many FINANCIAL_STATEMENTS (via <code>CompanyID FK</code>). 
+                One FINANCIAL_STATEMENT contains many LINE_ITEMS (via <code>StatementID FK</code>).
+              </li>
+              <li>
+                <strong>See the hierarchy:</strong> SECTORS → COMPANIES → FINANCIAL_STATEMENTS → LINE_ITEMS. This structure prevents 
+                redundancy: instead of repeating "Technology" in every Apple record, we store it once and reference it.
+              </li>
+            </ol>
+          </div>
         </Subsection>
 
         <Subsection title="Creating Your Own ERDs with Mermaid">
@@ -1180,60 +1248,69 @@ erDiagram
             a text-based diagramming tool that turns code into beautiful diagrams.
           </p>
 
-          <div className="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-300 dark:border-indigo-700 rounded-lg p-6 my-8">
-            <h4 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-4">
-              Step 1: Creating a Single Entity
-            </h4>
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mt-8 mb-3">
+            Step 1: Creating a Single Entity
+          </h4>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              <div>
-                <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-200 mb-3">The Mermaid Code:</p>
-                <div className="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
-                  <div className="bg-gray-200 dark:bg-gray-800 px-3 py-1.5 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between">
-                    <span className="text-xs text-gray-600 dark:text-gray-400 font-mono">mermaid</span>
-                  </div>
-                  <pre className="text-gray-900 dark:text-gray-100 p-4 text-xs font-mono overflow-x-auto leading-relaxed">
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            To create an ERD in Mermaid, you start with the <code>erDiagram</code> declaration, then define each entity as a block. 
+            Inside the curly braces, list each attribute with its data type, attribute name, and optional constraints (like PK for Primary Key). 
+            The basic syntax is: <code>datatype attributeName constraint</code>. Let's see this in action:
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start my-6">
+            <div>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">The Mermaid Code:</p>
+              <div className="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+                <div className="bg-gray-200 dark:bg-gray-800 px-3 py-1.5 border-b border-gray-300 dark:border-gray-700">
+                  <span className="text-xs text-gray-600 dark:text-gray-400 font-mono">mermaid</span>
+                </div>
+                <pre className="text-gray-900 dark:text-gray-100 p-4 text-xs font-mono overflow-x-auto leading-relaxed">
 {`erDiagram
     COMPANY {
         int CompanyID PK
         varchar CompanyName
         varchar StockTicker
     }`}
-                  </pre>
-                </div>
+                </pre>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-200 mb-3">Creates This Diagram:</p>
-                <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
-                  <InlineMermaid chart={`erDiagram
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Creates This Diagram:</p>
+              <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+                <InlineMermaid chart={`erDiagram
     COMPANY {
         int CompanyID PK
         varchar CompanyName
         varchar StockTicker
     }`} />
-                </div>
               </div>
             </div>
-
-            <p className="text-sm text-indigo-800 dark:text-indigo-200 mt-4">
-              Start with <code className="bg-indigo-100 dark:bg-indigo-900/50 px-1.5 py-0.5 rounded">erDiagram</code>, 
-              then define each entity with its attributes and data types.
-            </p>
           </div>
 
-          <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-300 dark:border-purple-700 rounded-lg p-6 my-8">
-            <h4 className="text-lg font-semibold text-purple-900 dark:text-purple-100 mb-4">
-              Step 2: Adding Relationships
-            </h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            Start with <code>erDiagram</code>, then define each entity with its attributes and data types.
+          </p>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              <div>
-                <p className="text-sm font-semibold text-purple-800 dark:text-purple-200 mb-3">The Mermaid Code:</p>
-                <div className="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
-                  <div className="bg-gray-200 dark:bg-gray-800 px-3 py-1.5 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between">
-                    <span className="text-xs text-gray-600 dark:text-gray-400 font-mono">mermaid</span>
-                  </div>
-                  <pre className="text-gray-900 dark:text-gray-100 p-4 text-xs font-mono overflow-x-auto leading-relaxed">
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mt-8 mb-3">
+            Step 2: Adding Relationships
+          </h4>
+
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            To connect entities with relationships, add a relationship line before the entity definitions. The syntax is:{' '}
+            <code>ENTITY1 relationship_type ENTITY2 : "verb phrase"</code>. The relationship type uses crow's foot notation 
+            (like <code>||--o&#123;</code> for one-to-many). The verb phrase in quotes describes the relationship in plain English. 
+            Then define both entities with their attributes, including the foreign key in the child entity:
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start my-6">
+            <div>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">The Mermaid Code:</p>
+              <div className="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+                <div className="bg-gray-200 dark:bg-gray-800 px-3 py-1.5 border-b border-gray-300 dark:border-gray-700">
+                  <span className="text-xs text-gray-600 dark:text-gray-400 font-mono">mermaid</span>
+                </div>
+                <pre className="text-gray-900 dark:text-gray-100 p-4 text-xs font-mono overflow-x-auto leading-relaxed">
 {`erDiagram
     CUSTOMER ||--o{ ORDER : "places"
     
@@ -1245,13 +1322,13 @@ erDiagram
         int OrderID PK
         int CustomerID FK
     }`}
-                  </pre>
-                </div>
+                </pre>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-purple-800 dark:text-purple-200 mb-3">Creates This Diagram:</p>
-                <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
-                  <InlineMermaid chart={`erDiagram
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Creates This Diagram:</p>
+              <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+                <InlineMermaid chart={`erDiagram
     CUSTOMER ||--o{ ORDER : "places"
     
     CUSTOMER {
@@ -1262,42 +1339,190 @@ erDiagram
         int OrderID PK
         int CustomerID FK
     }`} />
-                </div>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            The first line <code>CUSTOMER ||--o&#123; ORDER : "places"</code> defines the relationship. 
+            The <code>||--o&#123;</code> is the crow's foot notation showing "one-to-many," 
+            and <code>"places"</code> describes the relationship in plain English.
+          </p>
+
+          <Callout type="info" title="Why Diagrams as Code Matter in Modern Development">
+            Entity-Relationship Diagrams represent a powerful philosophy: <strong>diagrams as code</strong>. Instead of creating 
+            diagrams in visual tools that produce binary files, we express them as text (Mermaid syntax) that can be:
+            <ul className="list-disc pl-5 mt-2 space-y-1">
+              <li><strong>Version controlled:</strong> Track changes in Git alongside your code, see diagram evolution over time</li>
+              <li><strong>Reviewed in pull requests:</strong> Team members can comment on and approve schema changes</li>
+              <li><strong>Generated programmatically:</strong> Scripts and AI can create/modify diagrams based on your database</li>
+              <li><strong>Always in sync:</strong> Living documentation that sits right next to your code</li>
+              <li><strong>AI-friendly:</strong> In the age of AI-assisted development, text-based diagrams are machine-readable specifications 
+              that dramatically reduce ambiguity and hallucination when asking AI to generate database code</li>
+            </ul>
+            <p className="mt-2 text-sm">
+              This shift from "drawing diagrams" to "writing diagrams" mirrors the infrastructure-as-code movement and is 
+              essential for modern, collaborative, AI-augmented development workflows.
+            </p>
+          </Callout>
+
+          <Callout type="tip" title="AI-Assisted Database Design: Using ERDs to Prevent Hallucination">
+            When working with AI coding assistants (GitHub Copilot, ChatGPT, Claude, Cursor), providing an ERD in Mermaid syntax 
+            dramatically improves code quality and reduces errors. Here's why:
+            <ul className="list-disc pl-5 mt-2 space-y-2">
+              <li><strong>Precision over prose:</strong> "Create a user table with posts" is ambiguous. An ERD specifies exact column names, 
+              types, and relationships, leaving no room for AI misinterpretation.</li>
+              <li><strong>Prevents hallucination:</strong> AI sometimes invents column names or relationships. A structured ERD acts as 
+              a strict specification the AI must follow.</li>
+              <li><strong>Multi-language generation:</strong> From one ERD, ask AI to generate SQL DDL, SQLAlchemy models, Prisma schemas, 
+              or TypeORM entities - all guaranteed to match your design.</li>
+              <li><strong>Iterative refinement:</strong> Update the ERD, regenerate code. Much faster than manually editing SQL across multiple files.</li>
+            </ul>
+            
+            <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded p-3 mt-3">
+              <p className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">Example AI Prompts:</p>
+              <div className="text-xs text-green-800 dark:text-green-200 space-y-2 font-mono">
+                <p>"Generate PostgreSQL CREATE TABLE statements for this ERD: [paste Mermaid code]"</p>
+                <p>"Convert this Mermaid ERD to Python SQLAlchemy ORM models with all relationships"</p>
+                <p>"Create a TypeScript Prisma schema from this ERD, include all constraints"</p>
               </div>
             </div>
 
-            <p className="text-sm text-purple-800 dark:text-purple-200 mt-4">
-              The first line <code className="bg-purple-100 dark:bg-purple-900/50 px-1.5 py-0.5 rounded">CUSTOMER ||--o&#123; ORDER : "places"</code>{' '}
-              defines the relationship. The <code>||--o&#123;</code> is the crow's foot notation showing "one-to-many," 
-              and <code>"places"</code> describes the relationship in plain English.
-            </p>
-          </div>
-
-          <Callout type="tip" title="Try It Yourself!">
-            You can create and experiment with Mermaid diagrams using{' '}
-            <a 
-              href="https://mermaid.live/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
-            >
-              Mermaid's live editor
-            </a>. 
-            Copy the code examples above, paste them into the editor, and modify them to create your own database designs. 
-            This is also incredibly useful when working with AI assistants - you can describe your database structure and 
-            ask the AI to generate the Mermaid ERD code for you!
-            <p className="mt-3">
-              For complete Mermaid ERD syntax reference, including advanced features, visit the{' '}
+            <p className="mt-3 text-sm">
+              Experiment with{' '}
+              <a 
+                href="https://mermaid.live/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+              >
+                Mermaid's live editor
+              </a>{' '}
+              and see the{' '}
               <a 
                 href="https://docs.mermaidchart.com/mermaid-oss/syntax/entityRelationshipDiagram.html" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
               >
-                Mermaid ERD Documentation
+                complete ERD syntax reference
               </a>.
             </p>
           </Callout>
+        </Subsection>
+
+        <Subsection title="Practice: Design Your First Database">
+          <p>
+            Now that you understand entities, relationships, keys, and ERDs, let's put your knowledge to the test. 
+            Try designing a database for this real-world scenario:
+          </p>
+
+          <div className="bg-indigo-50 dark:bg-indigo-950/20 border-l-4 border-indigo-500 p-5 rounded-r my-4">
+            <p className="font-semibold text-indigo-900 dark:text-indigo-200 mb-3 text-lg">Scenario: Library Management System</p>
+            <p className="text-sm text-indigo-800 dark:text-indigo-300 mb-3">
+              A public library needs a database to manage their collection and track loans. The system must handle:
+            </p>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-indigo-800 dark:text-indigo-300">
+              <li><strong>Books:</strong> Title, ISBN (unique), publication year, number of copies</li>
+              <li><strong>Authors:</strong> Name, birth year, nationality</li>
+              <li><strong>Members:</strong> Name, email (unique), phone, join date</li>
+              <li><strong>Loans:</strong> Track which member borrowed which book, loan date, due date, return date</li>
+            </ul>
+            <p className="text-sm text-indigo-800 dark:text-indigo-300 mt-3">
+              <strong>Key requirements:</strong> Books can have multiple authors (many-to-many). Members can borrow multiple books. 
+              The library needs to track loan history even after books are returned.
+            </p>
+          </div>
+
+          <p className="mt-4">
+            <strong>Think about these questions:</strong>
+          </p>
+          <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 dark:text-gray-300">
+            <li>What are the main entities?</li>
+            <li>What attributes does each entity need?</li>
+            <li>What should be the primary key for each entity?</li>
+            <li>What relationships exist between entities?</li>
+            <li>Do any relationships require a junction table?</li>
+            <li>Where should foreign keys be placed?</li>
+          </ul>
+
+          <details className="mt-6 bg-green-50 dark:bg-green-950/20 border-2 border-green-400 dark:border-green-600 rounded-lg p-5">
+            <summary className="font-semibold text-green-900 dark:text-green-100 cursor-pointer text-lg hover:text-green-700 dark:hover:text-green-300">
+              💡 Click to Show Solution ERD
+            </summary>
+            <div className="mt-4">
+              <MermaidDiagram
+                caption="Library Database ERD Solution: This design uses 5 entities including a BOOK_AUTHORS junction table for the many-to-many relationship between books and authors"
+                chart={`
+erDiagram
+    MEMBERS ||--o{ LOANS : "borrows"
+    BOOKS ||--o{ LOANS : "borrowed in"
+    AUTHORS ||--o{ BOOK_AUTHORS : "writes"
+    BOOKS ||--o{ BOOK_AUTHORS : "written by"
+    
+    AUTHORS {
+        int AuthorID PK
+        varchar Name
+        int BirthYear
+        varchar Nationality
+    }
+    BOOKS {
+        int BookID PK
+        varchar ISBN "UNIQUE"
+        varchar Title
+        int PublicationYear
+        int CopiesAvailable
+    }
+    BOOK_AUTHORS {
+        int BookID FK
+        int AuthorID FK
+    }
+    MEMBERS {
+        int MemberID PK
+        varchar Name
+        varchar Email "UNIQUE"
+        varchar Phone
+        date JoinDate
+    }
+    LOANS {
+        int LoanID PK
+        int MemberID FK
+        int BookID FK
+        date LoanDate
+        date DueDate
+        date ReturnDate
+    }
+                `}
+              />
+              <div className="bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded-lg p-4 mt-4">
+                <p className="font-semibold text-green-900 dark:text-green-100 mb-2">Key Design Decisions:</p>
+                <ul className="text-sm text-green-800 dark:text-green-200 space-y-2">
+                  <li><strong>5 Tables:</strong> AUTHORS, BOOKS, MEMBERS, LOANS, plus BOOK_AUTHORS junction table</li>
+                  <li><strong>Surrogate PKs:</strong> AuthorID, BookID, MemberID, LoanID - stable identifiers</li>
+                  <li><strong>Natural key constraints:</strong> ISBN and Email marked UNIQUE to prevent duplicates</li>
+                  <li><strong>Many-to-many:</strong> BOOK_AUTHORS junction table connects books with authors (one book can have 
+                  multiple authors, one author can write multiple books)</li>
+                  <li><strong>One-to-many:</strong> MEMBERS to LOANS (one member, many loans). BOOKS to LOANS (one book, many loans over time)</li>
+                  <li><strong>Audit trail:</strong> ReturnDate in LOANS allows NULL (book not yet returned) and preserves history</li>
+                </ul>
+              </div>
+              <p className="text-sm text-green-800 dark:text-green-200 mt-3">
+                Compare your design with this solution. There's no single "right" answer - different designs can work depending on 
+                requirements. The important thing is that your design prevents data redundancy and maintains referential integrity!
+              </p>
+            </div>
+          </details>
+
+          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">
+              Congratulations!
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300">
+              You've completed Part I and learned the foundational concepts of relational databases! You now understand:
+              tables, rows, columns, keys, relationships, ERDs, and how to communicate database designs using Mermaid. 
+              In Part II, we'll explore how to ensure data quality through normalization and constraints.
+            </p>
+          </div>
         </Subsection>
       </Section>
     </>
