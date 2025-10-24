@@ -12,6 +12,14 @@ import {
   createStudentsTable,
   createClassesTable,
   createEnrollmentTable,
+  createCustomersTable,
+  createProductsTable,
+  createOrdersTable,
+  createOrderItemsTable,
+  createProfessorsTable,
+  createCoursesTable,
+  createUniversityStudentsTable,
+  createRegistrationsTable,
 } from './schemas';
 import {
   seedSectors,
@@ -26,6 +34,14 @@ import {
   seedStudents,
   seedClasses,
   seedEnrollment,
+  seedCustomers,
+  seedProducts,
+  seedOrders,
+  seedOrderItems,
+  seedProfessors,
+  seedCourses,
+  seedUniversityStudents,
+  seedRegistrations,
 } from './seedData';
 
 /**
@@ -146,6 +162,46 @@ export const NORMALIZATION_PRESET: DatabasePreset = {
     seedCompanies,
     seedFinancialStatements,
     seedLineItems,
+  ],
+};
+
+/**
+ * E-Commerce database - for advanced joins, aggregations, and real-world scenarios
+ */
+export const ECOMMERCE_PRESET: DatabasePreset = {
+  name: 'E-Commerce Database',
+  description: 'Online store with customers, products, orders, and order items',
+  schemas: [
+    createCustomersTable,
+    createProductsTable,
+    createOrdersTable,
+    createOrderItemsTable,
+  ],
+  seeds: [
+    seedCustomers,
+    seedProducts,
+    seedOrders,
+    seedOrderItems,
+  ],
+};
+
+/**
+ * University database - for complex joins and academic scenarios
+ */
+export const UNIVERSITY_PRESET: DatabasePreset = {
+  name: 'University Database',
+  description: 'Academic system with students, professors, courses, and registrations',
+  schemas: [
+    createProfessorsTable,
+    createCoursesTable,
+    createUniversityStudentsTable,
+    createRegistrationsTable,
+  ],
+  seeds: [
+    seedProfessors,
+    seedCourses,
+    seedUniversityStudents,
+    seedRegistrations,
   ],
 };
 

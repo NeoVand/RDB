@@ -148,7 +148,7 @@ export function Part5_Ecosystem() {
 -- 2. Show their sector name and net income too
 
 -- Your solution here:
-SELECT 
+SELECT
   c.CompanyName,
   s.SectorName,
   MAX(CASE WHEN li.ItemName = 'Revenue' THEN li.Value END) as Revenue,

@@ -164,3 +164,116 @@ export function seedEnrollment(db: Database): void {
   `);
 }
 
+// ============================================================================
+// E-COMMERCE DATABASE SEED DATA
+// ============================================================================
+
+export function seedCustomers(db: Database): void {
+  db.run(`
+    INSERT INTO customers (customer_id, email, first_name, last_name) VALUES
+      (1, 'john.doe@example.com', 'John', 'Doe'),
+      (2, 'jane.smith@example.com', 'Jane', 'Smith'),
+      (3, 'bob.johnson@example.com', 'Bob', 'Johnson'),
+      (4, 'alice.williams@example.com', 'Alice', 'Williams'),
+      (5, 'charlie.brown@example.com', 'Charlie', 'Brown');
+  `);
+}
+
+export function seedProducts(db: Database): void {
+  db.run(`
+    INSERT INTO products (product_id, product_name, category, price, stock_quantity) VALUES
+      (1, 'Laptop Pro 15', 'Electronics', 1299.99, 25),
+      (2, 'Wireless Mouse', 'Electronics', 29.99, 150),
+      (3, 'USB-C Cable', 'Accessories', 12.99, 200),
+      (4, 'Office Chair', 'Furniture', 249.99, 45),
+      (5, 'Desk Lamp', 'Furniture', 39.99, 80),
+      (6, 'Notebook Set', 'Stationery', 15.99, 120),
+      (7, 'Wireless Keyboard', 'Electronics', 79.99, 60);
+  `);
+}
+
+export function seedOrders(db: Database): void {
+  db.run(`
+    INSERT INTO orders (order_id, customer_id, order_date, total_amount, status) VALUES
+      (1, 1, '2024-01-15 10:30:00', 1342.97, 'shipped'),
+      (2, 2, '2024-01-16 14:20:00', 29.99, 'delivered'),
+      (3, 1, '2024-01-18 09:15:00', 52.98, 'pending'),
+      (4, 3, '2024-01-20 16:45:00', 289.98, 'shipped'),
+      (5, 4, '2024-01-22 11:00:00', 1299.99, 'processing');
+  `);
+}
+
+export function seedOrderItems(db: Database): void {
+  db.run(`
+    INSERT INTO order_items (order_item_id, order_id, product_id, quantity, unit_price) VALUES
+      (1, 1, 1, 1, 1299.99),
+      (2, 1, 3, 2, 12.99),
+      (3, 1, 2, 1, 29.99),
+      (4, 2, 2, 1, 29.99),
+      (5, 3, 3, 2, 12.99),
+      (6, 3, 6, 1, 15.99),
+      (7, 4, 4, 1, 249.99),
+      (8, 4, 5, 1, 39.99),
+      (9, 5, 1, 1, 1299.99);
+  `);
+}
+
+// ============================================================================
+// UNIVERSITY DATABASE SEED DATA
+// ============================================================================
+
+export function seedProfessors(db: Database): void {
+  db.run(`
+    INSERT INTO professors (professor_id, name, department, email, hire_date) VALUES
+      (1, 'Dr. Sarah Johnson', 'Computer Science', 's.johnson@university.edu', '2015-08-20'),
+      (2, 'Dr. Michael Chen', 'Computer Science', 'm.chen@university.edu', '2018-01-15'),
+      (3, 'Dr. Emily Rodriguez', 'Mathematics', 'e.rodriguez@university.edu', '2012-09-01'),
+      (4, 'Dr. David Kim', 'Physics', 'd.kim@university.edu', '2019-02-10'),
+      (5, 'Dr. Lisa Anderson', 'Chemistry', 'l.anderson@university.edu', '2016-06-01');
+  `);
+}
+
+export function seedCourses(db: Database): void {
+  db.run(`
+    INSERT INTO courses (course_id, course_code, course_name, credits, professor_id) VALUES
+      (1, 'CS101', 'Introduction to Programming', 4, 1),
+      (2, 'CS201', 'Data Structures', 4, 2),
+      (3, 'CS301', 'Database Systems', 3, 1),
+      (4, 'MATH101', 'Calculus I', 4, 3),
+      (5, 'MATH201', 'Linear Algebra', 3, 3),
+      (6, 'PHYS101', 'Physics I', 4, 4),
+      (7, 'CHEM101', 'General Chemistry', 4, 5);
+  `);
+}
+
+export function seedUniversityStudents(db: Database): void {
+  db.run(`
+    INSERT INTO university_students (student_id, name, email, major, enrollment_year) VALUES
+      (1, 'Alex Turner', 'a.turner@student.edu', 'Computer Science', 2022),
+      (2, 'Emma Davis', 'e.davis@student.edu', 'Computer Science', 2023),
+      (3, 'Ryan Martinez', 'r.martinez@student.edu', 'Mathematics', 2022),
+      (4, 'Sophia Lee', 's.lee@student.edu', 'Physics', 2021),
+      (5, 'Noah Wilson', 'n.wilson@student.edu', 'Chemistry', 2023),
+      (6, 'Olivia Taylor', 'o.taylor@student.edu', 'Computer Science', 2022);
+  `);
+}
+
+export function seedRegistrations(db: Database): void {
+  db.run(`
+    INSERT INTO registrations (registration_id, student_id, course_id, semester, grade) VALUES
+      (1, 1, 1, 'Fall 2023', 'A'),
+      (2, 1, 4, 'Fall 2023', 'B+'),
+      (3, 1, 2, 'Spring 2024', NULL),
+      (4, 2, 1, 'Spring 2024', NULL),
+      (5, 2, 4, 'Spring 2024', NULL),
+      (6, 3, 4, 'Fall 2023', 'A'),
+      (7, 3, 5, 'Spring 2024', NULL),
+      (8, 4, 6, 'Fall 2023', 'A-'),
+      (9, 4, 4, 'Fall 2023', 'B'),
+      (10, 5, 7, 'Spring 2024', NULL),
+      (11, 6, 1, 'Fall 2023', 'A-'),
+      (12, 6, 2, 'Spring 2024', NULL),
+      (13, 6, 3, 'Spring 2024', NULL);
+  `);
+}
+

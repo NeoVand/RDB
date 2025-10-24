@@ -4,7 +4,7 @@ import { CodeExample } from '../../components/Content/CodeExample';
 import { MermaidDiagram } from '../../components/Content/MermaidDiagram';
 import { SQLPlayground } from '../../components/Playground/SQLPlayground';
 import { Callout } from '../../components/Callout';
-import { FINANCIAL_FULL_PRESET, EMPLOYEES_PRESET } from '../../lib/database/presets';
+import { FINANCIAL_FULL_PRESET, EMPLOYEES_PRESET, EMPTY_PRESET } from '../../lib/database/presets';
 
 export function Part4_Advanced() {
   return (
@@ -24,6 +24,40 @@ export function Part4_Advanced() {
         </p>
 
         <Subsection title="The ACID Properties">
+          <MermaidDiagram
+            caption="Transaction Lifecycle: From BEGIN to COMMIT or ROLLBACK"
+            chart={`
+stateDiagram-v2
+    [*] --> Active: BEGIN TRANSACTION
+    
+    Active --> PartiallyCommitted: All operations complete
+    Active --> Failed: Operation error
+    
+    PartiallyCommitted --> Committed: COMMIT
+    PartiallyCommitted --> Failed: Commit error
+    
+    Failed --> Aborted: ROLLBACK
+    
+    Committed --> [*]: Changes permanent
+    Aborted --> [*]: Changes undone
+    
+    note right of Active
+        Operations being executed
+        Changes in memory only
+    end note
+    
+    note right of Committed
+        Changes written to disk
+        DURABILITY guaranteed
+    end note
+    
+    note right of Aborted
+        All changes rolled back
+        ATOMICITY preserved
+    end note
+            `}
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
             <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 p-4 rounded-r">
               <div className="flex items-center gap-2.5">
@@ -82,6 +116,37 @@ export function Part4_Advanced() {
             </div>
           </div>
 
+          <MermaidDiagram
+            caption="Isolation Levels: Balancing Concurrency vs Consistency"
+            chart={`
+graph TB
+    subgraph Levels["Isolation Levels (Strictest to Most Permissive)"]
+        L1["SERIALIZABLE<br/>No concurrency issues<br/>Slowest performance"]
+        L2["REPEATABLE READ<br/>Prevents dirty & non-repeatable<br/>Allows phantom reads"]
+        L3["READ COMMITTED<br/>Prevents dirty reads only<br/>Default in many DBs"]
+        L4["READ UNCOMMITTED<br/>No protection<br/>Fastest but risky"]
+    end
+    
+    subgraph Issues["Concurrency Problems Prevented"]
+        I1["Dirty Reads"]
+        I2["Non-Repeatable Reads"]
+        I3["Phantom Reads"]
+    end
+    
+    L1 -.->|"Prevents"| I1
+    L1 -.->|"Prevents"| I2
+    L1 -.->|"Prevents"| I3
+    
+    L2 -.->|"Prevents"| I1
+    L2 -.->|"Prevents"| I2
+    
+    L3 -.->|"Prevents"| I1
+    
+    style L1 fill:#dcfce7,stroke:#16a34a,color:#000
+    style L4 fill:#fee2e2,stroke:#dc2626,color:#000
+            `}
+          />
+
           <SQLPlayground
             preset={EMPLOYEES_PRESET}
             defaultQuery={`-- Transactions ensure ACID properties
@@ -113,6 +178,142 @@ COMMIT;
 -- Changes are now permanent
 SELECT * FROM employees WHERE name = 'Alice Smith';`}
           />
+        </Subsection>
+
+        <Subsection title="Isolation Levels Explained">
+          <p>
+            Isolation levels define how transaction changes are visible to other concurrent transactions.
+            Different levels provide different trade-offs between consistency and performance.
+          </p>
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr>
+                  <th>Level</th>
+                  <th>Dirty Reads</th>
+                  <th>Non-Repeatable Reads</th>
+                  <th>Phantom Reads</th>
+                  <th>Performance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="font-semibold">READ UNCOMMITTED</td>
+                  <td className="text-red-600 dark:text-red-400">Possible</td>
+                  <td className="text-red-600 dark:text-red-400">Possible</td>
+                  <td className="text-red-600 dark:text-red-400">Possible</td>
+                  <td className="text-green-600 dark:text-green-400">Fastest</td>
+                </tr>
+                <tr>
+                  <td className="font-semibold">READ COMMITTED</td>
+                  <td className="text-green-600 dark:text-green-400">Prevented</td>
+                  <td className="text-red-600 dark:text-red-400">Possible</td>
+                  <td className="text-red-600 dark:text-red-400">Possible</td>
+                  <td className="text-amber-600 dark:text-amber-400">Fast</td>
+                </tr>
+                <tr>
+                  <td className="font-semibold">REPEATABLE READ</td>
+                  <td className="text-green-600 dark:text-green-400">Prevented</td>
+                  <td className="text-green-600 dark:text-green-400">Prevented</td>
+                  <td className="text-red-600 dark:text-red-400">Possible</td>
+                  <td className="text-amber-600 dark:text-amber-400">Moderate</td>
+                </tr>
+                <tr>
+                  <td className="font-semibold">SERIALIZABLE</td>
+                  <td className="text-green-600 dark:text-green-400">Prevented</td>
+                  <td className="text-green-600 dark:text-green-400">Prevented</td>
+                  <td className="text-green-600 dark:text-green-400">Prevented</td>
+                  <td className="text-red-600 dark:text-red-400">Slowest</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="space-y-4 my-6">
+            <Callout type="info" title="Dirty Read">
+              Transaction A reads uncommitted changes from Transaction B. If B rolls back, A has read invalid data.
+            </Callout>
+
+            <Callout type="info" title="Non-Repeatable Read">
+              Transaction A reads a row, Transaction B updates it and commits, Transaction A reads again and gets different data.
+            </Callout>
+
+            <Callout type="info" title="Phantom Read">
+              Transaction A runs a query, Transaction B inserts rows matching A's query, Transaction A runs the same query and sees new rows appear.
+            </Callout>
+          </div>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Demonstrating transaction isolation
+-- Scenario: Two transactions updating the same data
+
+-- Transaction 1: Update salary
+BEGIN TRANSACTION;
+UPDATE employees SET salary = 90000 WHERE name = 'Alice Smith';
+
+-- At this point, changes are not committed
+-- Other transactions won't see this change (READ COMMITTED+)
+SELECT salary FROM employees WHERE name = 'Alice Smith';
+
+COMMIT;
+
+-- Now the change is visible to all transactions
+SELECT salary FROM employees WHERE name = 'Alice Smith';`}
+          />
+        </Subsection>
+
+        <Subsection title="Practical Transaction Examples">
+          <p>
+            Real-world scenarios where transactions are essential for maintaining data integrity.
+          </p>
+
+          <SQLPlayground
+            preset={EMPTY_PRESET}
+            defaultQuery={`-- Banking Example: Transfer money between accounts
+CREATE TABLE accounts (
+  account_id INTEGER PRIMARY KEY,
+  account_holder TEXT NOT NULL,
+  balance DECIMAL(10, 2) NOT NULL CHECK (balance >= 0)
+);
+
+INSERT INTO accounts VALUES
+  (1, 'Alice', 1000.00),
+  (2, 'Bob', 500.00);
+
+-- Transfer $200 from Alice to Bob (BOTH must succeed)
+BEGIN TRANSACTION;
+
+-- Debit from Alice
+UPDATE accounts
+SET balance = balance - 200
+WHERE account_id = 1;
+
+-- Credit to Bob
+UPDATE accounts
+SET balance = balance + 200
+WHERE account_id = 2;
+
+-- Verify both changes before committing
+SELECT * FROM accounts;
+
+-- If everything looks good, commit
+COMMIT;
+
+-- Final verification
+SELECT * FROM accounts;`}
+          />
+
+          <Callout type="success" title="ACID in Action">
+            This transaction demonstrates all ACID properties:
+            <ul className="list-disc pl-5 mt-2 space-y-1">
+              <li><strong>Atomicity:</strong> Both updates succeed or both fail</li>
+              <li><strong>Consistency:</strong> Total balance stays the same ($1500)</li>
+              <li><strong>Isolation:</strong> Other transactions don't see partial transfer</li>
+              <li><strong>Durability:</strong> After COMMIT, changes survive system crash</li>
+            </ul>
+          </Callout>
         </Subsection>
       </Section>
 
@@ -191,7 +392,7 @@ SELECT c.CompanyName, li.Value
 FROM Companies c
 JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
 JOIN Line_Items li ON fs.StatementID = li.StatementID
-WHERE li.ItemName = 'Revenue' 
+WHERE li.ItemName = 'Revenue'
   AND fs.Year = 2024;`}
           />
         </Subsection>
@@ -208,7 +409,7 @@ WHERE li.ItemName = 'Revenue'
             preset={FINANCIAL_FULL_PRESET}
             defaultQuery={`-- Create a view for latest company revenues
 CREATE VIEW LatestCompanyRevenue AS
-SELECT 
+SELECT
   c.CompanyName,
   li.Value AS Revenue,
   fs.Year
@@ -258,6 +459,27 @@ ORDER BY Revenue DESC;`}
               </tbody>
             </table>
           </div>
+
+          <MermaidDiagram
+            caption="OLTP vs OLAP: Different Workloads, Different Designs"
+            chart={`
+graph TB
+    subgraph OLTP["OLTP: Online Transaction Processing"]
+        O1["Characteristics:<br/>• Many short transactions<br/>• INSERT, UPDATE, DELETE heavy<br/>• Current data<br/>• Normalized schema"]
+        O2["Examples:<br/>• E-commerce checkout<br/>• Banking transactions<br/>• Order entry<br/>• User registration"]
+        O3["Optimized for:<br/>• Data integrity<br/>• Write performance<br/>• Concurrent users<br/>• ACID compliance"]
+    end
+    
+    subgraph OLAP["OLAP: Online Analytical Processing"]
+        A1["Characteristics:<br/>• Complex queries<br/>• SELECT heavy<br/>• Historical data<br/>• Denormalized/star schema"]
+        A2["Examples:<br/>• Business intelligence<br/>• Data warehouses<br/>• Reporting dashboards<br/>• Trend analysis"]
+        A3["Optimized for:<br/>• Read performance<br/>• Aggregations<br/>• Complex joins<br/>• Large datasets"]
+    end
+    
+    style OLTP fill:#dbeafe,stroke:#2563eb,color:#000
+    style OLAP fill:#fef3c7,stroke:#d97706,color:#000
+            `}
+          />
 
           <p>
             <strong>OLTP (Online Transaction Processing):</strong> Systems like e-commerce checkouts or 

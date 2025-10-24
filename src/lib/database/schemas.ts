@@ -179,3 +179,137 @@ export function createEnrollmentTable(db: Database): void {
   `);
 }
 
+// ============================================================================
+// E-COMMERCE DATABASE SCHEMAS
+// ============================================================================
+
+/**
+ * Create customers table for e-commerce example
+ */
+export function createCustomersTable(db: Database): void {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS customers (
+      customer_id INTEGER PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+}
+
+/**
+ * Create products table for e-commerce example
+ */
+export function createProductsTable(db: Database): void {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS products (
+      product_id INTEGER PRIMARY KEY,
+      product_name TEXT NOT NULL,
+      category TEXT,
+      price DECIMAL(10, 2) NOT NULL,
+      stock_quantity INTEGER DEFAULT 0
+    );
+  `);
+}
+
+/**
+ * Create orders table for e-commerce example
+ */
+export function createOrdersTable(db: Database): void {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS orders (
+      order_id INTEGER PRIMARY KEY,
+      customer_id INTEGER NOT NULL,
+      order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      total_amount DECIMAL(10, 2),
+      status TEXT DEFAULT 'pending',
+      FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+    );
+  `);
+}
+
+/**
+ * Create order_items table for e-commerce example
+ */
+export function createOrderItemsTable(db: Database): void {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS order_items (
+      order_item_id INTEGER PRIMARY KEY,
+      order_id INTEGER NOT NULL,
+      product_id INTEGER NOT NULL,
+      quantity INTEGER NOT NULL,
+      unit_price DECIMAL(10, 2) NOT NULL,
+      FOREIGN KEY (order_id) REFERENCES orders(order_id),
+      FOREIGN KEY (product_id) REFERENCES products(product_id)
+    );
+  `);
+}
+
+// ============================================================================
+// UNIVERSITY DATABASE SCHEMAS
+// ============================================================================
+
+/**
+ * Create professors table for university example
+ */
+export function createProfessorsTable(db: Database): void {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS professors (
+      professor_id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      department TEXT NOT NULL,
+      email TEXT UNIQUE,
+      hire_date DATE
+    );
+  `);
+}
+
+/**
+ * Create courses table for university example
+ */
+export function createCoursesTable(db: Database): void {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS courses (
+      course_id INTEGER PRIMARY KEY,
+      course_code TEXT UNIQUE NOT NULL,
+      course_name TEXT NOT NULL,
+      credits INTEGER NOT NULL,
+      professor_id INTEGER,
+      FOREIGN KEY (professor_id) REFERENCES professors(professor_id)
+    );
+  `);
+}
+
+/**
+ * Create university students table (different from enrollment example)
+ */
+export function createUniversityStudentsTable(db: Database): void {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS university_students (
+      student_id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      major TEXT,
+      enrollment_year INTEGER
+    );
+  `);
+}
+
+/**
+ * Create registrations table for university example
+ */
+export function createRegistrationsTable(db: Database): void {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS registrations (
+      registration_id INTEGER PRIMARY KEY,
+      student_id INTEGER NOT NULL,
+      course_id INTEGER NOT NULL,
+      semester TEXT NOT NULL,
+      grade TEXT,
+      FOREIGN KEY (student_id) REFERENCES university_students(student_id),
+      FOREIGN KEY (course_id) REFERENCES courses(course_id)
+    );
+  `);
+}
+

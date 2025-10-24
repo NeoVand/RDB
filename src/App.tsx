@@ -2,8 +2,11 @@ import { MainLayout } from './components/Layout/MainLayout';
 import { Part1_Foundation } from './content/sections/Part1_Foundation';
 import { Part2_DataIntegrity } from './content/sections/Part2_DataIntegrity';
 import { Part3_SQL } from './content/sections/Part3_SQL';
+import { Part3_AdvancedSQL } from './content/sections/Part3_AdvancedSQL';
 import { Part4_Advanced } from './content/sections/Part4_Advanced';
 import { Part5_Ecosystem } from './content/sections/Part5_Ecosystem';
+import { Part6_Exercises } from './content/sections/Part6_Exercises';
+import { Part7_Reference } from './content/sections/Part7_Reference';
 
 function App() {
   return (
@@ -30,8 +33,11 @@ function App() {
         <Part1_Foundation />
         <Part2_DataIntegrity />
         <Part3_SQL />
+        <Part3_AdvancedSQL />
         <Part4_Advanced />
         <Part5_Ecosystem />
+        <Part6_Exercises />
+        <Part7_Reference />
       </div>
     </MainLayout>
   );

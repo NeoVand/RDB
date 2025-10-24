@@ -9,10 +9,12 @@ interface MainLayoutProps {
 
 const sectionIds = [
   'part1', 'section1', 'section2', 'section3',
-  'part2', 'section4', 'section5',
-  'part3', 'section6', 'section7', 'section8',
+  'part2', 'section4', 'section5', 'section5b',
+  'part3', 'section6', 'section7', 'section8', 'section8b',
   'part4', 'section9', 'section10', 'section11',
   'part5', 'section12',
+  'part6', 'section13', 'section14', 'section15',
+  'part7', 'section16', 'section17', 'section18',
 ];
 
 export function MainLayout({ children }: MainLayoutProps) {

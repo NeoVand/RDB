@@ -31,6 +31,7 @@ const tocStructure: TOCItem[] = [
     children: [
       { id: 'section4', title: 'Database Normalization', level: 2 },
       { id: 'section5', title: 'Constraints and Integrity', level: 2 },
+      { id: 'section5b', title: 'Understanding Data Types', level: 2 },
     ],
   },
   {
@@ -41,6 +42,7 @@ const tocStructure: TOCItem[] = [
       { id: 'section6', title: 'Introduction to SQL', level: 2 },
       { id: 'section7', title: 'CRUD Operations', level: 2 },
       { id: 'section8', title: 'Advanced Querying', level: 2 },
+      { id: 'section8b', title: 'Advanced SQL Features', level: 2 },
     ],
   },
   {
@@ -59,6 +61,26 @@ const tocStructure: TOCItem[] = [
     level: 1,
     children: [
       { id: 'section12', title: 'Choosing Your Database', level: 2 },
+    ],
+  },
+  {
+    id: 'part6',
+    title: 'Part VI: Practice Exercises',
+    level: 1,
+    children: [
+      { id: 'section13', title: 'Beginner Exercises', level: 2 },
+      { id: 'section14', title: 'Intermediate Exercises', level: 2 },
+      { id: 'section15', title: 'Advanced Exercises', level: 2 },
+    ],
+  },
+  {
+    id: 'part7',
+    title: 'Part VII: Reference Guide',
+    level: 1,
+    children: [
+      { id: 'section16', title: 'SQL Keywords Reference', level: 2 },
+      { id: 'section17', title: 'Best Practices', level: 2 },
+      { id: 'section18', title: 'Common Pitfalls', level: 2 },
     ],
   },
 ];

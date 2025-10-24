@@ -4,6 +4,40 @@ import { MermaidDiagram } from '../../components/Content/MermaidDiagram';
 import { SQLPlayground } from '../../components/Playground/SQLPlayground';
 import { Callout } from '../../components/Callout';
 import { FINANCIAL_FULL_PRESET, ENROLLMENT_PRESET } from '../../lib/database/presets';
+import { useEffect, useRef } from 'react';
+import mermaid from 'mermaid';
+import { useTheme } from '../../hooks/useTheme';
+
+function InlineMermaid({ chart }: { chart: string }) {
+  const { theme } = useTheme();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const idRef = useRef(`mermaid-inline-${Math.random().toString(36).substr(2, 9)}`);
+
+  useEffect(() => {
+    const renderDiagram = async () => {
+      if (!containerRef.current) return;
+      try {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: theme === 'dark' ? 'dark' : 'neutral',
+          securityLevel: 'loose',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        });
+        const { svg } = await mermaid.render(idRef.current, chart.trim());
+        containerRef.current.innerHTML = svg;
+      } catch (error) {
+        console.error('Mermaid render error for chart:', chart);
+        console.error('Error details:', error);
+        if (containerRef.current) {
+          containerRef.current.innerHTML = `<div class="text-red-600 p-4 text-sm">Failed to render: ${error instanceof Error ? error.message : 'Unknown error'}</div>`;
+        }
+      }
+    };
+    renderDiagram();
+  }, [chart, theme]);
+
+  return <div ref={containerRef} className="flex justify-center items-center w-full" />;
+}
 
 export function Part1_Foundation() {
   return (
@@ -53,6 +87,140 @@ export function Part1_Foundation() {
             </li>
           </ul>
 
+          <Callout type="info" title="Schema vs Instance: Blueprint vs Building">
+            It's crucial to distinguish between the <strong>structure</strong> of a database and the <strong>data</strong> it holds:
+            <ul className="list-disc pl-5 mt-2 space-y-1">
+              <li><strong>Schema (Structure):</strong> The blueprint defining table names, column names, data types, and constraints. The schema is relatively stable and doesn't contain actual data.</li>
+              <li><strong>Instance (Data):</strong> A snapshot of the actual data stored in the database at a specific moment. The instance is dynamic and changes constantly as data is added, updated, or deleted.</li>
+            </ul>
+          </Callout>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-8">
+            {/* Left: Table with Data */}
+            <div>
+              <div className="h-[320px] flex justify-center items-center p-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg overflow-x-auto">
+                <table className="text-sm border-collapse">
+                  <thead>
+                    <tr>
+                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2">
+                        CompanyID<br/>
+                        <span className="text-xs font-normal text-blue-700 dark:text-blue-300">(PK)</span>
+                      </th>
+                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2">
+                        CompanyName
+                      </th>
+                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2">
+                        StockTicker
+                      </th>
+                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2">
+                        SectorID<br/>
+                        <span className="text-xs font-normal text-blue-700 dark:text-blue-300">(FK)</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-800">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">101</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Apple Inc.</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">AAPL</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">1</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">102</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Microsoft Corp.</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">MSFT</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">1</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-800">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">103</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">JPMorgan Chase</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">JPM</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">2</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Instance (The Data):</p>
+                <p className="leading-relaxed">
+                  This shows the actual table with real data values. Each row is a company record (Apple, Microsoft, JPMorgan). 
+                  The <strong>cardinality is 3</strong> (we have 3 rows currently), and the <strong>degree is 4</strong> (CompanyID, 
+                  CompanyName, StockTicker, SectorID). This data changes constantly as companies are added, updated, or removed.
+                </p>
+              </div>
+            </div>
+
+            {/* Right: ERD Schema */}
+            <div>
+              <div className="h-[320px] p-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg flex items-center justify-center">
+                <InlineMermaid chart={`erDiagram
+    COMPANIES {
+        int CompanyID PK
+        varchar CompanyName
+        varchar StockTicker
+        int SectorID FK
+    }`} />
+              </div>
+              <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Schema (The Structure):</p>
+                <p className="leading-relaxed">
+                  This defines the table's structure without any actual data. It specifies the column names (CompanyID, CompanyName, etc.), 
+                  their data types (int, varchar), and constraints (PK for Primary Key, FK for Foreign Key). The schema remains relatively 
+                  stable even as millions of rows are added to the table.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Callout type="info" title="Key Terminology">
+            <ul className="space-y-2">
+              <li><strong>Degree:</strong> The number of columns (attributes). The Companies table has a degree of 4.</li>
+              <li><strong>Cardinality:</strong> The number of rows (tuples). The example shows 3 rows, but this changes as data is added/removed.</li>
+              <li><strong>Primary Key (PK):</strong> Uniquely identifies each row.</li>
+              <li><strong>Foreign Key (FK):</strong> References another table's primary key.</li>
+            </ul>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="Your First SQL Query: Exploring Tables">
+          <p>
+            Now that you understand what tables, rows, and columns are, let's explore them using <strong>SQL</strong> 
+            (Structured Query Language) - the language used to communicate with relational databases.
+          </p>
+
+          <p className="mt-3">
+            The most fundamental SQL command is <code>SELECT</code>, which retrieves data from a table. 
+            The basic syntax is:
+          </p>
+
+          <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded p-3 my-3 font-mono text-sm">
+            <span className="text-cyan-600 dark:text-cyan-400 font-semibold">SELECT</span> 
+            <span className="text-gray-700 dark:text-gray-300"> column1, column2, ... </span>
+            <span className="text-cyan-600 dark:text-cyan-400 font-semibold">FROM</span>
+            <span className="text-gray-700 dark:text-gray-300"> table_name</span>
+            <span className="text-gray-500 dark:text-gray-500">;</span>
+          </div>
+
+          <p className="mt-3">
+            The <code>*</code> (asterisk) is a wildcard meaning "all columns". So <code>SELECT * FROM Companies</code> means 
+            "retrieve all columns from the Companies table."
+          </p>
+
+          <Callout type="tip" title="About the Interactive Playgrounds">
+            Throughout this course, you'll see interactive SQL playgrounds like the one below. Here's how to use them:
+            <ul className="list-disc pl-5 mt-2 space-y-1">
+              <li><strong>Execute button:</strong> Runs the SQL query and displays results below</li>
+              <li><strong>Schema button:</strong> Shows the database structure (what tables and columns exist)</li>
+              <li><strong>Reset button:</strong> Restores the database to its initial state if you've modified data</li>
+              <li><strong>Keyboard shortcut:</strong> Press Ctrl+Enter (Cmd+Enter on Mac) to execute the query</li>
+            </ul>
+            Feel free to modify queries and experiment - you can't break anything! Each playground has its own isolated database.
+          </Callout>
+
+          <p className="mt-4 font-semibold text-gray-900 dark:text-gray-100">
+            Try it yourself:
+          </p>
+
           <SQLPlayground
             preset={FINANCIAL_FULL_PRESET}
             defaultQuery={`-- Explore the Companies table
@@ -60,9 +228,14 @@ SELECT * FROM Companies;`}
           />
 
           <p className="mt-4">
-            Try modifying the query above to explore different tables in our financial database. 
-            For example, try: <code>SELECT * FROM Sectors;</code>
+            <strong>Experiment further:</strong> Try modifying the query above to explore different tables in our financial database. 
+            For example:
           </p>
+          <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 dark:text-gray-300">
+            <li><code>SELECT * FROM Sectors;</code> - See all business sectors</li>
+            <li><code>SELECT CompanyName, StockTicker FROM Companies;</code> - Get only specific columns</li>
+            <li>Click the <strong>Schema</strong> button to see what other tables are available</li>
+          </ul>
         </Subsection>
 
         <Subsection title="Key Terminology: Degree and Cardinality">

@@ -20,15 +20,25 @@ export function QueryEditor({
   const isDark = theme === 'dark';
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
+  const lineNumbersRef = useRef<HTMLDivElement>(null);
 
   // Auto-resize to fit content
   useEffect(() => {
-    if (textareaRef.current && highlightRef.current) {
+    if (textareaRef.current) {
+      // Reset height to recalculate
       textareaRef.current.style.height = 'auto';
-      const scrollHeight = textareaRef.current.scrollHeight;
-      const newHeight = Math.max(scrollHeight, parseInt(minHeight));
-      textareaRef.current.style.height = `${newHeight}px`;
-      highlightRef.current.style.height = `${newHeight}px`;
+      
+      // Use requestAnimationFrame to ensure accurate scrollHeight after reset
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          const scrollHeight = textareaRef.current.scrollHeight;
+          const minHeightPx = parseInt(minHeight);
+          const newHeight = Math.max(scrollHeight, minHeightPx);
+          
+          // Set textarea height (overlay will match via inset-0)
+          textareaRef.current.style.height = `${newHeight}px`;
+        }
+      });
     }
   }, [value, minHeight]);
 
@@ -68,11 +78,20 @@ export function QueryEditor({
     ];
 
     return value.split('\n').map((line, lineIndex) => {
-      if (line.trim().startsWith('--')) {
+      // Handle empty lines - must render with same height
+      if (line.trim() === '') {
         return (
           <div key={lineIndex} className="leading-5">
+            &nbsp;
+          </div>
+        );
+      }
+
+      if (line.trim().startsWith('--')) {
+        return (
+          <div key={lineIndex} className="leading-5" style={{ minHeight: '1.25rem' }}>
             <span className={isDark ? 'text-green-400' : 'text-green-600'}>
-              {line}
+              {line || '\u00A0'}
             </span>
           </div>
         );
@@ -81,56 +100,66 @@ export function QueryEditor({
       const words = line.split(/(\s+|[(),;])/);
       
       return (
-        <div key={lineIndex} className="leading-5">
-          {words.map((word, wordIndex) => {
-            const upperWord = word.toUpperCase();
-            const isKeyword = sqlKeywords.includes(upperWord);
-            
-            if (isKeyword) {
-              return (
-                <span 
-                  key={wordIndex} 
-                  className={`font-semibold ${isDark ? 'text-cyan-400' : 'text-cyan-700'}`}
-                >
-                  {word}
-                </span>
-              );
-            }
-            
-            if (word.startsWith("'") || word.startsWith('"')) {
-              return (
-                <span 
-                  key={wordIndex} 
-                  className={isDark ? 'text-amber-400' : 'text-amber-600'}
-                >
-                  {word}
-                </span>
-              );
-            }
-            
-            if (/^\d+\.?\d*$/.test(word)) {
-              return (
-                <span 
-                  key={wordIndex} 
-                  className={isDark ? 'text-cyan-400' : 'text-cyan-600'}
-                >
-                  {word}
-                </span>
-              );
-            }
-            
-            return <span key={wordIndex}>{word}</span>;
-          })}
+        <div key={lineIndex} className="leading-5" style={{ minHeight: '1.25rem' }}>
+          {words.length === 0 || words.every(w => w === '') ? (
+            <span>&nbsp;</span>
+          ) : (
+            words.map((word, wordIndex) => {
+              // Preserve empty strings (spaces) as-is
+              if (word === '') {
+                return <span key={wordIndex}></span>;
+              }
+              
+              const upperWord = word.toUpperCase();
+              const isKeyword = sqlKeywords.includes(upperWord);
+              
+              if (isKeyword) {
+                return (
+                  <span 
+                    key={wordIndex} 
+                    className={`font-semibold ${isDark ? 'text-cyan-400' : 'text-cyan-700'}`}
+                  >
+                    {word}
+                  </span>
+                );
+              }
+              
+              if (word.startsWith("'") || word.startsWith('"')) {
+                return (
+                  <span 
+                    key={wordIndex} 
+                    className={isDark ? 'text-amber-400' : 'text-amber-600'}
+                  >
+                    {word}
+                  </span>
+                );
+              }
+              
+              if (/^\d+\.?\d*$/.test(word)) {
+                return (
+                  <span 
+                    key={wordIndex} 
+                    className={isDark ? 'text-cyan-400' : 'text-cyan-600'}
+                  >
+                    {word}
+                  </span>
+                );
+              }
+              
+              return <span key={wordIndex}>{word}</span>;
+            })
+          )}
         </div>
       );
     });
   };
 
   return (
-    <div className={`relative overflow-hidden ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`relative ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="flex relative overflow-x-auto">
         {/* Line numbers */}
         <div
+          ref={lineNumbersRef}
           className={`py-2 px-2 text-right select-none font-mono text-xs shrink-0 ${
             isDark ? 'bg-gray-800 text-gray-600' : 'bg-gray-100 text-gray-500'
           }`}
@@ -146,12 +175,12 @@ export function QueryEditor({
         {/* Syntax highlighted overlay */}
         <div
           ref={highlightRef}
-          className={`absolute left-10 top-0 py-2 px-3 font-mono text-sm pointer-events-none select-none overflow-hidden ${
+          className={`absolute left-10 top-0 py-2 px-3 font-mono text-sm pointer-events-none select-none whitespace-pre-wrap ${
             isDark ? 'text-gray-100' : 'text-gray-900'
           }`}
           style={{ 
             minHeight,
-            width: 'calc(100% - 2.5rem)',
+            right: 0,
           }}
         >
           {renderHighlightedCode()}
@@ -169,6 +198,7 @@ export function QueryEditor({
             minHeight,
             color: 'transparent',
             caretColor: isDark ? 'rgb(243 244 246)' : 'rgb(17 24 39)',
+            lineHeight: '1.25rem',
           }}
           placeholder="Enter your SQL query here..."
           spellCheck={false}
