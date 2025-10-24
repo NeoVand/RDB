@@ -7,10 +7,10 @@ interface CalloutProps {
 export function Callout({ children, type = 'info', title }: CalloutProps) {
   const styles = {
     info: {
-      container: 'bg-slate-50 dark:bg-slate-900/30 border-slate-400 dark:border-slate-600',
-      icon: 'text-slate-600 dark:text-slate-400',
-      title: 'text-slate-900 dark:text-slate-200',
-      text: 'text-slate-800 dark:text-slate-300',
+      container: 'bg-blue-50 dark:bg-slate-900/30 border-blue-400 dark:border-slate-600',
+      icon: 'text-blue-600 dark:text-slate-400',
+      title: 'text-blue-900 dark:text-slate-200',
+      text: 'text-blue-800 dark:text-slate-300',
     },
     warning: {
       container: 'bg-amber-50 dark:bg-amber-950/30 border-amber-500 dark:border-amber-700',

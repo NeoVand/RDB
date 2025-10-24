@@ -57,6 +57,44 @@ export function Part1_Foundation() {
           data connect, forming a logical, intuitive representation of information.
         </p>
 
+        <Callout type="success" title="Historical Note: The Birth of Relational Databases">
+          <div className="flex gap-4 items-start">
+            <div className="flex-1">
+              The relational model was invented by{' '}
+              <a 
+                href="https://en.wikipedia.org/wiki/Edgar_F._Codd" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+              >
+                Dr. Edgar F. Codd
+              </a>, a British computer scientist 
+              working at IBM's San Jose Research Laboratory. In 1970, he published a groundbreaking paper titled{' '}
+              <a 
+                href="https://www.seas.upenn.edu/~zives/03f/cis550/codd.pdf" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+              >
+                "A Relational Model of Data for Large Shared Data Banks"
+              </a>{' '}
+              that revolutionized how we think about data storage. 
+              Before Codd's work, databases were rigid and hierarchical, requiring programmers to know the physical 
+              structure of data. Codd's relational model introduced the idea of organizing data into simple tables 
+              that could be queried without knowing how the data was physically stored - a concept so powerful it 
+              remains the foundation of database systems over 50 years later!
+            </div>
+            <div className="text-center flex-shrink-0">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/en/5/58/Edgar_F_Codd.jpg" 
+                alt="Dr. Edgar F. Codd"
+                className="h-24 w-auto object-contain rounded border border-emerald-300 dark:border-emerald-600"
+              />
+              <p className="text-xs mt-1 text-emerald-800 dark:text-emerald-200">Dr. Edgar F. Codd</p>
+            </div>
+          </div>
+        </Callout>
+
         <Subsection title="Continuous Case Study: Corporate Financial Filings">
           <p>
             Throughout this guide, we will build and query a database designed to solve a common business problem: 
@@ -98,23 +136,21 @@ export function Part1_Foundation() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-8">
             {/* Left: Table with Data */}
             <div>
-              <div className="h-[320px] flex justify-center items-center p-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg overflow-x-auto">
-                <table className="text-sm border-collapse">
+              <div className="h-[320px] flex justify-center items-center p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg overflow-auto">
+                <table className="text-xs border-collapse w-auto">
                   <thead>
                     <tr>
-                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2">
-                        CompanyID<br/>
-                        <span className="text-xs font-normal text-blue-700 dark:text-blue-300">(PK)</span>
+                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2 whitespace-nowrap">
+                        CompanyID <span className="text-xs font-normal text-blue-700 dark:text-blue-300">(PK)</span>
                       </th>
-                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2">
+                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2 whitespace-nowrap">
                         CompanyName
                       </th>
-                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2">
+                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2 whitespace-nowrap">
                         StockTicker
                       </th>
-                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2">
-                        SectorID<br/>
-                        <span className="text-xs font-normal text-blue-700 dark:text-blue-300">(FK)</span>
+                      <th className="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 px-3 py-2 whitespace-nowrap">
+                        SectorID <span className="text-xs font-normal text-blue-700 dark:text-blue-300">(FK)</span>
                       </th>
                     </tr>
                   </thead>
@@ -137,14 +173,20 @@ export function Part1_Foundation() {
                       <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">JPM</td>
                       <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">2</td>
                     </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">104</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Goldman Sachs</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">GS</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-center">2</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
               <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                 <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Instance (The Data):</p>
                 <p className="leading-relaxed">
-                  This shows the actual table with real data values. Each row is a company record (Apple, Microsoft, JPMorgan). 
-                  The <strong>cardinality is 3</strong> (we have 3 rows currently), and the <strong>degree is 4</strong> (CompanyID, 
+                  This shows the actual table with real data values. Each row is a company record (Apple, Microsoft, JPMorgan, Goldman Sachs). 
+                  The <strong>cardinality is 4</strong> (we have 4 rows currently), and the <strong>degree is 4</strong> (CompanyID, 
                   CompanyName, StockTicker, SectorID). This data changes constantly as companies are added, updated, or removed.
                 </p>
               </div>
@@ -152,7 +194,7 @@ export function Part1_Foundation() {
 
             {/* Right: ERD Schema */}
             <div>
-              <div className="h-[320px] p-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg flex items-center justify-center">
+              <div className="h-[320px] p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg flex items-center justify-center">
                 <InlineMermaid chart={`erDiagram
     COMPANIES {
         int CompanyID PK
@@ -165,7 +207,8 @@ export function Part1_Foundation() {
                 <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Schema (The Structure):</p>
                 <p className="leading-relaxed">
                   This defines the table's structure without any actual data. It specifies the column names (CompanyID, CompanyName, etc.), 
-                  their data types (int, varchar), and constraints (PK for Primary Key, FK for Foreign Key). The schema remains relatively 
+                  their data types (int, varchar), and constraints. The PK and FK labels indicate Primary Keys and Foreign Keys - 
+                  don't worry, we'll explain what these mean in the next section! The schema remains relatively 
                   stable even as millions of rows are added to the table.
                 </p>
               </div>
@@ -188,6 +231,70 @@ export function Part1_Foundation() {
             (Structured Query Language) - the language used to communicate with relational databases.
           </p>
 
+          <Callout type="success" title="Historical Note: The Origins of SQL">
+            <div className="flex gap-4 items-start">
+              <div className="flex-1">
+                SQL was developed at IBM in the early 1970s by{' '}
+                <a 
+                  href="https://en.wikipedia.org/wiki/Donald_D._Chamberlin" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  Donald Chamberlin
+                </a>{' '}
+                and{' '}
+                <a 
+                  href="https://en.wikipedia.org/wiki/Raymond_F._Boyce" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  Raymond Boyce
+                </a>, 
+                building on E.F. Codd's relational model. It was originally called{' '}
+                <a 
+                  href="https://en.wikipedia.org/wiki/SQL" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  SEQUEL
+                </a>{' '}
+                (Structured English Query Language), designed to be so intuitive that non-programmers could use it. The name was 
+                later shortened to SQL due to trademark conflicts. First commercialized by{' '}
+                <a 
+                  href="https://en.wikipedia.org/wiki/Oracle_Database" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  Oracle Corporation
+                </a>{' '}
+                in 1979 and IBM in 1981, SQL became an ANSI standard in 1986 and an ISO standard in 1987. Today, it's one of 
+                the most enduring programming languages - the syntax you'll learn here has remained remarkably consistent for over 40 years!
+              </div>
+              <div className="flex gap-3 flex-shrink-0">
+                <div className="text-center">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/6/62/Don_Chamberlin_%28cropped%29.jpg" 
+                    alt="Donald Chamberlin"
+                    className="h-24 w-auto object-contain rounded border border-emerald-300 dark:border-emerald-600"
+                  />
+                  <p className="text-xs mt-1 text-emerald-800 dark:text-emerald-200">D. Chamberlin</p>
+                </div>
+                <div className="text-center">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Raymond_F_Boyce_age_25.png" 
+                    alt="Raymond Boyce"
+                    className="h-24 w-auto object-contain rounded border border-emerald-300 dark:border-emerald-600"
+                  />
+                  <p className="text-xs mt-1 text-emerald-800 dark:text-emerald-200">R. Boyce</p>
+                </div>
+              </div>
+            </div>
+          </Callout>
+
           <p className="mt-3">
             The most fundamental SQL command is <code>SELECT</code>, which retrieves data from a table. 
             The basic syntax is:
@@ -205,6 +312,25 @@ export function Part1_Foundation() {
             The <code>*</code> (asterisk) is a wildcard meaning "all columns". So <code>SELECT * FROM Companies</code> means 
             "retrieve all columns from the Companies table."
           </p>
+
+          <p className="mt-3">
+            <strong>SQL Comments:</strong> You'll notice lines starting with <code>--</code> (double dashes) in our queries. 
+            These are comments - notes for humans that the database ignores when executing the query. Comments are useful for:
+          </p>
+          <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 dark:text-gray-300">
+            <li>Explaining what a query does</li>
+            <li>Adding context or instructions</li>
+            <li>Temporarily disabling parts of a query (useful when testing)</li>
+          </ul>
+          <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded p-3 my-3 font-mono text-sm">
+            <span className="text-green-600 dark:text-green-400">-- This is a comment - the database ignores this line</span><br/>
+            <span className="text-cyan-600 dark:text-cyan-400 font-semibold">SELECT</span>
+            <span className="text-gray-700 dark:text-gray-300"> * </span>
+            <span className="text-cyan-600 dark:text-cyan-400 font-semibold">FROM</span>
+            <span className="text-gray-700 dark:text-gray-300"> Companies</span>
+            <span className="text-gray-500 dark:text-gray-500">;</span>
+            <span className="text-green-600 dark:text-green-400"> -- This is also a comment</span>
+          </div>
 
           <Callout type="tip" title="About the Interactive Playgrounds">
             Throughout this course, you'll see interactive SQL playgrounds like the one below. Here's how to use them:
