@@ -115,8 +115,25 @@ export function Part2_DataIntegrity() {
             data modification operations. These aren't random bugs; they're inherent flaws in the database structure itself.
           </p>
 
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            The core issue is <em>data redundancy</em> - storing the same information in multiple places. This creates a 
+            maintenance nightmare when that information needs to change. To understand why this is so problematic, consider 
+            an everyday analogy:
+          </p>
+
+          <Callout type="tip" title="Analogy: The Contact Information Problem">
+            Imagine you have a friend whose phone number is written on sticky notes scattered throughout your house - 
+            one on the fridge, one in your car, one on your desk, and one in your wallet. When your friend changes their 
+            number, you face three problems: (1) You might forget to check if you even have their old number written down 
+            (insertion anomaly), (2) You have to find and update ALL the sticky notes or you'll have conflicting information 
+            (update anomaly), and (3) If you throw away the sticky note on your desk, you might lose their number entirely 
+            (deletion anomaly). The solution? Keep phone numbers in ONE place - your phone's contacts - and reference that 
+            single source of truth. This is exactly what database normalization does: it eliminates redundant copies of data 
+            by storing each fact exactly once.
+          </Callout>
+
           <p className="mt-3">
-            Imagine you're tracking companies and their sectors in a single table, with the sector name repeated in every company record:
+            Let's see this problem in action. Imagine you're tracking companies and their sectors in a single table, with the sector name repeated in every company record:
           </p>
 
           <div className="overflow-x-auto my-4">
@@ -403,31 +420,31 @@ flowchart LR
             <table className="min-w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-slate-100 dark:bg-slate-800">
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2" colSpan={2}>Composite Primary Key</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2" colSpan={3}>Non-Key Attributes</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-slate-900 dark:text-slate-100 font-semibold" colSpan={2}>Composite Primary Key</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-slate-900 dark:text-slate-100 font-semibold" colSpan={3}>Non-Key Attributes</th>
                 </tr>
-                <tr className="bg-slate-50 dark:bg-slate-850">
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">OrderID</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">ProductID</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30">OrderDate</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30">ProductName</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Quantity</th>
+                <tr className="bg-slate-50 dark:bg-slate-900">
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100">OrderID</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100">ProductID</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100">OrderDate</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100">ProductName</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100">Quantity</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">1001</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">P501</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30">2024-01-15</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30">Laptop</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">2</td>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100">1001</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100">P501</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100">2024-01-15</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100">Laptop</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100">2</td>
                 </tr>
-                <tr>
-                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">1001</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">P502</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30">2024-01-15</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30">Mouse</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">5</td>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100">1001</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100">P502</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100">2024-01-15</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100">Mouse</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100">5</td>
                 </tr>
               </tbody>
             </table>
@@ -606,6 +623,25 @@ ORDER BY s.SectorName, c.CompanyName;`}
               <li><strong>Maintainable:</strong> Updates happen in one place, reducing bugs and inconsistencies</li>
             </ul>
             Higher normal forms (BCNF, 4NF, 5NF) exist for edge cases, but 3NF is sufficient for 95% of real-world applications.
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            To understand the progression through normal forms and why 3NF is often the stopping point, it helps to visualize 
+            the journey as a series of increasingly refined organizational steps. Each normal form solves a specific type of 
+            redundancy problem:
+          </p>
+
+          <Callout type="tip" title="Analogy: Organizing a Messy Kitchen">
+            The journey through normal forms is like progressively organizing a chaotic kitchen. <strong>Unnormalized</strong> 
+            is like having ingredients scattered everywhere - pasta in three different cabinets, the same spice bought five times 
+            because you can't find the original. <strong>1NF</strong> is like deciding "one item per container" - no more bags 
+            containing both flour AND sugar, each ingredient gets its own labeled jar. <strong>2NF</strong> is like grouping 
+            items by meal type - breakfast items together, baking supplies together - so you don't store "pancake mix" in both 
+            the breakfast cabinet and the baking cabinet just because it's used in both contexts. <strong>3NF</strong> is like 
+            removing indirect dependencies: instead of storing "flour → baking section → second shelf" everywhere, just store 
+            "flour → baking section" and let "baking section → second shelf" be defined once. By 3NF, your kitchen is organized, 
+            intuitive, and efficient - everything has one clear home, and when you move the baking section to a different shelf, 
+            you only update one sign, not every item. Most kitchens stop here - it's organized enough!
           </Callout>
         </Subsection>
 
@@ -793,6 +829,31 @@ stateDiagram-v2
           that protect your data integrity 24/7, regardless of which application, script, or user is accessing the database.
         </p>
 
+        <p className="mt-3 text-gray-700 dark:text-gray-300">
+          The relationship between normalization and constraints is complementary: normalization tells you <em>how to organize</em> 
+          your data structure, while constraints tell you <em>what rules to enforce</em> within that structure. Think of it 
+          this way:
+        </p>
+
+        <Callout type="tip" title="Analogy: Traffic Laws vs. Road Design">
+          Think of database design like city planning. Normalization is like deciding how to lay out roads efficiently - 
+          avoiding redundant paths that go to the same destination. But good road layout isn't enough; you also need traffic 
+          laws (constraints) to keep everyone safe. A PRIMARY KEY is like a vehicle registration number - every car must have 
+          one unique ID. A NOT NULL constraint is like requiring all drivers to have a valid license - no exceptions. 
+          A CHECK constraint is like a speed limit - values must stay within acceptable bounds. A FOREIGN KEY is like requiring 
+          that street addresses actually exist before you can list them on mail - you can't reference 123 Fake Street if 
+          that street isn't in the city registry. Just as traffic laws are enforced by police (not just "hoped for" by drivers), 
+          database constraints are enforced by the database engine itself - not left to the honor system of application code. 
+          This is why constraints are so powerful: they're <em>always</em> enforced, no matter how many different applications 
+          access your database.
+        </Callout>
+
+        <p className="mt-4 text-gray-700 dark:text-gray-300">
+          This enforcement-first philosophy wasn't always standard practice. The journey from "constraints are optional 
+          performance overhead" to "constraints are essential for correctness" took several decades to complete. Understanding 
+          this evolution helps explain why constraints are now universally recognized as critical:
+        </p>
+
         <Callout type="success" title="Historical Note: The Evolution of Database Constraints">
           <div className="flex gap-4 items-start">
             <div className="flex-1">
@@ -806,6 +867,14 @@ stateDiagram-v2
               became the default in 2010 - meaning millions of MySQL databases operated without referential integrity for decades! 
               This led to countless data corruption issues that could have been prevented. Today, every serious relational database 
               enforces constraints at the database level, recognizing that performance is meaningless without correctness.
+            </div>
+            <div className="text-center flex-shrink-0">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Sql_data_base_with_logo.png/300px-Sql_data_base_with_logo.png" 
+                alt="SQL Database"
+                className="h-24 w-auto object-contain rounded border border-emerald-300 dark:border-emerald-600"
+              />
+              <p className="text-xs mt-1 mb-0 text-emerald-800 dark:text-emerald-200">SQL Standards</p>
             </div>
           </div>
         </Callout>
@@ -896,6 +965,65 @@ stateDiagram-v2
               </div>
             </div>
           </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Now let's put this into practice! The playground below lets you create your first table with constraints. Follow the 
+            guided steps in the comments to understand each part of the CREATE TABLE statement:
+          </p>
+
+          <SQLPlayground
+            preset={EMPTY_PRESET}
+            defaultQuery={`-- Step 1: Create a Products table with various constraints
+-- Read through each line to understand the syntax
+
+CREATE TABLE products (
+  -- Primary key: auto-incrementing unique identifier
+  product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  
+  -- Required text field (NOT NULL)
+  product_name TEXT NOT NULL,
+  
+  -- Unique constraint: SKU must be unique across all products
+  sku TEXT UNIQUE NOT NULL,
+  
+  -- Decimal for exact pricing (10 total digits, 2 after decimal)
+  price DECIMAL(10, 2) CHECK (price >= 0),
+  
+  -- Integer with CHECK constraint for stock
+  stock_quantity INTEGER DEFAULT 0 CHECK (stock_quantity >= 0),
+  
+  -- Automatically set when record is created
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Step 2: After running this, click the "Schema" button above
+--         to see your table structure!
+
+-- Step 3: Try inserting some data
+INSERT INTO products (product_name, sku, price, stock_quantity)
+VALUES ('Wireless Mouse', 'WM-001', 29.99, 50);
+
+INSERT INTO products (product_name, sku, price)
+VALUES ('USB Cable', 'USB-C-001', 9.99);  -- stock_quantity will default to 0
+
+-- Step 4: Query your data
+SELECT * FROM products;
+
+-- Challenge: Try these experiments (uncomment one at a time):
+-- This will FAIL (duplicate SKU):
+-- INSERT INTO products (product_name, sku, price) VALUES ('Keyboard', 'WM-001', 49.99);
+
+-- This will FAIL (negative price violates CHECK):
+-- INSERT INTO products (product_name, sku, price) VALUES ('Monitor', 'MON-001', -199.99);
+
+-- This will FAIL (product_name is NOT NULL):
+-- INSERT INTO products (sku, price) VALUES ('HDMI-001', 15.99);`}
+          />
+
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+            <strong>Tip:</strong> Use the <strong>Schema</strong> button to visualize your table structure. Notice how constraints 
+            are enforced - try uncommenting the challenge queries to see what happens when constraints are violated!
+          </p>
         </Subsection>
 
         <Subsection title="Entity Integrity: PRIMARY KEY and UNIQUE Constraints">
@@ -1088,6 +1216,23 @@ SELECT * FROM employees;`}
             </a>). 
             They prevent "orphaned" records by ensuring any foreign key value exists in the referenced table's 
             primary key.
+          </p>
+
+          <Callout type="tip" title="Analogy: Library Call Numbers">
+            Think of a foreign key like a library call number written in a book recommendation card. The card says 
+            "For more on this topic, see QA76.73.P98" - but this reference is only useful if that call number actually 
+            exists in the library catalog! A foreign key constraint is like the librarian checking: "Before I accept this 
+            recommendation card, let me verify that book QA76.73.P98 actually exists in our catalog." Without this check, 
+            patrons would follow references to non-existent books (orphaned records). Cascading actions are like library 
+            policies: if a book moves to a new shelf location (UPDATE), should we update all the recommendation cards 
+            (CASCADE)? If a book is removed from the catalog (DELETE), should we remove all cards referencing it (CASCADE) 
+            or keep them but mark "reference unavailable" (SET NULL)?
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Just as a well-run library maintains the integrity of its catalog references, foreign key constraints ensure 
+            your database maintains the integrity of its table relationships. But why should these constraints be enforced 
+            by the database itself rather than application code? The answer lies in the architecture of modern systems:
           </p>
 
           <Callout type="info" title="Why enforce constraints at the database level?">
@@ -1611,6 +1756,21 @@ FROM events;`}
           <Callout type="info" title="Three-Valued Logic">
             SQL uses three-valued logic: TRUE, FALSE, and UNKNOWN (NULL). Comparisons with NULL always return UNKNOWN, 
             not TRUE or FALSE. Use IS NULL or IS NOT NULL to check for NULL values.
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            This three-valued logic concept can be confusing at first because it differs from how we typically think about 
+            true/false logic in everyday situations. To make this more intuitive, consider a real-world scenario:
+          </p>
+
+          <Callout type="tip" title="Analogy: The Unanswered Question">
+            NULL is like an unanswered question on a survey. Imagine a form asking "What is your favorite ice cream flavor?" 
+            If someone writes "chocolate," that's a value. If someone writes "I don't like ice cream," that's also a value 
+            (even though it's negative). But if someone leaves it blank, that's NULL - you don't know if they forgot to answer, 
+            don't have a favorite, or haven't tried ice cream yet. The absence of an answer is fundamentally different from 
+            any answer. This is why <code>favorite_flavor = NULL</code> doesn't make sense - you can't compare something to 
+            "unknown." Instead, you must ask <code>IS favorite_flavor NULL?</code> - "Was this question left unanswered?" 
+            This is SQL's three-valued logic: TRUE, FALSE, and "I don't know" (UNKNOWN/NULL).
           </Callout>
 
           <p className="mt-4 text-gray-700 dark:text-gray-300">
