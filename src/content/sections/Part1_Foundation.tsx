@@ -954,52 +954,6 @@ JOIN Sectors s             -- Related table (alias "s")
           </p>
         </Subsection>
 
-        <Subsection title="Common Misconceptions About Keys">
-          <p>
-            Before moving forward, let's address some common misconceptions that often confuse beginners:
-          </p>
-
-          <Callout type="warning" title="Myths vs Reality">
-            <div className="space-y-3">
-              <div>
-                <p className="font-semibold text-amber-900 dark:text-amber-200">Myth: "Primary keys must be integers"</p>
-                <p className="text-sm text-amber-800 dark:text-amber-300">
-                  <strong>Reality:</strong> Primary keys can be any data type (text, UUID, composite). However, simple integers are 
-                  preferred because they're compact, efficient for indexing, and fast for joins.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-amber-900 dark:text-amber-200">Myth: "You can never change a primary key value"</p>
-                <p className="text-sm text-amber-800 dark:text-amber-300">
-                  <strong>Reality:</strong> You CAN change them, but it triggers cascading updates to all foreign key references - 
-                  a risky, expensive operation. This is precisely why surrogate keys (which never need to change) are best practice.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-amber-900 dark:text-amber-200">Myth: "Foreign key constraints always hurt performance"</p>
-                <p className="text-sm text-amber-800 dark:text-amber-300">
-                  <strong>Reality:</strong> The overhead is minimal with proper indexing, and they prevent costly data cleanup. 
-                  Modern databases optimize FK checks efficiently - the validation happens at insert/update time, not during reads. 
-                  The slight performance cost is vastly outweighed by the protection against orphaned records and referential integrity 
-                  violations. Never skip them in real applications. We'll cover constraints and referential integrity in detail in{' '}
-                  <a 
-                    href="#section5" 
-                    className="text-amber-800 dark:text-amber-200 hover:underline font-semibold"
-                  >
-                    Part II
-                  </a>.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-amber-900 dark:text-amber-200">Myth: "Every table needs an auto-increment ID"</p>
-                <p className="text-sm text-amber-800 dark:text-amber-300">
-                  <strong>Reality:</strong> Junction tables often use composite keys (two foreign keys combined). Pure lookup tables 
-                  might use natural keys. The "always use auto-increment ID" rule is a good default, but not universal.
-                </p>
-              </div>
-            </div>
-          </Callout>
-        </Subsection>
       </Section>
 
       <Section id="section3" title="Modeling the Real World - Entities and Relationships" level={2}>
@@ -1600,6 +1554,124 @@ erDiagram
               </a>.
             </p>
           </Callout>
+        </Subsection>
+
+        <Subsection title="Common Misconceptions About Keys">
+          <p>
+            Before practicing database design, let's clarify some common misconceptions that often confuse beginners:
+          </p>
+
+          <div className="my-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Myth 1 */}
+              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <div className="border-b border-slate-200 dark:border-slate-700 px-3 py-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">❌</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-gray-200 text-xs uppercase tracking-wide">Myth</p>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm mt-0.5">"Primary keys must be integers"</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-3 py-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">✅</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-gray-200 text-xs uppercase tracking-wide">Reality</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                        Primary keys can be any data type (text, UUID, composite). However, simple integers are 
+                        preferred because they're compact, efficient for indexing, and fast for joins.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Myth 2 */}
+              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <div className="border-b border-slate-200 dark:border-slate-700 px-3 py-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">❌</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-gray-200 text-xs uppercase tracking-wide">Myth</p>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm mt-0.5">"You can never change a primary key value"</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-3 py-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">✅</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-gray-200 text-xs uppercase tracking-wide">Reality</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                        You CAN change them, but it triggers cascading updates to all foreign key references - 
+                        a risky, expensive operation. This is precisely why surrogate keys (which never need to change) are best practice.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Myth 3 */}
+              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <div className="border-b border-slate-200 dark:border-slate-700 px-3 py-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">❌</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-gray-200 text-xs uppercase tracking-wide">Myth</p>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm mt-0.5">"Foreign key constraints always hurt performance"</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-3 py-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">✅</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-gray-200 text-xs uppercase tracking-wide">Reality</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                        The overhead is minimal with proper indexing, and they prevent costly data cleanup. 
+                        Modern databases optimize FK checks efficiently - the validation happens at insert/update time, not during reads. 
+                        The slight performance cost is vastly outweighed by the protection against orphaned records and referential integrity 
+                        violations. Never skip them in real applications. We'll cover constraints and referential integrity in detail in{' '}
+                        <a 
+                          href="#section5" 
+                          className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                        >
+                          Part II
+                        </a>.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Myth 4 */}
+              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <div className="border-b border-slate-200 dark:border-slate-700 px-3 py-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">❌</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-gray-200 text-xs uppercase tracking-wide">Myth</p>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm mt-0.5">"Every table needs an auto-increment ID"</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-3 py-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">✅</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-gray-200 text-xs uppercase tracking-wide">Reality</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                        Junction tables often use composite keys (two foreign keys combined). Pure lookup tables 
+                        might use natural keys. The "always use auto-increment ID" rule is a good default, but not universal.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </Subsection>
 
         <Subsection title="Practice: Design Your First Database">
