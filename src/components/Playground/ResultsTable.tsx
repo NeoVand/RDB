@@ -51,7 +51,9 @@ export function ResultsTable({ results }: ResultsTableProps) {
             </p>
           </div>
           
-          <div className="max-h-80 overflow-y-auto">
+          <div className={`max-h-80 overflow-y-auto border-b ${
+            isDark ? 'border-gray-700' : 'border-gray-200'
+          }`}>
             <table className="w-full text-xs">
               <thead className={`sticky top-0 ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
                 <tr>
@@ -73,10 +75,18 @@ export function ResultsTable({ results }: ResultsTableProps) {
                 {result.values.map((row, rowIndex) => (
                   <tr
                     key={rowIndex}
-                    className={`border-b ${
+                    className={`${
+                      rowIndex < result.values.length - 1
+                        ? `border-b ${
+                            isDark
+                              ? 'border-gray-800'
+                              : 'border-gray-100'
+                          }`
+                        : ''
+                    } ${
                       isDark
-                        ? 'border-gray-800 hover:bg-gray-800/50'
-                        : 'border-gray-100 hover:bg-gray-50'
+                        ? 'hover:bg-gray-800/50'
+                        : 'hover:bg-gray-50'
                     }`}
                   >
                     {row.map((cell, cellIndex) => (

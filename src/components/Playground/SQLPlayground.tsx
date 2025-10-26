@@ -7,6 +7,7 @@ import { QueryEditor } from './QueryEditor';
 import { ResultsTable } from './ResultsTable';
 import { ErrorDisplay } from './ErrorDisplay';
 import { SchemaViewer } from './SchemaViewer';
+import { DataViewer } from './DataViewer';
 
 interface SQLPlaygroundProps {
   preset: DatabasePreset;
@@ -29,6 +30,8 @@ export function SQLPlayground({
   const [isLoading, setIsLoading] = useState(true);
   const [isExecuting, setIsExecuting] = useState(false);
   const [showSchema, setShowSchema] = useState(false);
+  const [showData, setShowData] = useState(false);
+  const [dataVersion, setDataVersion] = useState(0);
 
   const initializeDatabase = useCallback(async () => {
     setIsLoading(true);
@@ -71,6 +74,8 @@ export function SQLPlayground({
     try {
       const queryResults = db.exec(query);
       setResults(queryResults.length > 0 ? queryResults : []);
+      // Increment version to trigger DataViewer refresh
+      setDataVersion(v => v + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Query execution failed');
     } finally {
@@ -169,31 +174,62 @@ export function SQLPlayground({
           </button>
           <button
             onClick={() => setShowSchema(!showSchema)}
-            className={`px-2 py-1 text-xs font-medium rounded border ${
-              isDark
-                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600'
-                : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
+            className={`px-2 py-1 text-xs font-medium rounded border flex items-center gap-1.5 ${
+              showSchema
+                ? isDark
+                  ? 'bg-blue-600/20 text-blue-300 border-blue-700/50 hover:bg-blue-600/30'
+                  : 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100'
+                : isDark
+                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600'
+                  : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
             }`}
             type="button"
           >
-            {showSchema ? 'Hide' : 'Schema'}
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            {showSchema ? 'Hide Schema' : 'Schema'}
+          </button>
+          <button
+            onClick={() => setShowData(!showData)}
+            className={`px-2 py-1 text-xs font-medium rounded border flex items-center gap-1.5 ${
+              showData
+                ? isDark
+                  ? 'bg-blue-600/20 text-blue-300 border-blue-700/50 hover:bg-blue-600/30'
+                  : 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100'
+                : isDark
+                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600'
+                  : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
+            }`}
+            type="button"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+            {showData ? 'Hide Explorer' : 'Explorer'}
           </button>
           <button
             onClick={handleReset}
-            className={`px-2 py-1 text-xs font-medium rounded border ${
+            className={`px-2 py-1 text-xs font-medium rounded border flex items-center gap-1.5 ${
               isDark
                 ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600'
                 : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
             }`}
             type="button"
           >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
             Reset
           </button>
         </div>
       </div>
 
       {/* Schema Viewer */}
-      {showSchema && db && <SchemaViewer db={db} />}
+      {showSchema && db && <SchemaViewer db={db} dataVersion={dataVersion} />}
+
+      {/* Data Viewer */}
+      {showData && db && <DataViewer db={db} dataVersion={dataVersion} />}
 
       {/* Query Editor */}
       <QueryEditor

@@ -45,14 +45,14 @@ export function Part2_DataIntegrity() {
     <>
       <Section id="part2" title="Part II: The Principle of Order - Ensuring Data Integrity" level={1}>
         <p className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          Why did a simple data entry mistake cost a healthcare company $1 billion in lost market value?
+          How can a simple database design flaw lead to catastrophic data corruption?
         </p>
         <p>
-          In 2023, a major healthcare provider discovered that their patient database had been corrupted for months due to 
-          missing referential integrity constraints. When a hospital location was deleted, thousands of patient records became 
-          "orphaned" - pointing to locations that no longer existed. The resulting data cleanup took 6 months, involved manually 
-          verifying hundreds of thousands of records, and led to compliance violations. This disaster could have been prevented 
-          by implementing proper database constraints from the start.
+          Consider a real-world scenario: A large healthcare system deploys a patient management database without proper referential 
+          integrity constraints. When a hospital location is deleted from the system, thousands of patient records become "orphaned" - 
+          pointing to locations that no longer exist. The resulting data cleanup requires months of manual verification, affects 
+          hundreds of thousands of records, and leads to serious compliance violations. This type of disaster is entirely preventable 
+          through proper database design with integrity constraints from the start.
         </p>
         <p className="mt-3 text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
           This part transitions from defining the <em>structure</em> of data in{' '}
@@ -775,27 +775,27 @@ stateDiagram-v2
             Instead of manually analyzing functional dependencies, you can leverage AI to review your schema designs.
           </p>
 
-          <Callout type="tip" title="Effective AI Prompts for Schema Validation">
+          <Callout type="ai" title="Effective AI Prompts for Schema Validation">
             <div className="space-y-3">
-              <div className="bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-300 dark:border-indigo-700 rounded p-3">
-                <p className="font-semibold text-indigo-900 dark:text-indigo-100 text-sm mb-1">Prompt 1: Check Normalization Level</p>
-                <p className="text-xs text-indigo-800 dark:text-indigo-200 font-mono">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt 1: Check Normalization Level</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
                   &quot;Analyze this database schema for normal form violations. Identify any partial dependencies, 
                   transitive dependencies, or BCNF violations: [paste your ERD or CREATE TABLE statements]&quot;
                 </p>
               </div>
 
-              <div className="bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-300 dark:border-indigo-700 rounded p-3">
-                <p className="font-semibold text-indigo-900 dark:text-indigo-100 text-sm mb-1">Prompt 2: Suggest Decomposition</p>
-                <p className="text-xs text-indigo-800 dark:text-indigo-200 font-mono">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt 2: Suggest Decomposition</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
                   &quot;This table violates 3NF due to the transitive dependency CompanyID → SectorName → SectorDescription. 
                   Show me how to decompose it into proper 3NF tables with SQL CREATE statements.&quot;
                 </p>
               </div>
 
-              <div className="bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-300 dark:border-indigo-700 rounded p-3">
-                <p className="font-semibold text-indigo-900 dark:text-indigo-100 text-sm mb-1">Prompt 3: Generate Migration Script</p>
-                <p className="text-xs text-indigo-800 dark:text-indigo-200 font-mono">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt 3: Generate Migration Script</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
                   &quot;I need to normalize my existing database from this denormalized structure [describe tables] 
                   to 3NF. Generate a migration script that preserves all existing data while splitting the tables properly.&quot;
                 </p>
@@ -858,8 +858,17 @@ stateDiagram-v2
           <div className="flex gap-4 items-start">
             <div className="flex-1">
               The concept of database constraints evolved gradually through the 1970s and 1980s. While E.F. Codd's original 
-              1970 paper introduced the idea of domains (acceptable values for attributes), the first practical implementation 
-              of PRIMARY KEY and FOREIGN KEY constraints didn't appear in commercial databases until the late 1970s with 
+              1970 paper introduced the idea of domains (acceptable values for attributes), his later work including{' '}
+              <a 
+                href="https://en.wikipedia.org/wiki/Codd%27s_12_rules" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+              >
+                Codd's 12 Rules (1985)
+              </a>{' '}
+              emphasized entity and referential integrity as foundational requirements. The first practical implementation 
+              of PRIMARY KEY and FOREIGN KEY constraints appeared in commercial databases in the late 1970s with 
               IBM's System R. The SQL standard that we know today - with its rich constraint system including CHECK, UNIQUE, 
               and NOT NULL - was formalized in <strong>SQL-89</strong> and significantly expanded in <strong>SQL-92</strong> 
               (also known as SQL2). Interestingly, many popular databases initially ignored foreign key constraints as "optional" 
@@ -946,6 +955,22 @@ stateDiagram-v2
                   Example: <code>CompanyID INTEGER PRIMARY KEY AUTOINCREMENT</code> - the database automatically assigns 
                   1, 2, 3, etc.
                 </p>
+                <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded">
+                  <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-1">💡 SQLite: INTEGER PRIMARY KEY vs AUTOINCREMENT</p>
+                  <p className="text-xs text-blue-800 dark:text-blue-200">
+                    In SQLite, <code>INTEGER PRIMARY KEY</code> alone already auto-generates IDs using rowid. Adding <code>AUTOINCREMENT</code> 
+                    changes behavior to never reuse deleted IDs, which has performance implications. The{' '}
+                    <a 
+                      href="https://www.sqlite.org/autoinc.html" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-700 dark:text-blue-300 hover:underline font-semibold"
+                    >
+                      SQLite docs recommend
+                    </a>{' '}
+                    using plain <code>INTEGER PRIMARY KEY</code> unless you specifically need the "never reuse" guarantee.
+                  </p>
+                </div>
               </div>
               <div>
                 <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-1">DECIMAL(p, s) or NUMERIC(p, s)</p>
@@ -1044,21 +1069,49 @@ SELECT * FROM products;
           <p className="mt-2 text-gray-700 dark:text-gray-300">
             The <code>PRIMARY KEY</code> uniquely identifies each row in a table. Every table should have exactly one primary 
             key, which must be both UNIQUE and NOT NULL - no duplicates, no missing values. When you define a primary key, 
-            the database automatically creates a unique index on that column for fast lookups. By convention, primary keys are 
-            usually auto-incrementing integers (like <code>CompanyID INTEGER PRIMARY KEY AUTOINCREMENT</code>) or UUIDs. The 
-            primary key is the foundation of all relationships in your database - foreign keys point to primary keys.
+            the database automatically creates a <strong>unique index</strong> on that column for fast lookups - this connects 
+            integrity with performance! By convention, primary keys are usually auto-incrementing integers 
+            (like <code>CompanyID INTEGER PRIMARY KEY AUTOINCREMENT</code>) or UUIDs. The primary key is the foundation of all 
+            relationships in your database - foreign keys point to primary keys.
           </p>
+          
+          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">💡 Constraints and Performance</p>
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              Both <code>PRIMARY KEY</code> and <code>UNIQUE</code> constraints are automatically implemented using indexes 
+              by the database. This means they not only enforce data integrity but also speed up lookups and joins. Constraints 
+              aren't just about correctness - they're also a performance optimization technique!
+            </p>
+          </div>
 
           <p className="mt-4 font-semibold text-gray-900 dark:text-white">
             UNIQUE Constraint
           </p>
           <p className="mt-2 text-gray-700 dark:text-gray-300">
             The <code>UNIQUE</code> constraint ensures that all values in a column (or set of columns) are distinct, but unlike 
-            PRIMARY KEY, a table can have multiple UNIQUE constraints. UNIQUE columns can also contain NULL values (typically one NULL 
-            is allowed). Use UNIQUE constraints to enforce uniqueness on <em>natural keys</em> - real-world identifiers like email 
-            addresses, stock tickers, ISBN numbers, or social security numbers. While the primary key is for internal database 
-            relationships, UNIQUE constraints enforce business rules about what makes records truly distinct in your domain.
+            PRIMARY KEY, a table can have multiple UNIQUE constraints. Use UNIQUE constraints to enforce uniqueness on <em>natural keys</em> - 
+            real-world identifiers like email addresses, stock tickers, ISBN numbers, or social security numbers. While the primary key 
+            is for internal database relationships, UNIQUE constraints enforce business rules about what makes records truly distinct in 
+            your domain.
           </p>
+          
+          <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded">
+            <p className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">💡 Cross-Dialect Note: UNIQUE and NULL Values</p>
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              How UNIQUE constraints handle NULL values varies across database engines. <strong>PostgreSQL, MySQL, and Oracle</strong> allow 
+              multiple NULL values in a UNIQUE column (treating each NULL as distinct). <strong>SQL Server</strong> allows at most one NULL. 
+              SQLite follows the SQL standard allowing multiple NULLs. This is an important cross-dialect difference to be aware of. 
+              Best practice: Combine UNIQUE with NOT NULL when NULLs shouldn't be allowed.{' '}
+              <a 
+                href="https://www.postgresql.org/docs/current/indexes-unique.html" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-amber-700 dark:text-amber-300 hover:underline font-semibold"
+              >
+                Learn more →
+              </a>
+            </p>
+          </div>
 
           <CodeExample
             title="Creating a table with PRIMARY KEY and UNIQUE constraints"
@@ -1086,30 +1139,80 @@ CREATE TABLE Companies (
             has a UNIQUE constraint to prevent duplicate ticker symbols - enforcing a business rule directly in the schema.
           </p>
 
-          <Callout type="tip" title="AI-Assisted Schema Design: From Requirements to SQL">
+          <Callout type="info" title="Composite UNIQUE Constraints: Preventing Duplicate Combinations">
+            <p className="mb-3">
+              UNIQUE constraints can span multiple columns to enforce uniqueness on <strong>combinations of values</strong>. 
+              This is essential for junction tables and scenarios where two columns together must be unique, even though 
+              individual values can repeat.
+            </p>
+            
+            <CodeExample
+              title="Composite UNIQUE constraint example"
+              code={`-- Enrollment table: Students can take multiple courses
+-- But a student can't enroll in the same course twice in the same semester
+CREATE TABLE Enrollments (
+  EnrollmentID INTEGER PRIMARY KEY AUTOINCREMENT,
+  StudentID INTEGER NOT NULL,
+  CourseCode TEXT NOT NULL,
+  Semester TEXT NOT NULL,  -- e.g., 'Fall 2024'
+  Grade TEXT,
+  
+  -- Composite UNIQUE: Prevent duplicate (StudentID, CourseCode, Semester)
+  UNIQUE (StudentID, CourseCode, Semester),
+  
+  FOREIGN KEY (StudentID) REFERENCES Students(StudentID)
+);
+
+-- This INSERT succeeds: Alice enrolls in CS101 for Fall 2024
+INSERT INTO Enrollments (StudentID, CourseCode, Semester)
+VALUES (1, 'CS101', 'Fall 2024');
+
+-- This INSERT succeeds: Alice enrolls in CS101 for Spring 2025 (different semester)
+INSERT INTO Enrollments (StudentID, CourseCode, Semester)
+VALUES (1, 'CS101', 'Spring 2025');
+
+-- ❌ This INSERT FAILS: Alice can't enroll in CS101 Fall 2024 again!
+INSERT INTO Enrollments (StudentID, CourseCode, Semester)
+VALUES (1, 'CS101', 'Fall 2024');  -- UNIQUE constraint violation`}
+            />
+            
+            <p className="text-sm mt-3">
+              <strong>When to use composite UNIQUE:</strong> Junction tables (preventing duplicate relationships), 
+              versioned records (unique per version), or any business rule requiring combination uniqueness like 
+              "one phone number per type per customer" or "one submission per assignment per student."
+            </p>
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Understanding how to write constraint definitions manually is crucial, but in practice, you'll often be translating 
+            business requirements into properly constrained schemas. This is where modern AI tools can accelerate your workflow 
+            while you apply the theoretical knowledge you've learned:
+          </p>
+
+          <Callout type="ai" title="AI-Assisted Schema Design: From Requirements to SQL">
             Modern AI tools excel at translating business requirements into properly constrained database schemas. Here's how to leverage them effectively:
             
             <div className="space-y-3 mt-3">
-              <div className="bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-300 dark:border-indigo-700 rounded p-3">
-                <p className="font-semibold text-indigo-900 dark:text-indigo-100 text-sm mb-1">Prompt: Generate Schema from Requirements</p>
-                <p className="text-xs text-indigo-800 dark:text-indigo-200 font-mono">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Generate Schema from Requirements</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
                   &quot;I need a database for an e-commerce platform. Requirements: Products have SKUs (unique), prices (positive decimals), 
                   stock quantities (non-negative integers), and categories. Every product must have a name. Generate CREATE TABLE statements 
                   with appropriate constraints.&quot;
                 </p>
               </div>
 
-              <div className="bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-300 dark:border-indigo-700 rounded p-3">
-                <p className="font-semibold text-indigo-900 dark:text-indigo-100 text-sm mb-1">Prompt: Validate Existing Schema</p>
-                <p className="text-xs text-indigo-800 dark:text-indigo-200 font-mono">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Validate Existing Schema</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
                   &quot;Review this schema for missing constraints: [paste CREATE TABLE]. What business rules are not enforced? 
                   What columns should be NOT NULL? What needs CHECK constraints?&quot;
                 </p>
               </div>
 
-              <div className="bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-300 dark:border-indigo-700 rounded p-3">
-                <p className="font-semibold text-indigo-900 dark:text-indigo-100 text-sm mb-1">Prompt: Convert to ORM Models</p>
-                <p className="text-xs text-indigo-800 dark:text-indigo-200 font-mono">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Convert to ORM Models</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
                   &quot;Convert this SQL schema to [SQLAlchemy/Prisma/TypeORM] models, preserving all constraints and relationships: 
                   [paste SQL]&quot;
                 </p>
@@ -1250,6 +1353,35 @@ SELECT * FROM employees;
             Enforcing rules in application code alone is brittle—a new service might forget checks, 
             or manual data entry could bypass them. Database constraints create an unbreakable contract 
             that protects data integrity universally.
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            With this understanding of why database-level enforcement matters, there's an important implementation detail 
+            you need to know about the playgrounds in this course. Since they run SQLite, there's a specific configuration 
+            requirement for foreign key constraints:
+          </p>
+
+          <Callout type="warning" title="SQLite Specific: Foreign Key Enforcement">
+            <p className="mb-2">
+              In SQLite (used in these playgrounds), foreign key constraints are <strong>disabled by default</strong> for backwards compatibility. 
+              You must enable them per connection using:
+            </p>
+            <div className="bg-slate-800 dark:bg-slate-900 rounded p-2 font-mono text-sm text-slate-100 my-2">
+              PRAGMA foreign_keys = ON;
+            </div>
+            <p className="text-sm mt-2">
+              Without this pragma, SQLite will accept your FOREIGN KEY definitions but won't enforce them! In production applications 
+              using SQLite, always enable this setting at connection time. Note: Other databases like PostgreSQL, MySQL, and SQL Server 
+              enforce foreign keys by default.{' '}
+              <a 
+                href="https://www.sqlite.org/foreignkeys.html" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+              >
+                SQLite Foreign Keys Documentation →
+              </a>
+            </p>
           </Callout>
 
           <SQLPlayground
@@ -1469,6 +1601,23 @@ SELECT * FROM employees;
 -- INSERT INTO employees VALUES (3, 'Charlie', 90000, 'Marketing');`}
           />
 
+          <Callout type="warning" title="War Story: The Million Dollar Typo">
+            One of the most catastrophic database mistakes is executing <code>UPDATE</code> without a <code>WHERE</code> clause 
+            in production. In a famous incident, a developer testing an UPDATE query forgot to include the WHERE clause before 
+            hitting execute. Instead of updating one customer record, the query updated <strong>all 2.3 million customer records</strong> 
+            in the database, setting every customer's email address to the same test value. The database had to be restored from 
+            the previous night's backup, losing an entire day's worth of orders and customer updates. The cost in lost business, 
+            customer service, and reputation exceeded $1 million.
+            <br /><br />
+            <strong>Golden Rule:</strong> Always, <em>always</em> write and test your WHERE clause first. Many DBAs recommend 
+            running the query as a SELECT before converting it to UPDATE to verify exactly which rows will be affected.
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Now that we've covered the dangers of careless updates, let's return to schema modification. When working with 
+            SQLite (used in these playgrounds), it's important to understand its limitations compared to other database engines:
+          </p>
+
           <Callout type="info" title="ALTER TABLE Limitations in SQLite">
             SQLite has limited ALTER TABLE support compared to PostgreSQL or MySQL. You can:
             <ul className="list-disc pl-5 mt-2 space-y-1">
@@ -1486,29 +1635,29 @@ SELECT * FROM employees;
             a powerful productivity tool:
           </p>
 
-          <Callout type="tip" title="AI-Assisted Test Data Generation: Populating Your Database">
+          <Callout type="ai" title="AI-Assisted Test Data Generation: Populating Your Database">
             Creating realistic test data is tedious and time-consuming. AI can generate hundreds of INSERT statements that respect all your constraints:
 
             <div className="space-y-3 mt-3">
-              <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded p-3">
-                <p className="font-semibold text-green-900 dark:text-green-100 text-sm mb-1">Prompt: Generate Realistic Test Data</p>
-                <p className="text-xs text-green-800 dark:text-green-200 font-mono">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Generate Realistic Test Data</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
                   &quot;Generate 50 realistic INSERT statements for this schema: [paste CREATE TABLE]. Include diverse data: 
                   various names, dates spanning multiple years, realistic prices. Ensure all constraints are satisfied.&quot;
                 </p>
               </div>
 
-              <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded p-3">
-                <p className="font-semibold text-green-900 dark:text-green-100 text-sm mb-1">Prompt: Generate Edge Case Data</p>
-                <p className="text-xs text-green-800 dark:text-green-200 font-mono">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Generate Edge Case Data</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
                   &quot;Generate test data specifically for edge cases: NULL values where allowed, boundary values for CHECK constraints, 
                   minimum/maximum dates, empty strings vs NULL. Schema: [paste]&quot;
                 </p>
               </div>
 
-              <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded p-3">
-                <p className="font-semibold text-green-900 dark:text-green-100 text-sm mb-1">Prompt: Test Foreign Key Relationships</p>
-                <p className="text-xs text-green-800 dark:text-green-200 font-mono">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Test Foreign Key Relationships</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
                   &quot;Generate INSERT statements that properly respect foreign key relationships. First insert parents (Sectors), 
                   then children (Companies) with valid SectorID references. Include 10 sectors and 50 companies.&quot;
                 </p>
@@ -1520,6 +1669,91 @@ SELECT * FROM employees;
               foreign key constraints are satisfied. You can also request specific scenarios like &quot;3 companies with no financial 
               statements&quot; to test your application's edge case handling.
             </p>
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            While AI can help generate test data and schemas, there's one critical security concern you must understand when 
+            generating application code that interacts with databases. This is non-negotiable knowledge for any developer working 
+            with SQL:
+          </p>
+
+          <Callout type="warning" title="Security Critical: SQL Injection Prevention">
+            When generating application code that executes SQL (whether manually or via AI), <strong>never build queries by 
+            concatenating strings</strong>. SQL injection is one of the most dangerous vulnerabilities in web applications.
+            <br /><br />
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded p-3 my-3">
+              <p className="font-semibold text-red-900 dark:text-red-100 text-sm mb-2">❌ NEVER Do This (Vulnerable):</p>
+              <pre className="text-xs text-red-800 dark:text-red-200 font-mono overflow-x-auto">
+{`// Python (BAD - SQL Injection risk!)
+query = f"SELECT * FROM users WHERE email = '{user_input}'"
+cursor.execute(query)  # Attacker can inject: ' OR '1'='1`}
+              </pre>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded p-3 my-3">
+              <p className="font-semibold text-green-900 dark:text-green-100 text-sm mb-2">✅ ALWAYS Do This (Parameterized Query):</p>
+              <pre className="text-xs text-green-800 dark:text-green-200 font-mono overflow-x-auto">
+{`// Python (SAFE - Parameterized query)
+query = "SELECT * FROM users WHERE email = ?"
+cursor.execute(query, (user_input,))  # Database escapes input safely`}
+              </pre>
+            </div>
+            <p className="text-sm mt-3">
+              <strong>When using AI:</strong> Always specify "Use parameterized queries" or "Use prepared statements" in your prompts. 
+              Better yet, use a safe ORM like SQLAlchemy (Python), Prisma (TypeScript), or Eloquent (PHP) that handles this automatically. 
+              Learn more: <a 
+                href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+              >
+                OWASP SQL Injection Prevention Cheat Sheet →
+              </a>
+            </p>
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Beyond generating schemas and test data, AI can also help you validate existing designs and make informed decisions 
+            about constraint choices. Here are practical prompt patterns you can use throughout your database development workflow:
+          </p>
+
+          <Callout type="ai" title="AI Prompt Patterns: Constraint Design & Validation">
+            <p className="mb-3">
+              Use these prompt patterns to leverage AI for constraint design and validation:
+            </p>
+
+            <div className="space-y-3">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt 1: Generate Constraints from Business Rules</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                  &quot;Given these business rules: [list rules like 'age must be 18-100', 'email must be unique', 
+                  'salary must be positive'], generate a PostgreSQL CREATE TABLE statement with appropriate PRIMARY KEY, 
+                  UNIQUE, NOT NULL, CHECK, and DEFAULT constraints.&quot;
+                </p>
+              </div>
+
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt 2: Validate Existing Schema</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                  &quot;Review this schema for missing constraints: [paste CREATE TABLE statements]. 
+                  Identify: (1) tables without PRIMARY KEYs, (2) foreign key columns missing FK constraints, 
+                  (3) columns that should be NOT NULL, (4) missing CHECK constraints for data validation.&quot;
+                </p>
+              </div>
+
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt 3: Design Cascading Actions</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                  &quot;For this parent-child relationship [describe tables], what should happen when a parent is deleted? 
+                  Should children be deleted (CASCADE), prevented (RESTRICT), or set to NULL (SET NULL)? 
+                  Explain trade-offs and generate the appropriate FOREIGN KEY constraint syntax.&quot;
+                </p>
+              </div>
+
+              <p className="text-sm mt-3 text-teal-800 dark:text-teal-200">
+                <strong>Pro tip:</strong> Always ask AI to explain <em>why</em> it chose specific constraints. 
+                Understanding the reasoning helps you make better decisions when requirements change.
+              </p>
+            </div>
           </Callout>
         </Subsection>
       </Section>
@@ -1623,6 +1857,24 @@ SELECT * FROM employees;
             </p>
           </Callout>
 
+          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">💡 SQLite Note: Type Affinity and DECIMAL</p>
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              SQLite uses a flexible "type affinity" system and does <strong>not</strong> enforce <code>DECIMAL(p,s)</code> precision or scale. 
+              While you can declare <code>DECIMAL(10,2)</code>, SQLite may still store values using floating-point arithmetic internally. 
+              For exact money calculations in SQLite, consider storing amounts as <strong>integer cents</strong> (e.g., 1299 for $12.99) and 
+              dividing by 100 when displaying. Other databases like PostgreSQL and MySQL do enforce DECIMAL precision strictly.{' '}
+              <a 
+                href="https://www.sqlite.org/datatype3.html" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-700 dark:text-blue-300 hover:underline font-semibold"
+              >
+                SQLite Type Affinity →
+              </a>
+            </p>
+          </div>
+
           <p className="mt-4 text-gray-700 dark:text-gray-300">
             Let's see these numeric types in action. The following example demonstrates a product table using different 
             numeric types appropriately: INTEGER for IDs and counts (whole numbers), DECIMAL for prices (exact monetary values), 
@@ -1712,43 +1964,85 @@ FROM products;
 
         <Subsection title="Date and Time Types">
           <div className="overflow-x-auto my-4">
-            <table className="min-w-full text-sm">
-              <thead>
+            <table className="min-w-full text-sm border-collapse">
+              <thead className="bg-gray-100 dark:bg-gray-800">
                 <tr>
-                  <th>Type</th>
-                  <th>Stores</th>
-                  <th>Format Example</th>
-                  <th>Best For</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left">Type</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2">Stores</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2">Format Example</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2">Best For</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="font-semibold">DATE</td>
-                  <td>Date only</td>
-                  <td>2024-12-25</td>
-                  <td>Birthdates, deadlines</td>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold">DATE</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">Date only</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-mono text-xs">2024-12-25</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">Birthdates, deadlines</td>
                 </tr>
-                <tr>
-                  <td className="font-semibold">TIME</td>
-                  <td>Time only</td>
-                  <td>14:30:00</td>
-                  <td>Business hours, schedules</td>
+                <tr className="bg-gray-50 dark:bg-gray-850">
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold">TIME</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">Time only</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-mono text-xs">14:30:00</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">Business hours, schedules</td>
                 </tr>
-                <tr>
-                  <td className="font-semibold">DATETIME</td>
-                  <td>Date + Time</td>
-                  <td>2024-12-25 14:30:00</td>
-                  <td>Event timestamps</td>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold">DATETIME</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">Date + Time (no TZ)</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-mono text-xs">2024-12-25 14:30:00</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">Event timestamps</td>
                 </tr>
-                <tr>
-                  <td className="font-semibold">TIMESTAMP</td>
-                  <td>Date + Time + Timezone</td>
-                  <td>Varies by database</td>
-                  <td>Created/updated timestamps</td>
+                <tr className="bg-gray-50 dark:bg-gray-850">
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-semibold">TIMESTAMP</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">See details below</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-mono text-xs">Varies by engine</td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">Created/updated timestamps</td>
                 </tr>
               </tbody>
             </table>
           </div>
+
+          <Callout type="warning" title="Cross-Dialect: TIMESTAMP Behavior Varies Significantly">
+            <p className="mb-3 font-semibold">TIMESTAMP and timezone handling differs dramatically across databases:</p>
+            <div className="space-y-3 text-sm">
+              <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded p-3">
+                <p className="font-semibold text-purple-900 dark:text-purple-100 mb-1">PostgreSQL</p>
+                <ul className="list-disc pl-5 space-y-1 text-purple-800 dark:text-purple-200">
+                  <li><code>timestamp</code> (or <code>timestamp without time zone</code>) - stores date/time WITHOUT timezone info</li>
+                  <li><code>timestamptz</code> (or <code>timestamp with time zone</code>) - stores in UTC, displays in session timezone</li>
+                  <li><strong>Recommendation:</strong> Use <code>timestamptz</code> for recording moments in time (e.g., user actions, events)</li>
+                </ul>
+              </div>
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-3">
+                <p className="font-semibold text-blue-900 dark:text-blue-100 mb-1">MySQL</p>
+                <ul className="list-disc pl-5 space-y-1 text-blue-800 dark:text-blue-200">
+                  <li><code>TIMESTAMP</code> - stores as UTC, converts to/from session timezone on read/write</li>
+                  <li><code>DATETIME</code> - stores literally, no timezone awareness</li>
+                  <li>Range: TIMESTAMP is 1970-2038 (Unix epoch limits), DATETIME is 1000-9999</li>
+                </ul>
+              </div>
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded p-3">
+                <p className="font-semibold text-green-900 dark:text-green-100 mb-1">SQLite (these playgrounds)</p>
+                <ul className="list-disc pl-5 space-y-1 text-green-800 dark:text-green-200">
+                  <li>No native date/time types - stores as TEXT (ISO8601), REAL (Julian day), or INTEGER (Unix timestamp)</li>
+                  <li>Uses functions like <code>DATE()</code>, <code>JULIANDAY()</code> for date manipulation</li>
+                  <li>No automatic timezone handling - you manage timezones in application code</li>
+                </ul>
+              </div>
+            </div>
+            <p className="text-sm mt-3">
+              <strong>Best Practice:</strong> For recording moments in time (user signups, transactions, etc.), prefer timezone-aware types 
+              (<code>timestamptz</code> in Postgres, <code>TIMESTAMP</code> in MySQL). Store in UTC, display in user's local timezone.{' '}
+              <a 
+                href="https://www.postgresql.org/docs/current/datatype-datetime.html" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+              >
+                PostgreSQL Date/Time Docs →
+              </a>
+            </p>
+          </Callout>
 
           <p className="mt-4">
             SQL provides powerful functions for working with dates. Let's learn the key ones before we use them:
@@ -1846,6 +2140,11 @@ ORDER BY event_date;
           <Callout type="info" title="Three-Valued Logic">
             SQL uses three-valued logic: TRUE, FALSE, and UNKNOWN (NULL). Comparisons with NULL always return UNKNOWN, 
             not TRUE or FALSE. Use IS NULL or IS NOT NULL to check for NULL values.
+            <p className="text-sm mt-3 text-gray-600 dark:text-gray-400">
+              <strong>Important:</strong> In aggregate functions, NULLs are ignored. <code>SUM()</code> skips NULL values, 
+              but be careful with <code>AVG()</code> - it divides by the count of non-NULL values, not all rows. 
+              This can lead to surprising results if you're not expecting it!
+            </p>
           </Callout>
 
           <p className="mt-4 text-gray-700 dark:text-gray-300">
@@ -1928,6 +2227,11 @@ WHERE email IS NOT NULL;  -- Excludes NULLs
               <code>COALESCE(column, 'default')</code> returns the column value if it's not NULL, otherwise returns 'default'.
               <br/>You can provide multiple fallbacks: <code>COALESCE(email, phone, 'No contact info')</code>
               <br/><strong>Example:</strong> <code>SELECT username, COALESCE(email, 'No email provided') AS contact FROM users;</code>
+              <br/><br/>
+              <span className="text-sm text-blue-700 dark:text-blue-300">
+                <strong>For coders:</strong> COALESCE is like JavaScript's <code>??</code> (nullish coalescing) operator 
+                or Python's <code>or</code> - it provides fallback values for NULL/undefined data.
+              </span>
             </p>
           </div>
 
@@ -2168,7 +2472,7 @@ ORDER BY s.FullName, c.CourseName;`}
           </ol>
         </div>
 
-        <Callout type="tip" title="AI-Assisted Practice: Level Up Your Skills">
+        <Callout type="ai" title="AI-Assisted Practice: Level Up Your Skills">
           <p className="mb-2">Use AI to extend this exercise and deepen your understanding:</p>
           <ul className="list-disc pl-5 space-y-1 text-sm">
             <li>&quot;Add a prerequisite system: some courses require completion of other courses first. Modify the schema to support this.&quot;</li>

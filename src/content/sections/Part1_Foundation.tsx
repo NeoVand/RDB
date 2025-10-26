@@ -57,7 +57,10 @@ export function Part1_Foundation() {
           From your bank account to your favorite social media platform, from hospital medical records to airline reservations, 
           from e-commerce transactions to streaming services - relational databases power the infrastructure of modern life. 
           Despite the emergence of NoSQL alternatives, relational databases remain the dominant choice for mission-critical 
-          applications that require data consistency, complex relationships, and transactional guarantees.
+          applications that require data consistency, complex relationships, and transactional guarantees. Relational databases 
+          shine because of <strong>ACID</strong> transactions - <strong>A</strong>tomic, <strong>C</strong>onsistent, 
+          <strong>I</strong>solated, <strong>D</strong>urable - ensuring your app's state remains correct even with concurrent 
+          writes from multiple users.
         </p>
         <p className="mt-3">
           At its core, a <strong>relational database</strong> is a type of database that stores and provides 
@@ -92,6 +95,11 @@ export function Part1_Foundation() {
               structure of data. Codd's relational model introduced the idea of organizing data into simple tables 
               that could be queried without knowing how the data was physically stored - a concept so powerful it 
               remains the foundation of database systems over 50 years later!
+              <br /><br />
+              IBM initially resisted Codd's ideas, viewing them as impractical. A small team proved their value by 
+              building <strong>System R</strong> in 1974, which became the prototype for modern relational database 
+              systems and validated SQL as a practical query language. System R's success demonstrated that Codd's 
+              mathematical theory could be implemented efficiently in real-world systems.
             </div>
             <div className="text-center flex-shrink-0">
               <img 
@@ -167,6 +175,11 @@ flowchart TB
               <li><strong>Schema (Structure):</strong> The blueprint defining table names, column names, data types, and constraints. The schema is relatively stable and doesn't contain actual data.</li>
               <li><strong>Instance (Data):</strong> A snapshot of the actual data stored in the database at a specific moment. The instance is dynamic and changes constantly as data is added, updated, or deleted.</li>
             </ul>
+            <p className="text-sm mt-3 text-gray-600 dark:text-gray-400">
+              <strong>For coders:</strong> Think of the schema as your app's TypeScript interfaces (defining structure), 
+              and the instance as the runtime JSON data flowing through your API. Just as TypeScript catches type errors 
+              at compile time, schema constraints catch data errors before they corrupt your database.
+            </p>
           </Callout>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-8">
@@ -253,11 +266,21 @@ flowchart TB
 
           <Callout type="info" title="Key Terminology">
             <ul className="space-y-2">
-              <li><strong>Degree:</strong> The number of columns (attributes). The Companies table has a degree of 4.</li>
-              <li><strong>Cardinality:</strong> The number of rows (tuples). The example shows 3 rows, but this changes as data is added/removed.</li>
+              <li>
+                <strong>Degree:</strong> The number of columns (attributes). The Companies table has a degree of 4. 
+                <span className="text-sm text-gray-600 dark:text-gray-400"> (Large degree = many columns can impact storage and maintainability; avoid overly wide tables.)</span>
+              </li>
+              <li>
+                <strong>Cardinality:</strong> The number of rows (tuples). The example shows 4 rows, but this changes as data is added/removed. 
+                <span className="text-sm text-gray-600 dark:text-gray-400"> (High cardinality = many rows affects query performance; use indexes wisely.)</span>
+              </li>
               <li><strong>Primary Key (PK):</strong> Uniquely identifies each row.</li>
               <li><strong>Foreign Key (FK):</strong> References another table's primary key.</li>
             </ul>
+            <p className="text-sm mt-3 text-gray-600 dark:text-gray-400">
+              <strong>Note:</strong> "Cardinality" has two meanings in databases: the row count of a table (above), and the 
+              type of relationship between tables (one-to-many, many-to-many). Context makes it clear which is meant.
+            </p>
           </Callout>
         </Subsection>
 
@@ -349,6 +372,11 @@ flowchart TB
             <li>Explaining what a query does</li>
             <li>Adding context or instructions</li>
             <li>Temporarily disabling parts of a query (useful when testing)</li>
+            <li>
+              <strong>Pro tip:</strong> When using AI to generate SQL, include comments explaining your intent 
+              (e.g., <code>-- Find active users who haven't logged in recently</code>) before the query. 
+              This helps AI produce more accurate code that matches your requirements.
+            </li>
           </ul>
           <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded p-3 my-3 font-mono text-sm">
             <span className="text-green-600 dark:text-green-400">-- This is a comment - the database ignores this line</span><br/>
@@ -362,13 +390,61 @@ flowchart TB
 
           <Callout type="tip" title="About the Interactive Playgrounds">
             Throughout this course, you'll see interactive SQL playgrounds like the one below. Here's how to use them:
-            <ul className="list-disc pl-5 mt-2 space-y-1">
-              <li><strong>Execute button:</strong> Runs the SQL query and displays results below</li>
-              <li><strong>Schema button:</strong> Shows the database structure (what tables and columns exist)</li>
-              <li><strong>Reset button:</strong> Restores the database to its initial state if you've modified data</li>
-              <li><strong>Keyboard shortcut:</strong> Press Ctrl+Enter (Cmd+Enter on Mac) to execute the query</li>
+            <ul className="list-disc pl-5 mt-2 space-y-2">
+              <li>
+                <strong>
+                  <svg className="w-3.5 h-3.5 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                  </svg>
+                  Execute button:
+                </strong> Runs your SQL query and displays results below. Press <code className="text-xs">Ctrl+Enter</code> (<code className="text-xs">Cmd+Enter</code> on Mac) as a keyboard shortcut.
+              </li>
+              <li>
+                <strong>
+                  <svg className="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Schema button:
+                </strong> Shows an interactive ERD (Entity-Relationship Diagram) of the database structure with all tables, columns, types, and relationships visualized.
+              </li>
+              <li>
+                <strong>
+                  <svg className="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  Explorer button:
+                </strong> Opens a database browser where you can click on any table to view its data in real-time. Perfect for exploring what's in the database before writing queries!
+              </li>
+              <li>
+                <strong>
+                  <svg className="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Reset button:
+                </strong> Restores the database to its initial state if you've modified data or want to start fresh.
+              </li>
             </ul>
-            Feel free to modify queries and experiment - you can't break anything! Each playground has its own isolated database.
+            <p className="mt-3 text-sm">
+              Feel free to modify queries and experiment - you can't break anything! Each playground has its own isolated database.
+            </p>
+            
+            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">💡 SQL Dialect: SQLite</p>
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                These playgrounds run <strong>SQLite</strong>, a powerful embedded database engine (via WebAssembly). 
+                While we focus on standard SQL concepts that apply across all databases, SQLite has some specific behaviors 
+                (like flexible type affinity and connection-level foreign key enforcement) that differ from PostgreSQL, MySQL, 
+                or SQL Server. We'll point out these differences where relevant.{' '}
+                <a 
+                  href="https://www.sqlite.org/docs.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  SQLite Documentation →
+                </a>
+              </p>
+            </div>
           </Callout>
 
           <p className="mt-4 font-semibold text-gray-900 dark:text-gray-100">
@@ -628,23 +704,17 @@ SELECT * FROM Companies LIMIT 1;`}
         <MermaidDiagram
           caption="Key Types and Their Relationships: Primary keys uniquely identify rows within a table, while foreign keys create relationships between tables by referencing primary keys in other tables."
           chart={`
-flowchart LR
-    subgraph Table1["COMPANIES Table"]
-        PK1["🔑 CompanyID<br/>(PRIMARY KEY)"]
-        NK1["StockTicker<br/>(NATURAL KEY)"]
-        FK1["SectorID<br/>(FOREIGN KEY)"]
-    end
+%%{init: {'themeVariables': {'fontSize':'14px'}}}%%
+graph LR
+    PK1("🔑 CompanyID<br/>PRIMARY KEY")
+    NK1("StockTicker<br/>NATURAL KEY")
+    FK1("SectorID<br/>FOREIGN KEY")
+    PK2("🔑 SectorID<br/>PRIMARY KEY")
     
-    subgraph Table2["SECTORS Table"]
-        PK2["🔑 SectorID<br/>(PRIMARY KEY)"]
-        NK2["SectorName"]
-    end
-    
-    FK1 -.->|"References"| PK2
-    
-    PK1 --> R1["Uniquely identifies<br/>each company"]
-    NK1 --> R2["Business identifier<br/>(e.g., 'AAPL')"]
-    FK1 --> R3["Links to<br/>Sectors table"]
+    PK1 -.->|"identifies"| CT["COMPANIES<br/>table"]
+    NK1 -.->|"business ID"| CT
+    FK1 -->|"references"| PK2
+    PK2 -.->|"identifies"| ST["SECTORS<br/>table"]
           `}
         />
 
@@ -821,6 +891,15 @@ JOIN Sectors s             -- Related table (alias "s")
             changes its name, ticker symbol, or any other attribute.
           </p>
 
+          <p className="mt-3">
+            <strong>Modern alternatives:</strong> In distributed systems and cloud architectures, auto-incrementing integers 
+            have limitations - they require coordination between servers and can expose information about your data volume. 
+            Modern alternatives include <strong>UUIDs</strong> (Universally Unique Identifiers, like <code>550e8400-e29b-41d4-a716-446655440000</code>) 
+            and the newer <strong>ULIDs</strong> (Universally Unique Lexicographically Sortable Identifiers, like <code>01ARZ3NDEKTSV4RRFFQ69G5FAV</code>), 
+            which provide global uniqueness across servers without coordination, avoiding ID collisions that auto-increment 
+            integers can't prevent in sharded architectures.
+          </p>
+
           <div className="overflow-x-auto my-6">
             <table className="min-w-full text-sm">
               <thead>
@@ -897,12 +976,12 @@ JOIN Sectors s             -- Related table (alias "s")
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-amber-900 dark:text-amber-200">Myth: "Foreign key constraints are optional - they just slow things down"</p>
+                <p className="font-semibold text-amber-900 dark:text-amber-200">Myth: "Foreign key constraints always hurt performance"</p>
                 <p className="text-sm text-amber-800 dark:text-amber-300">
-                  <strong>Reality:</strong> While technically optional, foreign key constraints are essential for data integrity in 
-                  production systems. The slight performance cost is vastly outweighed by the protection against orphaned records and 
-                  referential integrity violations. Never skip them in real applications. We'll cover constraints and referential integrity 
-                  in detail in{' '}
+                  <strong>Reality:</strong> The overhead is minimal with proper indexing, and they prevent costly data cleanup. 
+                  Modern databases optimize FK checks efficiently - the validation happens at insert/update time, not during reads. 
+                  The slight performance cost is vastly outweighed by the protection against orphaned records and referential integrity 
+                  violations. Never skip them in real applications. We'll cover constraints and referential integrity in detail in{' '}
                   <a 
                     href="#section5" 
                     className="text-amber-800 dark:text-amber-200 hover:underline font-semibold"
@@ -1235,6 +1314,16 @@ erDiagram
             relationships. The junction table can also store attributes about the relationship itself, like Grade and EnrollmentDate.
           </p>
 
+          <Callout type="info" title="Junction Table Primary Keys">
+            The primary key of a junction table is typically the <strong>composite of both foreign keys</strong> 
+            (StudentID, ClassID) - ensuring a student can't enroll in the same class twice. Alternatively, you can use 
+            a new surrogate key (EnrollmentID) if additional attributes turn the junction table into a full entity. 
+            <br /><br />
+            <strong>Fun fact:</strong> Junction tables often evolve into rich entities. An ENROLLMENT might start as a simple 
+            link but later add Grade, AttendanceCount, SubmissionDate, and other attributes. What begins as "just a relationship" 
+            becomes a first-class entity in your domain model. This is a sign of a maturing data model!
+          </Callout>
+
           <p className="mt-4">
             Let's query this many-to-many relationship using SQL. This query introduces one new keyword:
           </p>
@@ -1289,7 +1378,9 @@ ORDER BY s.StudentName, c.ClassName;    -- Sort alphabetically
           <MermaidDiagram
             caption="Complete ERD: Our Financial Data Model with All Relationships"
             chart={`
+%%{init: {'themeVariables': {'fontSize':'11px'}}}%%
 erDiagram
+    direction LR
     SECTORS ||--o{ COMPANIES : "contains"
     COMPANIES ||--o{ FINANCIAL_STATEMENTS : "files"
     FINANCIAL_STATEMENTS ||--o{ LINE_ITEMS : "contains"
@@ -1323,11 +1414,11 @@ erDiagram
             <p className="font-semibold text-gray-900 dark:text-white mb-3">How to Read This Multi-Table ERD:</p>
             <ol className="list-decimal pl-5 space-y-2 text-sm text-gray-700 dark:text-gray-300">
               <li>
-                <strong>Start at the top:</strong> SECTORS is the root entity. One sector (like "Technology") contains many companies.
+                <strong>Start from the left:</strong> SECTORS is the root entity. One sector (like "Technology") contains many companies.
               </li>
               <li>
-                <strong>Follow the relationships:</strong> The <code>||--o&#123;</code> symbols show "one-to-many." Read left-to-right: 
-                "One SECTOR contains zero or more COMPANIES."
+                <strong>Follow the flow left-to-right:</strong> The <code>||--o&#123;</code> symbols show "one-to-many" relationships. 
+                Read the connections: "One SECTOR contains zero or more COMPANIES" → "One COMPANY files zero or more FINANCIAL_STATEMENTS" → "One FINANCIAL_STATEMENT contains zero or more LINE_ITEMS."
               </li>
               <li>
                 <strong>Trace the foreign keys:</strong> COMPANIES has <code>SectorID FK</code> - this creates the link back to SECTORS. 
@@ -1466,7 +1557,7 @@ erDiagram
             improves the quality and accuracy of generated code:
           </p>
 
-          <Callout type="tip" title="AI-Assisted Database Design: Using ERDs to Prevent Hallucination">
+          <Callout type="ai" title="AI-Assisted Database Design: Using ERDs to Prevent Hallucination">
             When working with AI coding assistants (GitHub Copilot, ChatGPT, Claude, Cursor), providing an ERD in Mermaid syntax 
             dramatically improves code quality and reduces errors. Here's why:
             <ul className="list-disc pl-5 mt-2 space-y-2">
@@ -1479,9 +1570,9 @@ erDiagram
               <li><strong>Iterative refinement:</strong> Update the ERD, regenerate code. Much faster than manually editing SQL across multiple files.</li>
             </ul>
             
-            <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded p-3 mt-3">
-              <p className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">Example AI Prompts:</p>
-              <div className="text-xs text-green-800 dark:text-green-200 space-y-2 font-mono">
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3 mt-3">
+              <p className="text-sm font-semibold text-teal-900 dark:text-teal-100 mb-2">Example AI Prompts:</p>
+              <div className="text-xs text-teal-800 dark:text-teal-200 space-y-2 font-mono">
                 <p>"Generate PostgreSQL CREATE TABLE statements for this ERD: [paste Mermaid code]"</p>
                 <p>"Convert this Mermaid ERD to Python SQLAlchemy ORM models with all relationships"</p>
                 <p>"Create a TypeScript Prisma schema from this ERD, include all constraints"</p>
