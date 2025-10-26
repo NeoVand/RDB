@@ -134,6 +134,33 @@ export function Part1_Foundation() {
             </li>
           </ul>
 
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            These three components work together to create the relational model's elegant structure. Let's visualize how they interact:
+          </p>
+
+          <MermaidDiagram
+            caption="The Relational Model Structure: Tables contain rows (individual records) and columns (attributes). Each intersection of a row and column contains a single data value, creating the familiar grid structure."
+            chart={`
+flowchart TB
+    DB[("Relational Database")]
+    
+    DB ==> T1["📊 Table: COMPANIES"]
+    DB ==> T2["📊 Table: SECTORS"]
+    DB ==> T3["📊 Table: STATEMENTS"]
+    
+    T1 --> R["Rows (Records)<br/>Each row = one entity"]
+    T1 --> C["Columns (Attributes)<br/>Each column = one property"]
+    
+    R -.-> D1["Row 1: Apple Inc."]
+    R -.-> D2["Row 2: Microsoft"]
+    R -.-> D3["Row 3: Google"]
+    
+    C -.-> A1["CompanyID"]
+    C -.-> A2["CompanyName"]
+    C -.-> A3["Founded"]
+            `}
+          />
+
           <Callout type="info" title="Schema vs Instance: Blueprint vs Building">
             It's crucial to distinguish between the <strong>structure</strong> of a database and the <strong>data</strong> it holds:
             <ul className="list-disc pl-5 mt-2 space-y-1">
@@ -594,6 +621,33 @@ SELECT * FROM Companies LIMIT 1;`}
           </p>
         </div>
 
+        <p className="mt-6 text-gray-700 dark:text-gray-300">
+          Understanding how these key types relate to each other is crucial. Here's a visual representation of the key hierarchy and their roles:
+        </p>
+
+        <MermaidDiagram
+          caption="Key Types and Their Relationships: Primary keys uniquely identify rows within a table, while foreign keys create relationships between tables by referencing primary keys in other tables."
+          chart={`
+flowchart LR
+    subgraph Table1["COMPANIES Table"]
+        PK1["🔑 CompanyID<br/>(PRIMARY KEY)"]
+        NK1["StockTicker<br/>(NATURAL KEY)"]
+        FK1["SectorID<br/>(FOREIGN KEY)"]
+    end
+    
+    subgraph Table2["SECTORS Table"]
+        PK2["🔑 SectorID<br/>(PRIMARY KEY)"]
+        NK2["SectorName"]
+    end
+    
+    FK1 -.->|"References"| PK2
+    
+    PK1 --> R1["Uniquely identifies<br/>each company"]
+    NK1 --> R2["Business identifier<br/>(e.g., 'AAPL')"]
+    FK1 --> R3["Links to<br/>Sectors table"]
+          `}
+        />
+
         <Subsection title="The Primary Key (PK): A Unique Identifier">
           <p>
             A <strong>primary key</strong> is a column, or a set of columns, that contains values that uniquely 
@@ -795,7 +849,14 @@ JOIN Sectors s ON c.SectorID = s.SectorID;`}
             internal database relationships. This ensures stability and efficiency. However, you should <em>still</em> enforce 
             uniqueness on natural keys using a <code>UNIQUE</code> constraint. For example, CompanyID is the primary key, 
             but StockTicker has a UNIQUE constraint to prevent duplicate ticker symbols. This gives you the best of both worlds: 
-            stable internal references (surrogate) and business rule enforcement (natural with UNIQUE).
+            stable internal references (surrogate) and business rule enforcement (natural with UNIQUE). We'll explore constraints 
+            like UNIQUE, NOT NULL, and CHECK in depth in{' '}
+            <a 
+              href="#section5" 
+              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+            >
+              Part II: Data Integrity
+            </a>.
           </p>
         </Subsection>
 
@@ -825,7 +886,14 @@ JOIN Sectors s ON c.SectorID = s.SectorID;`}
                 <p className="text-sm text-amber-800 dark:text-amber-300">
                   <strong>Reality:</strong> While technically optional, foreign key constraints are essential for data integrity in 
                   production systems. The slight performance cost is vastly outweighed by the protection against orphaned records and 
-                  referential integrity violations. Never skip them in real applications.
+                  referential integrity violations. Never skip them in real applications. We'll cover constraints and referential integrity 
+                  in detail in{' '}
+                  <a 
+                    href="#section5" 
+                    className="text-amber-800 dark:text-amber-200 hover:underline font-semibold"
+                  >
+                    Part II
+                  </a>.
                 </p>
               </div>
               <div>
@@ -913,6 +981,24 @@ erDiagram
               <li><strong>Relationships:</strong> How entities connect to each other (a Company "belongs to" a Sector). Drawn as lines between entities.</li>
             </ul>
           </div>
+
+          <Callout type="info" title="Why Diagrams as Code Matter in Modern Development">
+            Entity-Relationship Diagrams in this course use <strong>Mermaid syntax</strong> - a text-based diagramming language. 
+            This represents a powerful philosophy: <strong>diagrams as code</strong>. Instead of creating diagrams in visual tools 
+            that produce binary files, we express them as text that can be:
+            <ul className="list-disc pl-5 mt-2 space-y-1">
+              <li><strong>Version controlled:</strong> Track changes in Git, see who modified what, and when</li>
+              <li><strong>Code-reviewed:</strong> Review diagrams in pull requests alongside code changes</li>
+              <li><strong>AI-assisted:</strong> AI can read, generate, and modify Mermaid ERDs directly</li>
+              <li><strong>Automated:</strong> Generate diagrams from database schemas or vice versa</li>
+              <li><strong>Collaborative:</strong> No proprietary tools needed - just a text editor</li>
+            </ul>
+            <p className="mt-2">
+              This "diagrams as code" approach - treating visual models as text that lives alongside your codebase - is 
+              essential for modern, collaborative, AI-augmented development workflows. You'll see this principle in action 
+              throughout this course.
+            </p>
+          </Callout>
         </Subsection>
 
         <Subsection title="Reading ERD Notation: Understanding Crow's Foot">
@@ -1349,22 +1435,11 @@ erDiagram
             and <code>"places"</code> describes the relationship in plain English.
           </p>
 
-          <Callout type="info" title="Why Diagrams as Code Matter in Modern Development">
-            Entity-Relationship Diagrams represent a powerful philosophy: <strong>diagrams as code</strong>. Instead of creating 
-            diagrams in visual tools that produce binary files, we express them as text (Mermaid syntax) that can be:
-            <ul className="list-disc pl-5 mt-2 space-y-1">
-              <li><strong>Version controlled:</strong> Track changes in Git alongside your code, see diagram evolution over time</li>
-              <li><strong>Reviewed in pull requests:</strong> Team members can comment on and approve schema changes</li>
-              <li><strong>Generated programmatically:</strong> Scripts and AI can create/modify diagrams based on your database</li>
-              <li><strong>Always in sync:</strong> Living documentation that sits right next to your code</li>
-              <li><strong>AI-friendly:</strong> In the age of AI-assisted development, text-based diagrams are machine-readable specifications 
-              that dramatically reduce ambiguity and hallucination when asking AI to generate database code</li>
-            </ul>
-            <p className="mt-2 text-sm">
-              This shift from "drawing diagrams" to "writing diagrams" mirrors the infrastructure-as-code movement and is 
-              essential for modern, collaborative, AI-augmented development workflows.
-            </p>
-          </Callout>
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Beyond their readability and version control benefits, text-based ERDs have become particularly valuable in the 
+            age of AI-assisted development. When working with AI coding assistants, providing a structured ERD dramatically 
+            improves the quality and accuracy of generated code:
+          </p>
 
           <Callout type="tip" title="AI-Assisted Database Design: Using ERDs to Prevent Hallucination">
             When working with AI coding assistants (GitHub Copilot, ChatGPT, Claude, Cursor), providing an ERD in Mermaid syntax 
@@ -1520,8 +1595,22 @@ erDiagram
             <p className="text-gray-700 dark:text-gray-300">
               You've completed Part I and learned the foundational concepts of relational databases! You now understand:
               tables, rows, columns, keys, relationships, ERDs, and how to communicate database designs using Mermaid. 
-              In Part II, we'll explore how to ensure data quality through normalization and constraints.
             </p>
+            <p className="mt-3">
+              In{' '}
+              <a 
+                href="#part2" 
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+              >
+                Part II: Data Integrity
+              </a>, we'll explore how to ensure data quality through:
+            </p>
+            <ul className="list-disc pl-5 mt-2 space-y-1">
+              <li><strong>Database Normalization:</strong> Organizing data to eliminate redundancy and anomalies (1NF, 2NF, 3NF, BCNF)</li>
+              <li><strong>Constraints:</strong> PRIMARY KEY, FOREIGN KEY, UNIQUE, NOT NULL, CHECK, and DEFAULT</li>
+              <li><strong>Data Types:</strong> Choosing the right types for your data</li>
+              <li><strong>Referential Integrity:</strong> Maintaining relationships through cascading actions</li>
+            </ul>
           </div>
         </Subsection>
       </Section>

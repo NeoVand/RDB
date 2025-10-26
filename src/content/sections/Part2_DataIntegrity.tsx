@@ -55,7 +55,14 @@ export function Part2_DataIntegrity() {
           by implementing proper database constraints from the start.
         </p>
         <p className="mt-3 text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-          This part transitions from defining the <em>structure</em> of data (Part I) to establishing the <em>rules</em> that ensure 
+          This part transitions from defining the <em>structure</em> of data in{' '}
+          <a 
+            href="#part1" 
+            className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+          >
+            Part I
+          </a>{' '}
+          (tables, rows, columns, keys, and relationships) to establishing the <em>rules</em> that ensure 
           the data remains clean, consistent, and reliable. We'll explore both the formal process of database normalization and 
           the practical application of constraints. Together, these techniques form the foundation of data integrity - the guarantee 
           that your data is accurate, consistent, and trustworthy throughout its entire lifecycle.
@@ -894,7 +901,13 @@ stateDiagram-v2
         <Subsection title="Entity Integrity: PRIMARY KEY and UNIQUE Constraints">
           <p>
             <strong>Entity integrity</strong> ensures that each row in a table has a unique, identifiable identity. 
-            This is accomplished through two related constraints:
+            This is accomplished through two related constraints (if you need a refresher on keys, see{' '}
+            <a 
+              href="#section3" 
+              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+            >
+              Part I: Keys
+            </a>):
           </p>
 
           <p className="mt-4 font-semibold text-gray-900 dark:text-white">
@@ -1065,7 +1078,14 @@ SELECT * FROM employees;`}
 
         <Subsection title="Referential Integrity (FOREIGN KEY)">
           <p>
-            <strong>Foreign key constraints</strong> ensure that relationships between tables remain valid. 
+            <strong>Foreign key constraints</strong> ensure that relationships between tables remain valid (for a refresher on 
+            table relationships, see{' '}
+            <a 
+              href="#section3" 
+              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+            >
+              Part I: Relationships and Foreign Keys
+            </a>). 
             They prevent "orphaned" records by ensuring any foreign key value exists in the referenced table's 
             primary key.
           </p>
@@ -1689,7 +1709,14 @@ FROM contacts;`}
       <Section id="part2-practice" title="Practice Challenge: Design a University Database" level={2}>
         <p>
           Now it's time to apply everything you've learned! Design a complete database for a university course registration system, 
-          following all normalization rules and applying appropriate constraints.
+          following all normalization rules and applying appropriate constraints. You'll create an ERD (if you need a refresher, see{' '}
+          <a 
+            href="#section5" 
+            className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+          >
+            Part I: Entity-Relationship Diagrams
+          </a>) 
+          and implement it with proper SQL.
         </p>
 
         <div className="bg-indigo-50 dark:bg-indigo-950/20 border-l-4 border-indigo-500 p-5 rounded-r my-4">
