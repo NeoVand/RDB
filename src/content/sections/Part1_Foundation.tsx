@@ -686,10 +686,17 @@ flowchart LR
 
           <SQLPlayground
             preset={FINANCIAL_FULL_PRESET}
-            defaultQuery={`-- Primary keys uniquely identify each row
-SELECT CompanyID, CompanyName, StockTicker 
+            defaultQuery={`-- Using a primary key to find a specific record
+-- The WHERE clause filters rows based on the primary key
+SELECT 
+  CompanyID,      -- The unique identifier
+  CompanyName,    -- Company's legal name
+  StockTicker     -- Stock symbol
 FROM Companies
-WHERE CompanyID = 101;`}
+WHERE CompanyID = 101;  -- Finds exactly ONE company
+
+-- Try changing 101 to 102, 103, 104, etc.
+-- Each CompanyID returns exactly one company!`}
           />
 
           <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
@@ -744,14 +751,22 @@ WHERE CompanyID = 101;`}
 
           <SQLPlayground
             preset={FINANCIAL_FULL_PRESET}
-            defaultQuery={`-- Foreign keys create relationships
--- Companies reference Sectors via SectorID
+            defaultQuery={`-- Using foreign keys to JOIN related tables
+-- This combines data from Companies and Sectors tables
+
 SELECT 
-  c.CompanyName, 
-  c.StockTicker, 
-  s.SectorName
-FROM Companies c
-JOIN Sectors s ON c.SectorID = s.SectorID;`}
+  c.CompanyName,    -- From Companies table
+  c.StockTicker,    -- From Companies table
+  s.SectorName      -- From Sectors table (related via foreign key!)
+FROM Companies c           -- Main table (alias "c")
+JOIN Sectors s             -- Related table (alias "s")
+  ON c.SectorID = s.SectorID;  -- Match condition: foreign key = primary key
+
+-- The JOIN connects rows where the SectorID values match
+-- Result: Each company row gets its sector name added
+
+-- Try: Click the Schema button to see both tables
+-- Notice: Companies.SectorID references Sectors.SectorID`}
           />
 
           <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
@@ -1237,16 +1252,26 @@ erDiagram
 
           <SQLPlayground
             preset={ENROLLMENT_PRESET}
-            defaultQuery={`-- Query the many-to-many relationship
--- Show which students are in which classes
+            defaultQuery={`-- Querying a many-to-many relationship through a junction table
+-- Pattern: Table1 → Junction Table → Table2
+
 SELECT 
-  s.StudentName,
-  c.ClassName,
-  e.Grade
-FROM students s
-JOIN enrollment e ON s.StudentID = e.StudentID
-JOIN classes c ON e.ClassID = c.ClassID
-ORDER BY s.StudentName, c.ClassName;`}
+  s.StudentName,   -- From students table
+  c.ClassName,     -- From classes table  
+  e.Grade          -- From enrollment junction table
+FROM students s                          -- Start with students
+JOIN enrollment e                        -- Connect to junction table
+  ON s.StudentID = e.StudentID          -- Match student IDs
+JOIN classes c                           -- Connect to classes
+  ON e.ClassID = c.ClassID              -- Match class IDs
+ORDER BY s.StudentName, c.ClassName;    -- Sort alphabetically
+
+-- This query "walks" across the many-to-many relationship:
+-- Students → Enrollment → Classes
+-- The enrollment table bridges the connection!
+
+-- Try: Remove the ORDER BY to see unsorted results
+-- Try: Add WHERE s.StudentName = 'Alice' to filter one student`}
           />
 
           <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">

@@ -1185,22 +1185,33 @@ CREATE TABLE Companies (
 
           <SQLPlayground
             preset={EMPTY_PRESET}
-            defaultQuery={`-- Create a table with domain constraints
+            defaultQuery={`-- Demonstrating domain integrity constraints
+-- These constraints enforce data validation rules
+
 CREATE TABLE employees (
   id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  age INTEGER CHECK (age >= 18 AND age <= 100),
-  status TEXT DEFAULT 'active'
+  name TEXT NOT NULL,                        -- Must have a value
+  age INTEGER CHECK (age >= 18 AND age <= 100),  -- Must be 18-100
+  status TEXT DEFAULT 'active'               -- Auto-fills if not provided
 );
 
--- This will work
+-- ✅ This INSERT will succeed (all constraints satisfied)
 INSERT INTO employees (id, name, age)
 VALUES (1, 'Alice', 25);
 
--- Try inserting invalid data (age < 18) - will fail!
--- INSERT INTO employees (id, name, age) VALUES (2, 'Bob', 15);
+-- ✅ This works too (status defaults to 'active')
+INSERT INTO employees (id, name, age)
+VALUES (2, 'Bob', 30);
 
-SELECT * FROM employees;`}
+-- Now query to see the results
+SELECT * FROM employees;
+
+-- 💡 Try uncommenting these to see constraint violations:
+-- ❌ This fails: age < 18 (violates CHECK constraint)
+-- INSERT INTO employees (id, name, age) VALUES (3, 'Charlie', 15);
+
+-- ❌ This fails: name is NULL (violates NOT NULL)
+-- INSERT INTO employees (id, age) VALUES (4, 25);`}
           />
         </Subsection>
 
@@ -1243,14 +1254,24 @@ SELECT * FROM employees;`}
 
           <SQLPlayground
             preset={FINANCIAL_FULL_PRESET}
-            defaultQuery={`-- Foreign keys maintain referential integrity
--- Try to query a company and its sector
+            defaultQuery={`-- Foreign keys ensure referential integrity
+-- Companies.SectorID MUST reference a valid Sectors.SectorID
+
+-- First, see the foreign key relationship
 SELECT
   c.CompanyName,
-  s.SectorName
+  c.SectorID,      -- This is the FOREIGN KEY
+  s.SectorName     -- This comes from the referenced table
 FROM Companies c
-JOIN Sectors s ON c.SectorID = s.SectorID
-WHERE c.CompanyID = 101;`}
+JOIN Sectors s 
+  ON c.SectorID = s.SectorID  -- Foreign key = Primary key
+WHERE c.CompanyID = 101;
+
+-- The JOIN succeeds because the foreign key constraint
+-- guarantees that c.SectorID exists in Sectors table
+
+-- Try: Look at the schema to see the foreign key constraint
+-- Note: Without FOREIGN KEY constraint, orphaned records could exist!`}
           />
         </Subsection>
 
@@ -1321,28 +1342,53 @@ WHERE c.CompanyID = 101;`}
 
           <SQLPlayground
             preset={EMPTY_PRESET}
-            defaultQuery={`-- Create a comprehensive table with all constraint types
+            defaultQuery={`-- Creating a real-world table with comprehensive constraints
+-- This demonstrates all constraint types working together
+
 CREATE TABLE products (
+  -- Entity Integrity: PRIMARY KEY + AUTOINCREMENT
   product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  
+  -- Domain Integrity: UNIQUE + NOT NULL (business identifier)
   sku TEXT UNIQUE NOT NULL,
+  
+  -- Domain Integrity: NOT NULL (required field)
   product_name TEXT NOT NULL,
+  
+  -- Domain Integrity: DEFAULT (fallback value)
   category TEXT DEFAULT 'General',
+  
+  -- Domain Integrity: CHECK constraint (price must be non-negative)
   price DECIMAL(10, 2) CHECK (price >= 0),
+  
+  -- Domain Integrity: DEFAULT + CHECK (stock can't be negative)
   stock_quantity INTEGER DEFAULT 0 CHECK (stock_quantity >= 0),
+  
+  -- Domain Integrity: CHECK with IN (boolean as 0 or 1)
   is_active INTEGER DEFAULT 1 CHECK (is_active IN (0, 1)),
+  
+  -- Automatic timestamps
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Try inserting valid data
+-- ✅ Insert valid data
 INSERT INTO products (sku, product_name, category, price, stock_quantity)
 VALUES ('LAPTOP-001', 'Professional Laptop', 'Electronics', 1299.99, 10);
 
--- This will FAIL due to CHECK constraint (negative price)
--- INSERT INTO products (sku, product_name, price)
--- VALUES ('BAD-001', 'Bad Product', -100);
+-- ✅ Another valid insert (category defaults to 'General')
+INSERT INTO products (sku, product_name, price)
+VALUES ('MOUSE-001', 'Wireless Mouse', 29.99);
 
-SELECT * FROM products;`}
+-- Query to see the results
+SELECT * FROM products;
+
+-- 💡 Try these constraint violations (uncomment to test):
+-- ❌ Negative price:
+-- INSERT INTO products (sku, product_name, price) VALUES ('BAD-001', 'Test', -100);
+
+-- ❌ Duplicate SKU:
+-- INSERT INTO products (sku, product_name, price) VALUES ('LAPTOP-001', 'Another', 999);`}
           />
 
           <p className="mt-6 text-lg font-semibold text-gray-900 dark:text-white">
@@ -1382,28 +1428,45 @@ SELECT * FROM products;`}
 
           <SQLPlayground
             preset={EMPTY_PRESET}
-            defaultQuery={`-- ALTER TABLE: Modifying table structure
+            defaultQuery={`-- Demonstrating ALTER TABLE and UPDATE commands
+-- Pattern: CREATE → INSERT → ALTER → UPDATE
+
+-- Step 1: Create initial table
 CREATE TABLE employees (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   salary NUMERIC
 );
 
+-- Step 2: Insert initial data
 INSERT INTO employees VALUES
   (1, 'Alice', 75000),
   (2, 'Bob', 82000);
 
--- Add a new column
-ALTER TABLE employees ADD COLUMN department TEXT DEFAULT 'Unassigned';
+-- Step 3: ADD a new column to existing table
+ALTER TABLE employees 
+  ADD COLUMN department TEXT DEFAULT 'Unassigned';
+  
+-- Notice: existing rows get the DEFAULT value automatically!
 
--- View the modified table
+-- View the modified structure and data
 SELECT * FROM employees;
 
--- Update the new column
-UPDATE employees SET department = 'Engineering' WHERE id = 1;
-UPDATE employees SET department = 'Sales' WHERE id = 2;
+-- Step 4: UPDATE specific rows to change department
+-- ⚠️ Always use WHERE to update specific rows!
+UPDATE employees 
+SET department = 'Engineering' 
+WHERE id = 1;
 
-SELECT * FROM employees;`}
+UPDATE employees 
+SET department = 'Sales' 
+WHERE id = 2;
+
+-- Final result: structure modified, data updated
+SELECT * FROM employees;
+
+-- Try: Add another employee with INSERT
+-- INSERT INTO employees VALUES (3, 'Charlie', 90000, 'Marketing');`}
           />
 
           <Callout type="info" title="ALTER TABLE Limitations in SQLite">
@@ -1568,20 +1631,32 @@ SELECT * FROM employees;`}
 
           <SQLPlayground
             preset={EMPTY_PRESET}
-            defaultQuery={`-- Demonstrating numeric types
+            defaultQuery={`-- Choosing the right numeric type for each use case
+
 CREATE TABLE products (
-  id INTEGER PRIMARY KEY,
+  id INTEGER PRIMARY KEY,           -- Whole numbers: IDs, counts
   name TEXT,
-  price DECIMAL(10, 2),  -- Exact: $99,999,999.99
-  weight REAL,            -- Approximate: ok for weight
-  stock_count INTEGER     -- Whole numbers only
+  price DECIMAL(10, 2),             -- EXACT decimals: money (critical!)
+  weight REAL,                      -- APPROXIMATE: scientific measurements
+  stock_count INTEGER               -- Whole numbers: inventory count
 );
 
+-- Insert products with different numeric types
 INSERT INTO products VALUES
-  (1, 'Laptop', 1299.99, 2.5, 15),
-  (2, 'Mouse', 29.99, 0.1, 250);
+  (1, 'Laptop', 1299.99, 2.5, 15),     -- price exact, weight approximate
+  (2, 'Mouse', 29.99, 0.1, 250),        -- small price, fractional weight
+  (3, 'Monitor', 459.50, 5.8, 42);      -- another product
 
-SELECT * FROM products;`}
+-- Query shows all types working together
+SELECT 
+  name,
+  price,           -- Exact DECIMAL for money
+  weight,          -- Approximate REAL for measurements
+  stock_count,     -- Whole INTEGER for counts
+  price * stock_count as total_value   -- Calculate total inventory value
+FROM products;
+
+-- Notice: DECIMAL maintains exactness for financial calculations!`}
           />
         </Subsection>
 
@@ -1705,25 +1780,40 @@ SELECT * FROM products;`}
 
           <SQLPlayground
             preset={EMPTY_PRESET}
-            defaultQuery={`-- Working with dates
+            defaultQuery={`-- Working with dates and timestamps
+-- Demonstrates DATE storage, CURRENT_TIMESTAMP, and date functions
+
 CREATE TABLE events (
   id INTEGER PRIMARY KEY,
   event_name TEXT,
-  event_date DATE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  event_date DATE,                               -- Store date only
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Auto-timestamp
 );
 
+-- Insert events with dates in ISO 8601 format (YYYY-MM-DD)
 INSERT INTO events (id, event_name, event_date) VALUES
   (1, 'Product Launch', '2024-06-15'),
-  (2, 'Annual Meeting', '2024-12-01');
+  (2, 'Annual Meeting', '2024-12-01'),
+  (3, 'Team Offsite', '2025-03-20');
 
--- Date arithmetic and functions
+-- Date arithmetic and built-in date functions
 SELECT
   event_name,
   event_date,
+  -- DATE('now') gets today's date
   DATE('now') as today,
-  JULIANDAY(event_date) - JULIANDAY('now') as days_until
-FROM events;`}
+  
+  -- JULIANDAY() converts dates to numbers for arithmetic
+  -- Subtract to get days between dates
+  JULIANDAY(event_date) - JULIANDAY('now') as days_until,
+  
+  -- created_at shows when row was inserted (automatic!)
+  created_at
+FROM events
+ORDER BY event_date;
+
+-- Try: Calculate days since creation
+-- SELECT event_name, JULIANDAY('now') - JULIANDAY(created_at) as days_old FROM events;`}
           />
         </Subsection>
 
@@ -1781,30 +1871,38 @@ FROM events;`}
 
           <SQLPlayground
             preset={EMPTY_PRESET}
-            defaultQuery={`-- Understanding NULL behavior
+            defaultQuery={`-- Understanding NULL: The "Unknown" Value
+-- NULL is NOT zero, NOT empty string - it's "absence of value"
+
 CREATE TABLE users (
   id INTEGER PRIMARY KEY,
-  username TEXT NOT NULL,
-  email TEXT,  -- NULLs allowed
-  is_active INTEGER DEFAULT 1  -- Boolean as INT
+  username TEXT NOT NULL,              -- REQUIRED: can't be NULL
+  email TEXT,                          -- OPTIONAL: NULLs allowed
+  is_active INTEGER DEFAULT 1          -- Boolean as 0/1
 );
 
+-- Insert test data: some with email, some without
 INSERT INTO users (id, username, email, is_active) VALUES
-  (1, 'alice', 'alice@example.com', 1),
-  (2, 'bob', NULL, 1),  -- email is NULL (unknown)
-  (3, 'charlie', 'charlie@example.com', 0);
+  (1, 'alice', 'alice@example.com', 1),   -- Has email
+  (2, 'bob', NULL, 1),                    -- email is NULL (unknown/missing)
+  (3, 'charlie', 'charlie@example.com', 0); -- Has email
 
--- NULL comparisons (notice how email = NULL doesn't work!)
+-- ❌ WRONG WAY: email = NULL doesn't work!
+-- ✅ RIGHT WAY: Use IS NULL
 SELECT
   username,
   email,
-  email = NULL as wrong_null_check,  -- Always NULL!
-  email IS NULL as correct_null_check,
-  is_active as active
+  email = NULL as wrong_check,        -- Always returns NULL (not TRUE/FALSE!)
+  email IS NULL as correct_check      -- Returns TRUE or FALSE
 FROM users;
 
--- Only get users WITH email
-SELECT username FROM users WHERE email IS NOT NULL;`}
+-- Filter: Only users WITH email addresses
+SELECT username, email 
+FROM users 
+WHERE email IS NOT NULL;  -- Excludes NULLs
+
+-- Filter: Only users WITHOUT email (NULLs)
+-- SELECT username FROM users WHERE email IS NULL;`}
           />
 
           <Callout type="warning" title="Common NULL Pitfalls">
@@ -1841,27 +1939,40 @@ SELECT username FROM users WHERE email IS NOT NULL;`}
 
           <SQLPlayground
             preset={EMPTY_PRESET}
-            defaultQuery={`-- Using COALESCE to handle NULLs
+            defaultQuery={`-- COALESCE: Providing fallbacks for NULL values
+-- Returns the FIRST non-NULL value from a list
+
 CREATE TABLE contacts (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
-  email TEXT,
-  phone TEXT
+  email TEXT,        -- Can be NULL
+  phone TEXT         -- Can be NULL
 );
 
+-- Insert contacts with different missing information
 INSERT INTO contacts (id, name, email, phone) VALUES
-  (1, 'Alice', 'alice@example.com', '555-0101'),
-  (2, 'Bob', NULL, '555-0102'),
-  (3, 'Charlie', 'charlie@example.com', NULL),
-  (4, 'Diana', NULL, NULL);
+  (1, 'Alice', 'alice@example.com', '555-0101'),  -- Has both
+  (2, 'Bob', NULL, '555-0102'),                   -- Missing email
+  (3, 'Charlie', 'charlie@example.com', NULL),    -- Missing phone
+  (4, 'Diana', NULL, NULL);                       -- Missing both!
 
--- Show fallback values for missing data
+-- COALESCE provides user-friendly defaults for NULLs
 SELECT
   name,
+  -- Single fallback: show 'No email' if email is NULL
   COALESCE(email, 'No email') AS email_display,
+  
+  -- Single fallback: show 'No phone' if phone is NULL
   COALESCE(phone, 'No phone') AS phone_display,
+  
+  -- Multiple fallbacks: try email, then phone, then default
+  -- Returns FIRST non-NULL value in the list
   COALESCE(email, phone, 'No contact info') AS preferred_contact
-FROM contacts;`}
+FROM contacts;
+
+-- Notice: Diana shows 'No contact info' because both are NULL
+-- Alice shows email as preferred (first non-NULL)
+-- Bob shows phone as preferred (email is NULL, phone is not)`}
           />
         </Subsection>
       </Section>
