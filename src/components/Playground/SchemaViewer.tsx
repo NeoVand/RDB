@@ -27,6 +27,7 @@ export function SchemaViewer({ db, dataVersion }: SchemaViewerProps) {
       }
 
       // Configure Mermaid for compact horizontal layout
+      // Use standard themes and override colors via CSS
       const themeConfig = isDark ? 'dark' : 'neutral';
       let erd = `%%{init: {'theme':'${themeConfig}', 'themeVariables': {'fontSize':'10px'}}}%%\n`;
       erd += 'erDiagram\n';
@@ -160,6 +161,29 @@ export function SchemaViewer({ db, dataVersion }: SchemaViewerProps) {
         .mermaid-container text {
           font-size: 10px !important;
         }
+        /* Subtle color adjustments to match playground theme */
+        ${isDark ? `
+          /* Dark mode - adjust to blue tones */
+          .mermaid-container .er.entityBox {
+            fill: #1e3a5f !important;
+          }
+          .mermaid-container line,
+          .mermaid-container path {
+            stroke: #60a5fa !important;
+          }
+        ` : `
+          /* Light mode - add subtle shading */
+          .mermaid-container .er.entityBox {
+            fill: #dbeafe !important;
+          }
+          .mermaid-container .er.attributeBoxOdd {
+            fill: #f8fafc !important;
+          }
+          .mermaid-container line,
+          .mermaid-container path {
+            stroke: #2563eb !important;
+          }
+        `}
       `}</style>
       <div className="mermaid-container">
         <pre className="mermaid">{mermaidERD}</pre>
