@@ -6,6 +6,7 @@ import { SQLPlayground } from '../../components/Playground/SQLPlayground';
 import { Callout } from '../../components/Callout';
 import { CRUDFigure } from '../../components/Content/CRUDFigure';
 import { JoinFigure } from '../../components/Content/JoinFigure';
+import { WindowFunctionFigure } from '../../components/Content/WindowFunctionFigure';
 import { 
   EMPLOYEES_PRESET, 
   EMPTY_PRESET,
@@ -2259,38 +2260,48 @@ Requirements:
           into an analytical powerhouse. These features turn databases into real-time reporting engines.
         </p>
 
+        <p className="mt-4">
+          Now that you can JOIN tables to combine related data, aggregation lets you <em>summarize</em> that data—computing 
+          totals, averages, and counts across groups of rows. This is where analytical queries come alive: you're not just 
+          fetching data anymore, you're generating insights.
+        </p>
+
         <Subsection title="Aggregate Functions: Crunching Numbers">
           <p>
             Aggregate functions perform calculations across multiple rows and return a single summary value. SQL provides five
-            core aggregate functions:
+            core aggregate functions that you'll use constantly:
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2"><code className="text-blue-600 dark:text-blue-400">COUNT()</code></h4>
-              <p className="text-sm">Counts rows. <code>COUNT(*)</code> counts all rows; <code>COUNT(column)</code> counts non-NULL values.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 my-6">
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm"><code className="text-blue-600 dark:text-blue-400">COUNT()</code></h4>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Counts rows</p>
             </div>
 
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2"><code className="text-blue-600 dark:text-blue-400">SUM()</code></h4>
-              <p className="text-sm">Calculates the total of numeric values in a column.</p>
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm"><code className="text-green-600 dark:text-green-400">SUM()</code></h4>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Totals values</p>
             </div>
 
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2"><code className="text-blue-600 dark:text-blue-400">AVG()</code></h4>
-              <p className="text-sm">Computes the average (mean) of numeric values.</p>
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm"><code className="text-purple-600 dark:text-purple-400">AVG()</code></h4>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Averages values</p>
             </div>
 
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2"><code className="text-blue-600 dark:text-blue-400">MIN()</code></h4>
-              <p className="text-sm">Finds the minimum value in a column (works on numbers, dates, strings).</p>
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm"><code className="text-orange-600 dark:text-orange-400">MIN()</code></h4>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Finds minimum</p>
             </div>
 
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2"><code className="text-blue-600 dark:text-blue-400">MAX()</code></h4>
-              <p className="text-sm">Finds the maximum value in a column.</p>
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm"><code className="text-red-600 dark:text-red-400">MAX()</code></h4>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Finds maximum</p>
             </div>
           </div>
+
+          <p className="mt-4">
+            Let's see these in action. The playground below demonstrates how each function works on a simple employees table:
+          </p>
 
           <SQLPlayground
             preset={EMPLOYEES_PRESET}
@@ -2319,6 +2330,140 @@ SELECT
   MAX(name) AS alphabetically_last
 FROM employees;`}
           />
+
+          <p className="mt-6">
+            These aggregate functions seem straightforward, but there's a critical behavior that trips up even experienced developers: 
+            <strong>how they handle NULL values</strong>. Understanding this is essential to avoid subtle bugs in your analytics.
+          </p>
+
+          <Callout type="warning" title="Critical: Aggregate Functions and NULL Values">
+            <p className="font-semibold mb-2">
+              Aggregate functions have special NULL handling that trips up many developers:
+            </p>
+            <ul className="list-disc pl-5 space-y-2 text-sm">
+              <li><code>COUNT(*)</code> counts ALL rows, including rows with NULL values</li>
+              <li><code>COUNT(column)</code> counts only rows where <code>column IS NOT NULL</code></li>
+              <li><code>SUM()</code>, <code>AVG()</code>, <code>MIN()</code>, <code>MAX()</code> ignore NULL values entirely</li>
+              <li><code>AVG()</code> excludes NULLs from both numerator AND denominator</li>
+              <li>If ALL values are NULL, most aggregates return NULL (except <code>COUNT</code>, which returns 0)</li>
+            </ul>
+            <p className="mt-3 text-sm">
+              <strong>Pro tip:</strong> To count NULL values: <code>COUNT(*) - COUNT(column)</code>
+            </p>
+          </Callout>
+
+          <p className="mt-4">
+            Let's see NULL handling in action with a concrete example:
+          </p>
+
+          <div className="my-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Source Table: employees (with NULLs)</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-blue-100 dark:bg-blue-900/30">
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">name</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">department</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">salary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Alice</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Engineering</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">90000</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-800">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Bob</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Engineering</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-red-100 dark:bg-red-900/30">NULL</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Carol</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Sales</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">75000</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-800">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">David</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Sales</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-red-100 dark:bg-red-900/30">NULL</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">
+                Note: 2 out of 4 employees have NULL salaries (highlighted in red)
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Aggregate Results</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-green-100 dark:bg-green-900/30">
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">Aggregate</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">Result</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">Explanation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-mono">COUNT(*)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">4</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">All rows</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-800">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-mono">COUNT(salary)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">2</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Non-NULL salaries only</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-mono">SUM(salary)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">165000</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">90000 + 75000 (NULLs ignored)</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-800">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-mono">AVG(salary)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">82500</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">165000 / 2, not 4!</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">
+                Notice: AVG divides by 2 (non-NULL count), not 4 (total rows)
+              </p>
+            </div>
+          </div>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- Exploring NULL behavior in aggregates
+-- (We'll create a table with some NULL values to demonstrate)
+
+-- Count different ways
+SELECT 
+  COUNT(*) AS all_orders,                      -- Counts all rows
+  COUNT(total_amount) AS orders_with_amount,   -- Counts non-NULL amounts
+  COUNT(*) - COUNT(total_amount) AS null_amounts  -- How many are NULL?
+FROM orders;
+
+-- How aggregates handle NULLs
+SELECT 
+  SUM(total_amount) AS total_revenue,          -- NULLs ignored
+  AVG(total_amount) AS avg_order_value,        -- Excludes NULLs from calculation
+  MIN(total_amount) AS smallest_order,         -- NULLs ignored
+  MAX(total_amount) AS largest_order           -- NULLs ignored
+FROM orders;
+
+-- Try: What if we want to treat NULL as 0?
+SELECT 
+  SUM(COALESCE(total_amount, 0)) AS total_revenue_treating_null_as_zero,
+  AVG(COALESCE(total_amount, 0)) AS avg_treating_null_as_zero
+FROM orders;`}
+          />
         </Subsection>
 
         <Subsection title="GROUP BY: Organizing Data into Buckets">
@@ -2330,34 +2475,138 @@ FROM employees;`}
           <MermaidDiagram
             caption="How GROUP BY Works: Organizing Rows into Groups"
             chart={`
-flowchart LR
-    subgraph Input["📋 Original Rows"]
-        direction TB
-        R1["Alice | Eng | 90k"]
-        R2["Bob | Eng | 85k"]
-        R3["Carol | Sales | 75k"]
-        R4["David | Sales | 70k"]
-        R5["Eve | HR | 65k"]
-    end
-    
-    subgraph GroupBy["🗂️ GROUP BY dept"]
-        direction TB
-        G1["Eng: Alice, Bob"]
-        G2["Sales: Carol, David"]
-        G3["HR: Eve"]
-    end
-    
-    subgraph Aggregate["🔢 Aggregate"]
-        direction TB
-        A1["Eng:<br/>AVG=87.5k, COUNT=2"]
-        A2["Sales:<br/>AVG=72.5k, COUNT=2"]
-        A3["HR:<br/>AVG=65k, COUNT=1"]
+flowchart TD
+    subgraph Input["📋 Step 1: Original Rows"]
+        R1["Alice | Eng | 90k"] ~~~ R2["Bob | Eng | 85k"] ~~~ R3["Carol | Sales | 75k"] ~~~ R4["David | Sales | 70k"] ~~~ R5["Eve | HR | 65k"]
     end
     
     Input ==> GroupBy
+    
+    subgraph GroupBy["🗂️ Step 2: GROUP BY department"]
+        G1["Eng: Alice, Bob"] ~~~ G2["Sales: Carol, David"] ~~~ G3["HR: Eve"]
+    end
+    
     GroupBy ==> Aggregate
+    
+    subgraph Aggregate["🔢 Step 3: Apply Aggregates"]
+        A1["Eng<br/>AVG=87.5k, COUNT=2"] ~~~ A2["Sales<br/>AVG=72.5k, COUNT=2"] ~~~ A3["HR<br/>AVG=65k, COUNT=1"]
+    end
             `}
           />
+
+          <p className="mt-4">
+            Let's see this transformation with actual data. Watch how individual employee rows get grouped by department, 
+            then aggregated into summary statistics:
+          </p>
+
+          <div className="my-6">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Source Table: employees (8 rows)</p>
+            <div className="overflow-x-auto mb-4">
+              <table className="min-w-full text-xs border-collapse">
+                <thead>
+                  <tr className="bg-blue-100 dark:bg-blue-900/30">
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">id</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">name</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">department</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">salary</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="bg-green-50 dark:bg-green-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">1</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Alice</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Engineering</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">90000</td>
+                  </tr>
+                  <tr className="bg-green-50 dark:bg-green-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">2</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Bob</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Engineering</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">85000</td>
+                  </tr>
+                  <tr className="bg-green-50 dark:bg-green-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">3</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Frank</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Engineering</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">92000</td>
+                  </tr>
+                  <tr className="bg-orange-50 dark:bg-orange-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">4</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Carol</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Sales</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">75000</td>
+                  </tr>
+                  <tr className="bg-orange-50 dark:bg-orange-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">5</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">David</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Sales</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">70000</td>
+                  </tr>
+                  <tr className="bg-orange-50 dark:bg-orange-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">6</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Grace</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Sales</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">78000</td>
+                  </tr>
+                  <tr className="bg-purple-50 dark:bg-purple-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">7</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Eve</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">HR</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">65000</td>
+                  </tr>
+                  <tr className="bg-purple-50 dark:bg-purple-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">8</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Henry</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">HR</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">68000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 italic mb-4">
+              Color grouping shows which rows belong together: 
+              <span className="inline-block w-3 h-3 bg-green-200 dark:bg-green-900/40 mx-1 align-middle"></span> Engineering (3 rows),
+              <span className="inline-block w-3 h-3 bg-orange-200 dark:bg-orange-900/40 mx-1 align-middle"></span> Sales (3 rows),
+              <span className="inline-block w-3 h-3 bg-purple-200 dark:bg-purple-900/40 mx-1 align-middle"></span> HR (2 rows)
+            </p>
+
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Query: <code className="text-xs">SELECT department, COUNT(*), AVG(salary) FROM employees GROUP BY department;</code>
+            </p>
+
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-4">Result: Aggregated Summary (3 rows)</p>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-xs border-collapse">
+                <thead>
+                  <tr className="bg-blue-100 dark:bg-blue-900/30">
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">department</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">COUNT(*)</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">AVG(salary)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="bg-green-50 dark:bg-green-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Engineering</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">3</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">89000</td>
+                  </tr>
+                  <tr className="bg-orange-50 dark:bg-orange-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Sales</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">3</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">74333</td>
+                  </tr>
+                  <tr className="bg-purple-50 dark:bg-purple-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">HR</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">2</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">66500</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">
+              Notice: 8 rows collapsed into 3 summary rows—one per department
+            </p>
+          </div>
 
           <CodeExample
             title="GROUP BY Syntax"
@@ -2421,6 +2670,149 @@ ORDER BY department, hire_year;`}
             <p className="mt-2">
               <strong>Why?</strong> Each group produces one output row. If you try to SELECT a column that's NOT grouped,
               SQL doesn't know which value from the group to show.
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="Multiple Grouping Columns: Hierarchical Analysis">
+          <p>
+            You can GROUP BY multiple columns to create hierarchical summaries. This is incredibly powerful for analyzing data 
+            at different levels of granularity—like sales by region AND product category, or user activity by country AND month.
+          </p>
+
+          <p className="mt-4">
+            When you <code>GROUP BY col1, col2</code>, SQL creates a unique group for each combination of <code>col1</code> and 
+            <code>col2</code> values. This results in more granular grouping than using a single column.
+          </p>
+
+          <div className="my-6">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Example: GROUP BY department, hire_year
+            </p>
+            <div className="overflow-x-auto mb-4">
+              <table className="min-w-full text-xs border-collapse">
+                <thead>
+                  <tr className="bg-blue-100 dark:bg-blue-900/30">
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">name</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">department</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">hire_year</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">salary</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="bg-green-50 dark:bg-green-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Alice</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Eng</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">2020</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">90000</td>
+                  </tr>
+                  <tr className="bg-green-50 dark:bg-green-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Bob</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Eng</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">2020</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">85000</td>
+                  </tr>
+                  <tr className="bg-blue-50 dark:bg-blue-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Frank</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Eng</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">2021</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">92000</td>
+                  </tr>
+                  <tr className="bg-orange-50 dark:bg-orange-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Carol</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Sales</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">2020</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">75000</td>
+                  </tr>
+                  <tr className="bg-purple-50 dark:bg-purple-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">David</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Sales</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">2021</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">70000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 italic mb-4">
+              Each unique (department, hire_year) combination forms a separate group
+            </p>
+
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Result: 4 groups (not 2 departments or 2 years, but 4 combinations)
+            </p>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-xs border-collapse">
+                <thead>
+                  <tr className="bg-blue-100 dark:bg-blue-900/30">
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">department</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">hire_year</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">COUNT(*)</th>
+                    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">AVG(salary)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="bg-green-50 dark:bg-green-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Eng</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">2020</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">2</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">87500</td>
+                  </tr>
+                  <tr className="bg-blue-50 dark:bg-blue-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Eng</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">2021</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">1</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">92000</td>
+                  </tr>
+                  <tr className="bg-orange-50 dark:bg-orange-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Sales</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">2020</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">1</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">75000</td>
+                  </tr>
+                  <tr className="bg-purple-50 dark:bg-purple-900/20">
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">Sales</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 font-semibold">2021</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">1</td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-center">70000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">
+              Each row represents a unique (department, year) pair
+            </p>
+          </div>
+
+          <SQLPlayground
+            preset={FINANCIAL_FULL_PRESET}
+            defaultQuery={`-- Multi-level grouping: Sector → Year → Company count
+SELECT 
+  s.SectorName,
+  fs.Year,
+  COUNT(DISTINCT c.CompanyID) AS companies_filing,
+  COUNT(fs.StatementID) AS total_statements,
+  ROUND(AVG(li.Value) / 1000000000, 2) AS avg_revenue_billions
+FROM Sectors s
+JOIN Companies c ON s.SectorID = c.SectorID
+JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
+JOIN Line_Items li ON fs.StatementID = li.StatementID
+WHERE li.ItemName = 'Revenue'
+GROUP BY s.SectorName, fs.Year
+ORDER BY s.SectorName, fs.Year;
+
+-- Try: Remove "fs.Year" from GROUP BY to see aggregation at sector level only
+-- Try: Add "c.CompanyName" to GROUP BY to see company-level detail`}
+          />
+
+          <Callout type="tip" title="When to Use Multiple Grouping Columns">
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li><strong>Time-based analysis:</strong> GROUP BY region, year, month for trending</li>
+              <li><strong>Category breakdowns:</strong> GROUP BY product_category, product_subcategory</li>
+              <li><strong>Organizational hierarchies:</strong> GROUP BY country, state, city</li>
+              <li><strong>A/B testing:</strong> GROUP BY experiment_group, user_segment</li>
+            </ul>
+            <p className="mt-2 text-sm">
+              <strong>Rule of thumb:</strong> More grouping columns = more granular groups = more result rows
             </p>
           </Callout>
         </Subsection>
@@ -2514,38 +2906,508 @@ ORDER BY avg_salary DESC;`}
           />
         </Subsection>
 
-        <Subsection title="Advanced Aggregation: DISTINCT and Complex Expressions">
+        <Subsection title="Advanced Aggregation Techniques">
           <p>
-            Aggregate functions have additional capabilities beyond basic usage:
+            Beyond basic aggregates, SQL provides powerful patterns for conditional aggregation, distinct counting, 
+            string concatenation, and handling JOINs safely. These techniques are essential for real-world analytics.
+          </p>
+
+          <p className="mt-4 font-semibold text-gray-900 dark:text-white">
+            1. COUNT DISTINCT: Counting Unique Values
+          </p>
+
+          <p className="mt-2">
+            <code>COUNT(DISTINCT column)</code> counts only unique values, essential when dealing with many-to-many relationships 
+            or de-duplicating counts across JOINs.
           </p>
 
           <SQLPlayground
             preset={FINANCIAL_FULL_PRESET}
-            defaultQuery={`-- Advanced aggregation techniques
+            defaultQuery={`-- COUNT vs COUNT DISTINCT: Understanding the difference
 
--- COUNT DISTINCT: Count unique values
-SELECT 
-  COUNT(*) AS total_statements,
-  COUNT(DISTINCT CompanyID) AS companies_with_statements,
-  COUNT(DISTINCT Year) AS years_covered
+-- How many financial statements do we have?
+SELECT COUNT(*) AS total_statements FROM Financial_Statements;
+
+-- How many unique companies filed statements?
+SELECT COUNT(DISTINCT CompanyID) AS unique_companies 
 FROM Financial_Statements;
 
--- Aggregates on calculated expressions
+-- How many unique years are covered?
+SELECT COUNT(DISTINCT Year) AS years_covered 
+FROM Financial_Statements;
+
+-- All together: Overall dataset statistics
+SELECT 
+  COUNT(*) AS total_statements,
+  COUNT(DISTINCT CompanyID) AS unique_companies,
+  COUNT(DISTINCT Year) AS years_covered,
+  ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT CompanyID), 2) AS avg_statements_per_company
+FROM Financial_Statements;`}
+          />
+
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            2. Conditional Aggregation with CASE
+          </p>
+
+          <p className="mt-2">
+            Use <code>CASE</code> inside aggregate functions to compute multiple metrics in a single query—no need for 
+            separate queries or complex JOINs. This is sometimes called "pivoting" data.
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- Conditional aggregation: Multiple metrics in one query
+
+SELECT 
+  customer_id,
+  first_name || ' ' || last_name AS customer_name,
+  -- Total orders
+  COUNT(*) AS total_orders,
+  -- Count orders by status (if we had a status column)
+  -- For demo: count orders above/below $100
+  SUM(CASE WHEN total_amount > 100 THEN 1 ELSE 0 END) AS large_orders,
+  SUM(CASE WHEN total_amount <= 100 THEN 1 ELSE 0 END) AS small_orders,
+  -- Revenue breakdown
+  SUM(CASE WHEN total_amount > 100 THEN total_amount ELSE 0 END) AS revenue_from_large_orders,
+  SUM(CASE WHEN total_amount <= 100 THEN total_amount ELSE 0 END) AS revenue_from_small_orders,
+  -- Overall stats
+  SUM(total_amount) AS total_revenue,
+  ROUND(AVG(total_amount), 2) AS avg_order_value
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+GROUP BY customer_id, customer_name
+HAVING COUNT(*) >= 2  -- Customers with 2+ orders
+ORDER BY total_revenue DESC
+LIMIT 10;
+
+-- This is WAY more efficient than running separate queries!`}
+          />
+
+          <Callout type="tip" title="Conditional Aggregation Pattern">
+            <p className="text-sm">
+              <strong>Pattern:</strong> <code>SUM(CASE WHEN condition THEN 1 ELSE 0 END)</code> counts rows meeting a condition
+              <br/>
+              <strong>Alternative:</strong> <code>COUNT(CASE WHEN condition THEN 1 END)</code> also works (COUNT ignores NULLs)
+              <br/>
+              <strong>For sums:</strong> <code>SUM(CASE WHEN condition THEN amount ELSE 0 END)</code>
+            </p>
+          </Callout>
+
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            3. String Aggregation: GROUP_CONCAT
+          </p>
+
+          <p className="mt-2">
+            SQLite's <code>GROUP_CONCAT()</code> function (called <code>STRING_AGG()</code> in PostgreSQL, 
+            <code>LISTAGG()</code> in Oracle) combines multiple text values from a group into a single string. 
+            Incredibly useful for creating comma-separated lists.
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- String aggregation: Combine multiple values into one
+
+-- What products did each customer order?
+SELECT 
+  c.customer_id,
+  c.first_name || ' ' || c.last_name AS customer_name,
+  COUNT(DISTINCT oi.product_id) AS unique_products_ordered,
+  GROUP_CONCAT(DISTINCT p.product_name, ', ') AS products_list
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+GROUP BY c.customer_id, customer_name
+ORDER BY unique_products_ordered DESC
+LIMIT 10;
+
+-- Try: Change the separator to ' | ' or add ORDER BY in GROUP_CONCAT
+-- Syntax: GROUP_CONCAT(column, 'separator') ORDER BY column`}
+          />
+
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            4. Aggregating with JOINs: The Duplicate Row Problem
+          </p>
+
+          <p className="mt-2">
+            <strong>Critical gotcha:</strong> When you JOIN before aggregating, rows can multiply due to one-to-many 
+            relationships, inflating your counts and sums. Always use <code>COUNT(DISTINCT ...)</code> or 
+            <code>SUM(DISTINCT ...)</code> when aggregating across JOINs.
+          </p>
+
+          <SQLPlayground
+            preset={FINANCIAL_FULL_PRESET}
+            defaultQuery={`-- Demonstration: JOIN can inflate aggregate results!
+
+-- WRONG: Naive aggregation after JOIN (double-counts)
+-- Let's count statements per sector
+SELECT 
+  s.SectorName,
+  COUNT(*) AS statement_count_WRONG  -- Inflated by Line_Items JOIN!
+FROM Sectors s
+JOIN Companies c ON s.SectorID = c.SectorID
+JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
+JOIN Line_Items li ON fs.StatementID = li.StatementID  -- This multiplies rows!
+GROUP BY s.SectorName;
+
+-- CORRECT: Use COUNT(DISTINCT) to handle duplicates
+SELECT 
+  s.SectorName,
+  COUNT(DISTINCT fs.StatementID) AS statement_count_CORRECT,
+  COUNT(DISTINCT c.CompanyID) AS company_count,
+  COUNT(*) AS total_rows_after_join  -- Shows the multiplication
+FROM Sectors s
+JOIN Companies c ON s.SectorID = c.SectorID
+JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
+JOIN Line_Items li ON fs.StatementID = li.StatementID
+GROUP BY s.SectorName
+ORDER BY s.SectorName;
+
+-- Try: Compare the two results to see the difference`}
+          />
+
+          <Callout type="warning" title="Aggregation + JOIN = Danger Zone">
+            <p className="text-sm font-semibold mb-2">
+              When JOINing before aggregating, always ask: "Could this JOIN create duplicate rows?"
+            </p>
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li>One-to-many relationships multiply rows (e.g., 1 customer → 5 orders)</li>
+              <li>Use <code>COUNT(DISTINCT id)</code> instead of <code>COUNT(*)</code></li>
+              <li>Use <code>SUM(DISTINCT ...)</code> only if values are unique per entity</li>
+              <li>Or aggregate first in a subquery, then JOIN to the aggregated result</li>
+            </ul>
+          </Callout>
+
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            5. Aggregates on Calculated Expressions
+          </p>
+
+          <p className="mt-2">
+            You can apply aggregates to any expression—calculated columns, arithmetic, functions, and more.
+          </p>
+
+          <SQLPlayground
+            preset={FINANCIAL_FULL_PRESET}
+            defaultQuery={`-- Aggregating calculated values
+
 SELECT 
   s.SectorName,
   COUNT(*) AS line_item_count,
-  AVG(li.Value) AS avg_value,
-  SUM(li.Value) / 1000000000 AS total_billions,  -- Convert to billions
-  MAX(li.Value) - MIN(li.Value) AS value_range
+  -- Aggregates on calculations
+  ROUND(AVG(li.Value) / 1000000000, 2) AS avg_value_billions,
+  ROUND(SUM(li.Value) / 1000000000, 2) AS total_billions,
+  ROUND((MAX(li.Value) - MIN(li.Value)) / 1000000000, 2) AS range_billions,
+  -- Aggregate of aggregate (not directly possible, but we can calculate)
+  ROUND((MAX(li.Value) / AVG(li.Value)), 2) AS max_to_avg_ratio
 FROM Sectors s
 JOIN Companies c ON s.SectorID = c.SectorID
 JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
 JOIN Line_Items li ON fs.StatementID = li.StatementID
 WHERE li.ItemName = 'Revenue'
+  AND li.Value IS NOT NULL
 GROUP BY s.SectorName
-HAVING COUNT(*) >= 3  -- Only sectors with 3+ revenue line items
+HAVING COUNT(*) >= 3  -- Only sectors with sufficient data
 ORDER BY total_billions DESC;`}
           />
+        </Subsection>
+
+        <Subsection title="Common Aggregation Patterns: Real-World Use Cases">
+          <p>
+            Every database-driven application uses these patterns constantly. Recognizing them helps you write queries faster 
+            and understand what others have built.
+          </p>
+
+          <div className="my-4 space-y-4">
+            <div className="border-l-4 border-blue-500 pl-4">
+              <p className="font-semibold text-blue-900 dark:text-blue-200">1. Time-Series Analysis: Trending Over Time</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> <code>GROUP BY YEAR(date), MONTH(date)</code> or similar
+                <br/>
+                <strong>Use case:</strong> Monthly revenue, daily active users, quarterly growth
+              </p>
+            </div>
+
+            <div className="border-l-4 border-green-500 pl-4">
+              <p className="font-semibold text-green-900 dark:text-green-200">2. Cohort Analysis: Segmenting Users</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> <code>GROUP BY user_segment, acquisition_month</code>
+                <br/>
+                <strong>Use case:</strong> Retention rates, lifetime value by cohort, feature adoption
+              </p>
+            </div>
+
+            <div className="border-l-4 border-orange-500 pl-4">
+              <p className="font-semibold text-orange-900 dark:text-orange-200">3. Leaderboards and Rankings</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> <code>GROUP BY user_id ORDER BY SUM(points) DESC LIMIT 10</code>
+                <br/>
+                <strong>Use case:</strong> Top customers, best-selling products, most active contributors
+              </p>
+            </div>
+
+            <div className="border-l-4 border-purple-500 pl-4">
+              <p className="font-semibold text-purple-900 dark:text-purple-200">4. Business Metrics Dashboards</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> Multiple conditional aggregates in one query
+                <br/>
+                <strong>Use case:</strong> Count active users, paying users, churned users—all at once
+              </p>
+            </div>
+
+            <div className="border-l-4 border-pink-500 pl-4">
+              <p className="font-semibold text-pink-900 dark:text-pink-200">5. Funnel Analysis: Conversion Rates</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> <code>SUM(CASE WHEN stage='checkout' THEN 1 END) / SUM(CASE WHEN stage='view' THEN 1 END)</code>
+                <br/>
+                <strong>Use case:</strong> Signup conversion, purchase funnel, feature adoption rates
+              </p>
+            </div>
+          </div>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- Real-world pattern: Monthly revenue and customer growth
+
+SELECT 
+  strftime('%Y-%m', order_date) AS month,
+  -- Revenue metrics
+  COUNT(DISTINCT order_id) AS total_orders,
+  COUNT(DISTINCT customer_id) AS active_customers,
+  ROUND(SUM(total_amount), 2) AS total_revenue,
+  ROUND(AVG(total_amount), 2) AS avg_order_value,
+  -- Growth indicators
+  ROUND(SUM(total_amount) / COUNT(DISTINCT customer_id), 2) AS revenue_per_customer,
+  -- Order size distribution
+  SUM(CASE WHEN total_amount > 200 THEN 1 ELSE 0 END) AS large_orders,
+  SUM(CASE WHEN total_amount BETWEEN 50 AND 200 THEN 1 ELSE 0 END) AS medium_orders,
+  SUM(CASE WHEN total_amount < 50 THEN 1 ELSE 0 END) AS small_orders
+FROM orders
+GROUP BY month
+ORDER BY month DESC;
+
+-- This single query powers a typical SaaS dashboard!`}
+          />
+        </Subsection>
+
+        <Subsection title='The "Top N Per Group" Challenge'>
+          <p>
+            One of the most common—and frustrating—problems beginners face: "How do I find the highest-paid employee 
+            in <em>each</em> department?" or "Show me the top 3 products in each category." This is called the 
+            "Top N per group" problem.
+          </p>
+
+          <p className="mt-4">
+            <strong>The challenge:</strong> <code>GROUP BY</code> alone can't solve this. It gives you one aggregate 
+            value per group, but you want multiple detail rows per group. Let's see why this is hard, and how to solve it.
+          </p>
+
+          <Callout type="warning" title="Why GROUP BY Doesn't Work">
+            <p className="text-sm">
+              <code>SELECT department, name, MAX(salary)</code> seems logical, but it violates the GROUP BY rule: 
+              you can't SELECT individual row columns (<code>name</code>) when grouping—SQL doesn't know which name to show. 
+              MAX(salary) gives you the highest salary per department, but not <em>who</em> has it.
+            </p>
+          </Callout>
+
+          <p className="mt-4 font-semibold text-gray-900 dark:text-white">
+            Solution 1: Subquery with JOIN (Pre-Window Functions Era)
+          </p>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Find the highest-paid employee in each department
+
+-- Step 1: Find the max salary per department (subquery)
+-- Step 2: JOIN back to employees table to get the full row
+
+SELECT 
+  e.department,
+  e.name,
+  e.salary
+FROM employees e
+INNER JOIN (
+  -- This subquery finds max salary per department
+  SELECT department, MAX(salary) AS max_salary
+  FROM employees
+  GROUP BY department
+) dept_max
+  ON e.department = dept_max.department 
+  AND e.salary = dept_max.max_salary
+ORDER BY e.department;
+
+-- This works, but it's verbose and can be inefficient`}
+          />
+
+          <p className="mt-4 font-semibold text-gray-900 dark:text-white">
+            Solution 2: Correlated Subquery (Elegant but Slow)
+          </p>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Alternative: Correlated subquery approach
+
+SELECT 
+  e.department,
+  e.name,
+  e.salary
+FROM employees e
+WHERE e.salary = (
+  -- For each employee, find the max salary in their department
+  SELECT MAX(e2.salary)
+  FROM employees e2
+  WHERE e2.department = e.department
+)
+ORDER BY e.department;
+
+-- This is more readable but runs the subquery for EVERY row (slow on large tables)`}
+          />
+
+          <p className="mt-4 font-semibold text-gray-900 dark:text-white">
+            The Modern Solution: Window Functions
+          </p>
+
+          <p className="mt-2">
+            Window functions (covered in the next section) solve this elegantly with <code>ROW_NUMBER()</code> or 
+            <code>RANK()</code>. They let you assign rankings <em>within</em> groups without collapsing rows. This is 
+            the preferred approach in modern SQL.
+          </p>
+
+          <CodeExample
+            title="Preview: Window Function Solution (Coming Next!)"
+            code={`-- This is MUCH cleaner (requires window functions)
+SELECT department, name, salary
+FROM (
+  SELECT 
+    department, 
+    name, 
+    salary,
+    ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS rank
+  FROM employees
+) ranked
+WHERE rank = 1;
+
+-- Stay tuned for the Window Functions section!`}
+          />
+        </Subsection>
+
+        <Subsection title="Common Aggregation Mistakes and How to Fix Them">
+          <p>
+            These errors trip up beginners and experienced developers alike. Learn to recognize and avoid them:
+          </p>
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-red-100 dark:bg-red-900/30">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Symptom / Error</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Cause</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Solution</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    "Column must appear in GROUP BY or be used in aggregate"
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Trying to SELECT a column that's not grouped
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Add column to GROUP BY or remove it from SELECT
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    COUNT returns different number than expected
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Using <code>COUNT(column)</code> on column with NULLs
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Use <code>COUNT(*)</code> to count all rows, or handle NULLs explicitly
+                  </td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    "Aggregate functions are not allowed in WHERE"
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Trying to filter on an aggregate in WHERE clause
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Use HAVING instead of WHERE for aggregate filters
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    AVG() doesn't match manual calculation
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Forgot that AVG() excludes NULLs from denominator
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Understand NULL behavior: AVG ignores NULLs, doesn't count them as zeros
+                  </td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Group has too many rows after GROUP BY
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Grouping by wrong column (e.g., ID instead of category)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Verify you're grouping by the right column(s) for your analysis
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Counts inflated after adding JOIN
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    One-to-many JOIN multiplied rows before aggregation
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Use <code>COUNT(DISTINCT id)</code> or aggregate in subquery first
+                  </td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Query is very slow on large dataset
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    No index on GROUP BY or JOIN columns
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Add indexes to columns used in GROUP BY and JOIN ON clauses
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    "No such function: GROUP_CONCAT"
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Using SQLite function in PostgreSQL/MySQL
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Use <code>STRING_AGG()</code> (PostgreSQL) or <code>GROUP_CONCAT()</code> (MySQL/SQLite)
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <Callout type="success" title="Debugging Aggregation Queries">
+            <p className="text-sm font-semibold mb-2">When your GROUP BY query isn't working:</p>
+            <ol className="list-decimal pl-5 space-y-1 text-sm">
+              <li>Remove GROUP BY and run the ungrouped query—do the rows look right?</li>
+              <li>Add one grouping column at a time and check row counts</li>
+              <li>Use <code>LIMIT 100</code> while debugging to speed up iterations</li>
+              <li>Add <code>COUNT(*) AS row_count</code> to see group sizes</li>
+              <li>Check for NULLs with <code>COUNT(*)</code> vs <code>COUNT(column)</code></li>
+              <li>If numbers seem off after JOIN, check for duplicate rows with <code>COUNT(DISTINCT id)</code></li>
+            </ol>
+          </Callout>
         </Subsection>
 
         <Callout type="ai" title="AI-Assisted Aggregation: Generating Summary Reports">
@@ -2575,8 +3437,16 @@ Generate: SQLite query with clear column aliases`}
         </Callout>
 
         <p className="mt-6">
-          Aggregation and GROUP BY are essential for analytical queries. Next, we'll explore subqueries and CTEs—techniques
-          for building complex, multi-step analytical logic.
+          Aggregation and GROUP BY transform SQL from a data retrieval language into an analytical powerhouse. You've learned 
+          the five core aggregates, GROUP BY mechanics, NULL handling, WHERE vs. HAVING, multi-column grouping, conditional 
+          aggregation with CASE, string aggregation, and how to avoid the most common pitfalls. You've also seen real-world 
+          patterns and gotten a preview of the "Top N per group" challenge that will be solved elegantly with window functions.
+        </p>
+
+        <p className="mt-4">
+          Next, we'll explore subqueries and CTEs—techniques for breaking down complex analytical logic into manageable, 
+          readable steps. You'll see how to compose queries like building blocks, making even the most intricate data 
+          questions tractable.
         </p>
       </Section>
 
@@ -2602,19 +3472,25 @@ Generate: SQLite query with clear column aliases`}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
             <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Scalar Subquery</h4>
-              <p className="text-sm">Returns a single value (one row, one column). Use with =, &lt;, &gt;, etc.</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">Returns a single value (one row, one column). Use with =, &lt;, &gt;, etc.</p>
             </div>
 
             <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Row Subquery</h4>
-              <p className="text-sm">Returns a single row with multiple columns. Rarely used in practice.</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">Returns a single row with multiple columns. Rarely used in practice.</p>
             </div>
 
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:border-gray-700">
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Table Subquery</h4>
-              <p className="text-sm">Returns multiple rows. Use with IN, EXISTS, or as a derived table in FROM.</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">Returns multiple rows. Use with IN, EXISTS, or as a derived table in FROM.</p>
             </div>
           </div>
+
+          <p className="mt-4">
+            Let's explore these types in action. The playground below demonstrates both <strong>scalar subqueries</strong> 
+            (returning a single value for comparison) and <strong>table subqueries</strong> (returning multiple rows for 
+            use with IN):
+          </p>
 
           <SQLPlayground
             preset={EMPLOYEES_PRESET}
@@ -2714,7 +3590,18 @@ ORDER BY e1.department, e1.salary DESC;`}
         <Subsection title="EXISTS and NOT EXISTS: Testing for Existence">
           <p>
             <code>EXISTS</code> is a special operator that returns TRUE if a subquery returns any rows. It's optimized to stop
-            as soon as it finds the first match (unlike IN, which processes all results).
+            as soon as it finds the first match (unlike IN, which processes all results). This makes it significantly faster 
+            for checking existence, especially with large datasets.
+          </p>
+
+          <p className="mt-4">
+            <code>NOT EXISTS</code> is the inverse—it returns TRUE if the subquery returns <em>no</em> rows. This is perfect 
+            for finding "missing" relationships: customers who haven't ordered, products with no reviews, users who haven't 
+            logged in.
+          </p>
+
+          <p className="mt-4">
+            Here's how to use both for common analytical questions:
           </p>
 
           <SQLPlayground
@@ -2753,29 +3640,53 @@ ORDER BY last_name, first_name;`}
 
         <Subsection title="Common Table Expressions (CTEs): WITH Clause">
           <p>
-            <strong>CTEs</strong> (Common Table Expressions) provide a cleaner, more readable way to write complex queries.
-            Think of them as named temporary result sets that exist only for the duration of the query.
+            <strong>CTEs</strong> (Common Table Expressions) are one of SQL's most powerful features for writing maintainable, 
+            readable queries. Introduced with the <code>WITH</code> clause, CTEs let you break complex queries into named, 
+            logical steps—like defining variables or functions before using them.
           </p>
+
+          <p className="mt-4">
+            Think of a CTE as a temporary, named result set that exists only for the duration of your query. Instead of deeply 
+            nested subqueries that are hard to read and debug, you write a series of clear, sequential transformations. Each CTE 
+            can reference previously defined CTEs, building up complex logic step by step.
+          </p>
+
+          <Callout type="info" title="Why Use CTEs Instead of Subqueries?">
+            <ul className="list-disc pl-5 space-y-2 text-sm">
+              <li><strong>Readability:</strong> Name your intermediate results meaningfully (<code>high_value_customers</code>, not <code>subquery3</code>)</li>
+              <li><strong>Maintainability:</strong> Modify one CTE without touching the rest of the query</li>
+              <li><strong>Debuggability:</strong> Test each CTE independently by selecting from it directly</li>
+              <li><strong>Reusability:</strong> Reference the same CTE multiple times in your query (can't do this with subqueries!)</li>
+              <li><strong>Organization:</strong> Present complex logic as a sequence of clear transformations</li>
+            </ul>
+          </Callout>
+
+          <p className="mt-4 font-semibold text-gray-900 dark:text-white">
+            When Should You Use CTEs?
+          </p>
+
+          <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 dark:text-gray-300">
+            <li>When your query has multiple logical steps (aggregate, then filter, then join)</li>
+            <li>When you need to reference the same subquery result multiple times</li>
+            <li>When you're joining complex aggregations together</li>
+            <li>When debugging complex queries (isolate each step)</li>
+            <li>When working with hierarchical data (recursive CTEs)</li>
+            <li>When your team needs to understand or modify your SQL later</li>
+          </ul>
 
           <MermaidDiagram
             caption="CTE Benefits: Readability and Reusability"
             chart={`
-flowchart LR
+flowchart TD
     subgraph Complex["❌ Nested Subqueries"]
-        direction TB
-        C1["😵 Hard to read"]
-        C2["🐛 Hard to debug"]
-        C3["📋 Copy-paste reuse"]
-    end
-    
-    subgraph CTE["✅ CTEs (WITH)"]
-        direction TB
-        T1["✨ Clear step-by-step"]
-        T2["🔍 Test each CTE"]
-        T3["♻️ Reuse by name"]
+        C1["😵 Hard to read"] ~~~ C2["🐛 Hard to debug"] ~~~ C3["📋 Copy-paste reuse"]
     end
     
     Complex ==> |"Refactor"| CTE
+    
+    subgraph CTE["✅ CTEs (WITH)"]
+        T1["✨ Clear step-by-step"] ~~~ T2["🔍 Test each CTE"] ~~~ T3["♻️ Reuse by name"]
+    end
             `}
           />
 
@@ -2798,6 +3709,12 @@ SELECT * FROM cte1
 JOIN cte2 ON ...
 JOIN cte3 ON ...;`}
           />
+
+          <p className="mt-4">
+            Now let's see CTEs in action with a real-world example. This query analyzes customer behavior using a three-step 
+            transformation: first aggregating order statistics, then categorizing customers into tiers, and finally joining with 
+            customer details for a complete report. Notice how each CTE builds on the previous one:
+          </p>
 
           <SQLPlayground
             preset={ECOMMERCE_PRESET}
@@ -2842,9 +3759,76 @@ ORDER BY ct.total_spent DESC;`}
           />
 
           <p className="mt-6">
-            CTEs make complex queries dramatically more readable. Each CTE represents a logical step, and you can test
-            each step independently by selecting from that CTE alone.
+            Notice how this query reads like a story: "First, calculate order stats per customer. Then, categorize them into tiers. 
+            Finally, join with customer details and filter." Compare this to the equivalent nested subquery version—it would be 
+            nearly impossible to understand at a glance.
           </p>
+
+          <Callout type="tip" title="CTE Best Practices">
+            <ul className="list-disc pl-5 space-y-2 text-sm">
+              <li><strong>Name descriptively:</strong> Use clear names like <code>active_customers</code>, not <code>cte1</code></li>
+              <li><strong>One transformation per CTE:</strong> Don't try to do everything in one CTE</li>
+              <li><strong>Comment your intent:</strong> Add a comment above each CTE explaining what it does</li>
+              <li><strong>Test incrementally:</strong> Run <code>SELECT * FROM cte_name</code> to verify each step</li>
+              <li><strong>Order matters:</strong> Each CTE can only reference CTEs defined before it</li>
+              <li><strong>Comma separation:</strong> Multiple CTEs are separated by commas, not semicolons!</li>
+            </ul>
+          </Callout>
+
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            CTE Performance Note
+          </p>
+
+          <p className="mt-2">
+            In most databases, CTEs are <strong>optimization fences</strong>—the database optimizer treats each CTE as a 
+            separate step. This can sometimes be slower than a single complex query, but the readability and maintainability 
+            benefits usually far outweigh minor performance differences. Modern database optimizers (PostgreSQL 12+, SQL Server) 
+            can often "inline" simple CTEs automatically.
+          </p>
+
+          <p className="mt-4">
+            <strong>Pro tip:</strong> If you need to reference the same complex calculation multiple times in a query, CTEs 
+            can actually <em>improve</em> performance by computing it once instead of multiple times (as you'd have to with 
+            subqueries).
+          </p>
+
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            Real-World CTE Patterns
+          </p>
+
+          <div className="my-4 space-y-3">
+            <div className="border-l-4 border-blue-500 pl-4">
+              <p className="font-semibold text-blue-900 dark:text-blue-200">Pattern 1: Sequential Filters</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <code>WITH active_users AS (...), paying_users AS (SELECT * FROM active_users WHERE ...)</code>
+                <br/>Apply filters one at a time, narrowing down your dataset step by step.
+              </p>
+            </div>
+
+            <div className="border-l-4 border-green-500 pl-4">
+              <p className="font-semibold text-green-900 dark:text-green-200">Pattern 2: Aggregate Then Join</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <code>WITH order_stats AS (SELECT customer_id, SUM(...) FROM orders GROUP BY ...)</code>
+                <br/>Aggregate data first, then join the summary to other tables for enrichment.
+              </p>
+            </div>
+
+            <div className="border-l-4 border-purple-500 pl-4">
+              <p className="font-semibold text-purple-900 dark:text-purple-200">Pattern 3: Multiple Aggregations</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <code>WITH sales_by_month AS (...), sales_by_product AS (...)</code>
+                <br/>Compute different aggregations, then join or UNION them together.
+              </p>
+            </div>
+
+            <div className="border-l-4 border-orange-500 pl-4">
+              <p className="font-semibold text-orange-900 dark:text-orange-200">Pattern 4: Data Enrichment Pipeline</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <code>WITH raw AS (...), cleaned AS (SELECT * FROM raw WHERE ...), enriched AS (...)</code>
+                <br/>Transform raw data through multiple stages before final analysis.
+              </p>
+            </div>
+          </div>
         </Subsection>
 
         <Subsection title="Recursive CTEs: Hierarchies and Graphs">
@@ -2882,6 +3866,13 @@ ORDER BY ct.total_spent DESC;`}
 )
 SELECT * FROM cte_name;`}
           />
+
+          <p className="mt-4">
+            Let's start with a simple example to understand the mechanics. This playground demonstrates recursive CTEs with 
+            two classic use cases: generating a number sequence (the "Hello World" of recursion) and then a practical application 
+            for creating date ranges for reports. Watch how the anchor member starts the recursion and the recursive member 
+            keeps going until the condition is no longer met:
+          </p>
 
           <SQLPlayground
             preset={EMPTY_PRESET}
@@ -2960,27 +3951,41 @@ Add comments explaining each CTE's purpose.`}
           ============================================ */}
       <Section id="section11" title="7. Window Functions: Analytics Without Grouping">
         <p>
-          <strong>Window functions</strong> are one of SQL's most powerful modern features, introduced in SQL:2003. They perform
-          calculations across a "window" of rows related to the current row—<em>without collapsing rows like GROUP BY</em>.
+          <strong>Window functions</strong> are one of SQL's most powerful modern features, introduced in SQL:2003. They solve 
+          a fundamental limitation of SQL: how to perform calculations across related rows <em>without losing the individual row 
+          detail</em>. This is the problem GROUP BY can't solve—it forces you to collapse rows into summaries.
         </p>
 
         <p className="mt-4">
-          Think of window functions as adding a "sidebar calculation" to each row. You get to keep all your individual rows
-          while also seeing aggregate or ranking information computed over related rows.
+          Remember the "Top N per group" challenge from the Aggregation section? Window functions provide the elegant solution. 
+          They let you answer questions like "Show me each employee's salary <em>and</em> their rank within their department" 
+          in a single, clean query—no complex self-joins or correlated subqueries required.
         </p>
 
-        <Callout type="tip" title="Window Functions vs. GROUP BY">
-          <p>
-            <strong>GROUP BY</strong> collapses multiple rows into summary rows (e.g., total sales per department).
-            <br />
-            <strong>Window functions</strong> add calculated columns to existing rows without collapsing (e.g., each employee
-            row shows their rank within their department).
+        <p className="mt-4">
+          Think of window functions as adding a "sidebar calculation" to each row. You keep all your individual rows while also 
+          seeing aggregate, ranking, or comparative information computed across a "window" of related rows.
+        </p>
+
+        <Callout type="tip" title="Window Functions vs. GROUP BY: The Key Difference">
+          <p className="font-semibold mb-2">
+            The fundamental distinction:
           </p>
-          <p className="mt-2">
-            This means you can answer questions like "show each employee's salary <em>and</em> how they rank in their department"
-            in a single query, without joins or subqueries.
+          <ul className="list-disc pl-5 space-y-2 text-sm">
+            <li><strong>GROUP BY</strong> collapses multiple rows into summary rows (5 employees → 3 departments)</li>
+            <li><strong>Window functions</strong> add calculated columns to existing rows (5 employees → 5 employees with rankings)</li>
+          </ul>
+          <p className="mt-3 text-sm">
+            This means you can show <em>both</em> individual detail <em>and</em> group-level insights in the same result set. 
+            It's like having your cake and eating it too—you get the granularity of raw data with the analytical power of aggregation.
           </p>
         </Callout>
+
+        <p className="mt-6">
+          Let's visualize how window functions work with four common patterns:
+        </p>
+
+        <WindowFunctionFigure />
 
         <Subsection title="Ranking Functions: ROW_NUMBER, RANK, DENSE_RANK">
           <p>
@@ -3017,6 +4022,11 @@ Add comments explaining each CTE's purpose.`}
             </table>
           </div>
 
+          <p className="mt-4">
+            Let's see this in action with actual data. The playground below demonstrates all three ranking functions side by side, 
+            so you can compare their behavior when there are ties in the salary values:
+          </p>
+
           <SQLPlayground
             preset={EMPLOYEES_PRESET}
             defaultQuery={`-- Compare ranking functions: Finding top earners
@@ -3044,6 +4054,12 @@ ORDER BY salary DESC, name;
           <p>
             The real power of window functions emerges with <code>PARTITION BY</code>, which divides rows into groups before
             applying the window function. This lets you rank or calculate statistics <em>within each partition</em> independently.
+          </p>
+
+          <p className="mt-4">
+            Here's the key insight: without <code>PARTITION BY</code>, the window function operates over ALL rows. With 
+            <code>PARTITION BY</code>, it resets for each group. This solves the "Top N per group" problem elegantly. Let's see 
+            how to rank employees within their own departments:
           </p>
 
           <SQLPlayground
@@ -3075,7 +4091,13 @@ ORDER BY department, dept_rank;
           <p>
             You can use familiar aggregate functions (<code>SUM</code>, <code>AVG</code>, <code>COUNT</code>, etc.) as window
             functions by adding an <code>OVER</code> clause. This creates powerful analytical capabilities like running totals
-            and moving averages.
+            and moving averages—essential for time-series analysis, financial dashboards, and trend visualization.
+          </p>
+
+          <p className="mt-4">
+            The magic happens with the <strong>window frame specification</strong> (<code>ROWS BETWEEN...</code>), which defines 
+            exactly which rows relative to the current row should be included in the calculation. Let's see running totals and 
+            rolling averages in action:
           </p>
 
           <SQLPlayground
@@ -3193,6 +4215,75 @@ ORDER BY salary DESC;
           />
         </Subsection>
 
+        <Subsection title="Common Window Function Patterns: Real-World Use Cases">
+          <p>
+            Window functions appear constantly in production SQL. Recognizing these patterns helps you write better queries and 
+            understand what colleagues have built. Here are the six most common use cases you'll encounter:
+          </p>
+
+          <div className="my-4 space-y-4">
+            <div className="border-l-4 border-blue-500 pl-4">
+              <p className="font-semibold text-blue-900 dark:text-blue-200">1. 🏆 Leaderboards & Top N Per Group</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> <code>ROW_NUMBER() OVER (PARTITION BY category ORDER BY score DESC)</code>
+                <br/>
+                <strong>Use cases:</strong> Top-selling products per region, highest-rated items per category, best employees per department
+              </p>
+            </div>
+
+            <div className="border-l-4 border-green-500 pl-4">
+              <p className="font-semibold text-green-900 dark:text-green-200">2. 📈 Running Totals & Cumulative Metrics</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> <code>SUM(amount) OVER (ORDER BY date ROWS UNBOUNDED PRECEDING)</code>
+                <br/>
+                <strong>Use cases:</strong> Cumulative revenue dashboards, year-to-date sales, lifetime customer value calculation
+              </p>
+            </div>
+
+            <div className="border-l-4 border-purple-500 pl-4">
+              <p className="font-semibold text-purple-900 dark:text-purple-200">3. 📊 Moving Averages & Trend Smoothing</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> <code>AVG(value) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)</code>
+                <br/>
+                <strong>Use cases:</strong> 7-day rolling averages, smoothing noisy time-series data, stock price moving averages
+              </p>
+            </div>
+
+            <div className="border-l-4 border-orange-500 pl-4">
+              <p className="font-semibold text-orange-900 dark:text-orange-200">4. 📉 Period-over-Period Comparisons</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> <code>LAG(revenue, 1) OVER (PARTITION BY product ORDER BY month)</code>
+                <br/>
+                <strong>Use cases:</strong> Month-over-month growth, same-quarter-last-year comparisons, sequential change analysis
+              </p>
+            </div>
+
+            <div className="border-l-4 border-pink-500 pl-4">
+              <p className="font-semibold text-pink-900 dark:text-pink-200">5. 🎯 Percentile Analysis & Segmentation</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> <code>NTILE(100) OVER (ORDER BY spend)</code> or <code>PERCENT_RANK() OVER (ORDER BY score)</code>
+                <br/>
+                <strong>Use cases:</strong> Customer segmentation (top 10%, bottom quartile), performance distributions, outlier detection
+              </p>
+            </div>
+
+            <div className="border-l-4 border-teal-500 pl-4">
+              <p className="font-semibold text-teal-900 dark:text-teal-200">6. 🔄 Sequential Pattern Detection</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <strong>Pattern:</strong> <code>LEAD(status) OVER (PARTITION BY user_id ORDER BY timestamp)</code>
+                <br/>
+                <strong>Use cases:</strong> User journey analysis (page view sequences), churn prediction (no activity after X days), funnel drop-off detection
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 italic">
+            <strong>Pro tip:</strong> Most analytical queries involve one or more of these six patterns. When facing a complex 
+            analytical question, ask yourself: "Is this fundamentally a ranking problem? A running total? A comparison to previous 
+            rows?" This helps you choose the right window function approach.
+          </p>
+        </Subsection>
+
         <Subsection title="Combining Window Functions: Real-World Analytics">
           <p>
             The true power of window functions shines when you combine multiple in a single query for sophisticated analysis.
@@ -3255,10 +4346,148 @@ Generate: SQLite query using appropriate window functions.`}
           </p>
         </Callout>
 
+        <Subsection title="Common Window Function Mistakes & How to Fix Them">
+          <p>
+            Window functions are powerful but can be tricky. Here are the most common errors beginners (and even experienced developers) 
+            make, along with the fixes:
+          </p>
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">❌ Mistake</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Why It Fails</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">✅ Fix</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                <tr>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    WHERE ROW_NUMBER() = 1
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Window functions can't be used in WHERE—they're evaluated <em>after</em> WHERE
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Use a CTE or subquery, then filter in outer query
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-900/30">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    GROUP BY with window function in SELECT
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Window functions are incompatible with GROUP BY in the same query level
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Do GROUP BY first in a CTE, then apply window functions in outer query
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Forgetting ORDER BY in OVER clause
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Ranking and LAG/LEAD require ORDER BY to be meaningful; results will be arbitrary
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Always specify ORDER BY for ranking, running totals, and LAG/LEAD
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-900/30">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Using PARTITION BY without ORDER BY
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    PARTITION BY divides data; ORDER BY defines sequence. Both are needed for rankings
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    PARTITION BY category ORDER BY score DESC
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Expecting RANK() to skip duplicate ranks
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    RANK() <em>does</em> skip (1,2,2,4); DENSE_RANK() doesn't (1,2,2,3)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Use DENSE_RANK() if you want consecutive ranks (no gaps)
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-900/30">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Window frame issues (ROWS vs RANGE)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    ROWS counts physical rows; RANGE groups by value (can include multiple rows per "position")
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Use ROWS for rolling windows, RANGE for value-based windows
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Not handling NULLs from LAG/LEAD
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    First row has no LAG; last row has no LEAD—returns NULL
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    LAG(col, 1, 0) or COALESCE(LAG(col), 0)
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-900/30">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Duplicate OVER clauses (verbose)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Repeating long OVER(...) clauses makes queries hard to read and maintain
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    Use WINDOW clause: WINDOW w AS (PARTITION BY dept ORDER BY sal)
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <Callout type="tip" title="Debugging Window Functions: A Systematic Approach">
+            <p className="text-sm mb-2"><strong>When your window function query doesn't work:</strong></p>
+            <ol className="list-decimal pl-5 text-sm space-y-1">
+              <li>Remove the window function and verify the base query returns expected data</li>
+              <li>Add just the <code>OVER ()</code> clause (empty) to see if the window function executes at all</li>
+              <li>Add <code>ORDER BY</code> and check if ranking makes sense</li>
+              <li>Add <code>PARTITION BY</code> and verify partitions are correctly formed</li>
+              <li>If filtering results, wrap in a CTE/subquery—never filter window functions in WHERE</li>
+            </ol>
+            <p className="text-sm mt-2 italic">
+              Most window function bugs come from filtering or grouping issues. The CTE wrapper is your best friend!
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Callout type="warning" title="Window Functions and Database Compatibility">
+          <p>
+            While window functions are part of the SQL standard (SQL:2003, SQL:2011), not all databases support all features:
+          </p>
+          <ul className="list-disc pl-5 text-sm mt-2 space-y-1">
+            <li><strong>PostgreSQL, SQL Server, Oracle:</strong> Full support for all window functions</li>
+            <li><strong>MySQL:</strong> Window function support added in MySQL 8.0 (2018)</li>
+            <li><strong>SQLite:</strong> Window function support added in SQLite 3.25.0 (2018)</li>
+          </ul>
+          <p className="mt-2 text-sm">
+            If using an older database, you may need to fall back to self-joins or correlated subqueries for similar functionality.
+          </p>
+        </Callout>
+
         <p className="mt-6">
           Window functions are essential for modern data analysis. They eliminate complex self-joins and correlated subqueries
-          while providing clearer, more maintainable SQL. In the next section, we'll explore additional advanced SQL techniques
-          to round out your toolkit.
+          while providing clearer, more maintainable SQL. Mastering these patterns—from simple rankings to complex analytical 
+          queries—will make you significantly more effective at extracting insights from your data. In the next section, we'll 
+          explore additional advanced SQL techniques to round out your toolkit.
         </p>
       </Section>
 
