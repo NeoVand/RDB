@@ -9,7 +9,8 @@ import { JoinFigure } from '../../components/Content/JoinFigure';
 import { 
   EMPLOYEES_PRESET, 
   EMPTY_PRESET,
-  ECOMMERCE_PRESET
+  ECOMMERCE_PRESET,
+  FINANCIAL_FULL_PRESET
 } from '../../lib/database/presets';
 
 export function Part3_SQL() {
@@ -695,31 +696,31 @@ WHERE phone IS NOT NULL           -- Has a phone number`}
           />
 
           <SQLPlayground
-            preset={EMPLOYEES_PRESET}
+            preset={ECOMMERCE_PRESET}
             defaultQuery={`-- Demonstrate different WHERE clause patterns
 
--- 1. Simple comparison
-SELECT name, department, salary
-FROM employees
-WHERE salary > 80000;
+-- 1. Simple comparison with numbers
+SELECT first_name, last_name, email
+FROM customers
+WHERE customer_id > 5;
 
 -- 2. Multiple conditions with AND
-SELECT name, department, hire_date
-FROM employees
-WHERE department = 'Engineering'
-  AND hire_date < '2021-01-01';
+SELECT first_name, last_name, email
+FROM customers
+WHERE first_name LIKE 'J%'
+  AND last_name LIKE 'S%';
 
 -- 3. Set membership with IN
-SELECT name, department
-FROM employees
-WHERE department IN ('Sales', 'Marketing', 'HR')
-ORDER BY department, name;
+SELECT product_name, category, price
+FROM products
+WHERE category IN ('Electronics', 'Books', 'Clothing')
+ORDER BY category, product_name;
 
 -- 4. Pattern matching with LIKE
-SELECT name, email
-FROM employees
-WHERE email LIKE '%@company.com'
-ORDER BY name;`}
+SELECT first_name, last_name, email
+FROM customers
+WHERE email LIKE '%@gmail.com'
+ORDER BY last_name;`}
           />
 
           <p className="mt-6">
@@ -1306,6 +1307,34 @@ WHERE salary < (SELECT AVG(salary) FROM employees);
           </p>
         </Subsection>
 
+        <Callout type="ai" title="AI-Assisted JOINs: Describing Relationships">
+          <p>
+            AI can generate JOIN queries when you clearly describe your database relationships and what you want to know.
+          </p>
+
+          <div className="mt-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-500 dark:border-teal-700 rounded-lg p-4">
+            <p className="font-semibold text-teal-900 dark:text-teal-200 mb-2">Example Prompt:</p>
+            <pre className="text-sm text-teal-800 dark:text-teal-300 whitespace-pre-wrap">
+{`Schema relationships:
+- Companies (company_id PK, sector_id FK → Sectors)
+- Sectors (sector_id PK)
+- Financial_Statements (statement_id PK, company_id FK → Companies)
+- Line_Items (item_id PK, statement_id FK → Financial_Statements)
+
+Task: Write a query to find all technology companies (sector = 'Technology')
+that reported revenue above $100B in 2024. Show company name, revenue, and
+rank them by revenue descending.
+
+Generate: SQLite-compatible query with clear aliases and comments.`}
+            </pre>
+          </div>
+
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+            <strong>Key to good AI JOIN queries:</strong> Clearly specify PK→FK relationships. AI needs to understand how
+            tables connect to generate correct <code>ON</code> clauses.
+          </p>
+        </Callout>
+
         <Subsection title="INNER JOIN: The Foundation">
           <p>
             <code>INNER JOIN</code> returns only rows where there's a match in <em>both</em> tables. It's the most common JOIN
@@ -1442,7 +1471,7 @@ JOIN table2 t2 ON t1.fk = t2.pk;`}
           />
 
           <SQLPlayground
-            preset={ECOMMERCE_PRESET}
+            preset={FINANCIAL_FULL_PRESET}
             defaultQuery={`-- INNER JOIN: Companies with their sectors
 -- Only returns companies that HAVE a sector
 
@@ -1589,7 +1618,7 @@ WHERE c.CompanyName = 'Apple Inc.'
           </p>
 
           <SQLPlayground
-            preset={ECOMMERCE_PRESET}
+            preset={FINANCIAL_FULL_PRESET}
             defaultQuery={`-- LEFT JOIN: Show ALL companies, with sector info if available
 -- If a company has no sector, show NULL for sector columns
 
@@ -1920,68 +1949,297 @@ ORDER BY e1.name, e2.name;
 
         <Subsection title="Complex Multi-Table JOINs">
           <p>
-            Real-world queries often JOIN three, four, or more tables. The key is building them incrementally and understanding
-            the logical flow:
+            In real-world applications, complex queries routinely JOIN three, four, five, or even more tables. This isn't 
+            an edge case—it's the norm. E-commerce sites join customers, orders, order items, products, and reviews. 
+            Social networks join users, posts, comments, likes, and friendships. Financial systems join accounts, transactions, 
+            categories, budgets, and recurring payments.
+          </p>
+
+          <p className="mt-4">
+            <strong>The good news:</strong> Complex multi-table JOINs follow the same principles as simple two-table JOINs. 
+            The key is approaching them systematically, one relationship at a time, rather than trying to construct the entire 
+            query at once.
+          </p>
+
+          <Callout type="tip" title="Common Real-World Multi-Table JOIN Scenarios">
+            <p className="font-semibold mb-2">You'll encounter these patterns constantly:</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li><strong>E-commerce Analytics:</strong> "Show me total revenue by product category" requires joining: 
+                Orders → OrderItems → Products → Categories</li>
+              <li><strong>User Activity Tracking:</strong> "Which features do premium users engage with most?" needs: 
+                Users → Subscriptions → ActivityLogs → Features</li>
+              <li><strong>Content Moderation:</strong> "Find posts with the most reports from verified users" combines: 
+                Posts → Reports → Users → Verifications</li>
+              <li><strong>Inventory Management:</strong> "Which suppliers provide our best-selling products?" links: 
+                Sales → Products → ProductSuppliers → Suppliers</li>
+              <li><strong>Medical Records:</strong> "Patient diagnosis history with prescribed treatments" spans: 
+                Patients → Visits → Diagnoses → Prescriptions → Medications</li>
+            </ul>
+            <p className="mt-3 text-sm">
+              Notice the pattern: you're traversing a <strong>relationship chain</strong> through your database schema. 
+              Each arrow (→) represents a JOIN operation.
+            </p>
+          </Callout>
+
+          <p className="mt-6 font-semibold text-lg text-gray-900 dark:text-white">
+            The Systematic Approach: From Natural Language to SQL
+          </p>
+
+          <p className="mt-3">
+            Here's a proven methodology for translating complex business questions into multi-table JOINs:
+          </p>
+
+          <div className="bg-slate-50 dark:bg-slate-900/50 border-l-4 border-blue-500 p-5 my-4 space-y-4">
+            <div>
+              <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Step 1: Identify the Entities (Tables)</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Extract all the nouns from your question. These usually map to tables.
+                <br/><strong>Example question:</strong> "Show me customers who bought electronics products in 2024"
+                <br/><strong>Entities:</strong> Customers, Products (electronics), Orders/Purchases (implicit), Time (2024)
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Step 2: Map the Relationship Path</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Draw the path through your schema. How do you get from the first entity to the last?
+                <br/><strong>Path:</strong> Customers → Orders → OrderItems → Products (with category filter)
+                <br/>Each arrow is a JOIN. If you can't connect two entities, you might be missing a table.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Step 3: Identify the "Anchor" Table</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Which table should you start FROM? Usually, it's the primary entity you're asking about.
+                <br/><strong>In our example:</strong> Start FROM Customers (we want to show customers)
+                <br/><strong>Alternative:</strong> If the question was "Show products bought by VIP customers," start FROM Products
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Step 4: Build JOINs Following the Path</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Add one JOIN at a time, in the order of your relationship path. Test after each JOIN.
+                <br/><code className="text-xs bg-slate-200 dark:bg-slate-800 px-1 rounded">FROM Customers c</code>
+                <br/><code className="text-xs bg-slate-200 dark:bg-slate-800 px-1 rounded">JOIN Orders o ON c.CustomerID = o.CustomerID</code>
+                <br/><code className="text-xs bg-slate-200 dark:bg-slate-800 px-1 rounded">JOIN OrderItems oi ON o.OrderID = oi.OrderID</code>
+                <br/><code className="text-xs bg-slate-200 dark:bg-slate-800 px-1 rounded">JOIN Products p ON oi.ProductID = p.ProductID</code>
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Step 5: Add Filters and Aggregations</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Now apply your WHERE conditions, GROUP BY, and SELECT clauses.
+                <br/><code className="text-xs bg-slate-200 dark:bg-slate-800 px-1 rounded">WHERE p.Category = 'Electronics' AND YEAR(o.OrderDate) = 2024</code>
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Step 6: Verify and Debug</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Use <code>COUNT(*)</code> or <code>LIMIT 10</code> to check intermediate results. Do you have more or fewer 
+                rows than expected? An unexpected explosion of rows often means a missing or incorrect join condition.
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-6">
+            Let's apply this methodology to a concrete example:
           </p>
 
           <SQLPlayground
-            preset={ECOMMERCE_PRESET}
-            defaultQuery={`-- Complex 4-table JOIN: Full financial analysis
--- Goal: Show average revenue per sector
+            preset={FINANCIAL_FULL_PRESET}
+            defaultQuery={`-- Business Question: "Show me total revenue by sector, 
+-- but only for companies that have filed statements in 2023"
 
+-- Step 1: Entities identified: Sectors, Companies, Statements, Line_Items (revenue)
+-- Step 2: Path: Sectors → Companies → Financial_Statements → Line_Items
+-- Step 3: Anchor: Sectors (we want results grouped by sector)
+-- Step 4: Build JOINs incrementally (see below)
+
+-- Start with the anchor
 SELECT 
   s.SectorName,
-  COUNT(DISTINCT c.CompanyID) AS company_count,
-  COUNT(DISTINCT fs.StatementID) AS statement_count,
-  AVG(li.Value) AS avg_revenue
+  COUNT(DISTINCT c.CompanyID) AS companies_with_statements,
+  SUM(li.Value) AS total_revenue,
+  AVG(li.Value) AS avg_revenue_per_statement
 FROM Sectors s
+-- First JOIN: Sectors → Companies
 JOIN Companies c 
   ON s.SectorID = c.SectorID
+-- Second JOIN: Companies → Financial_Statements
 JOIN Financial_Statements fs 
   ON c.CompanyID = fs.CompanyID
+-- Third JOIN: Financial_Statements → Line_Items
 JOIN Line_Items li 
   ON fs.StatementID = li.StatementID
+-- Step 5: Apply filters
 WHERE li.ItemName = 'Revenue'
+  AND fs.Year = 2023
+-- Step 6: Aggregate and sort
 GROUP BY s.SectorName
-ORDER BY avg_revenue DESC;
+ORDER BY total_revenue DESC;
 
--- Tip: Build complex JOINs incrementally
--- Start with 2 tables, verify results, then add the 3rd, etc.`}
+-- Try: Comment out the last JOIN and see what happens
+-- Try: Add COUNT(fs.StatementID) to see statement counts per sector`}
+          />
+
+          <Callout type="success" title="Pro Tips for Complex JOINs">
+            <ul className="list-disc pl-5 space-y-2 text-sm">
+              <li><strong>Build incrementally:</strong> Start with 2 tables, verify the results, then add the 3rd, then the 4th. 
+                Don't try to write all JOINs at once.</li>
+              <li><strong>Use meaningful aliases:</strong> <code>c</code> for Companies, <code>o</code> for Orders. 
+                This makes complex queries readable.</li>
+              <li><strong>Comment your JOINs:</strong> Add comments explaining what each JOIN accomplishes, especially in queries 
+                with 5+ tables.</li>
+              <li><strong>Watch for Cartesian explosions:</strong> If you suddenly have millions of rows from three small tables, 
+                you're missing a join condition.</li>
+              <li><strong>Consider LEFT JOIN carefully:</strong> In a chain like A → B → C, if B → C is a LEFT JOIN but A → B is INNER, 
+                you'll lose rows from A. Think through the logic.</li>
+              <li><strong>Use DISTINCT when needed:</strong> Multi-table JOINs can create duplicate rows. <code>DISTINCT</code> or 
+                <code>COUNT(DISTINCT ...)</code> helps.</li>
+            </ul>
+          </Callout>
+
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            Example 2: A More Complex Scenario
+          </p>
+
+          <p className="mt-3">
+            Let's tackle a harder question that requires careful thought about the join structure:
+          </p>
+
+          <SQLPlayground
+            preset={FINANCIAL_FULL_PRESET}
+            defaultQuery={`-- Business Question: "For each sector, show the company with the 
+-- highest revenue in 2023, and that company's total statement count"
+
+-- This is complex because we need:
+-- 1. Revenue aggregated by company (Companies → Statements → Line_Items)
+-- 2. Total statement counts per company
+-- 3. Only the TOP company per sector
+-- 4. All while preserving sector information
+
+-- Approach: Use a subquery to find max revenue per sector first
+SELECT 
+  s.SectorName,
+  c.CompanyName,
+  c.StockTicker,
+  SUM(CASE WHEN li.ItemName = 'Revenue' THEN li.Value END) AS total_revenue_2023,
+  COUNT(DISTINCT fs.StatementID) AS total_statements
+FROM Sectors s
+JOIN Companies c ON s.SectorID = c.SectorID
+JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
+LEFT JOIN Line_Items li ON fs.StatementID = li.StatementID
+WHERE fs.Year = 2023
+GROUP BY s.SectorName, c.CompanyID, c.CompanyName, c.StockTicker
+ORDER BY s.SectorName, total_revenue_2023 DESC;
+
+-- This gives us ALL companies ranked by revenue within each sector
+-- To get just the TOP company per sector, we'd use a window function
+-- (covered later in Part III) or filter in application code
+
+-- Try: Remove the CASE statement and see what happens
+-- Try: Change LEFT JOIN to INNER JOIN - what rows disappear?`}
           />
 
           <p className="mt-6">
-            <strong>Pro tip:</strong> When debugging complex JOINs, add <code>COUNT(*)</code> at each step to see how many
-            rows you're getting. Unexpected row counts often indicate missing or incorrect join conditions.
+            Notice how we had to think carefully about:
           </p>
-        </Subsection>
+          <ul className="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-300">
+            <li>Using <code>LEFT JOIN</code> for Line_Items (what if a statement has no line items yet?)</li>
+            <li>Using <code>CASE</code> to filter to only Revenue items within the SUM</li>
+            <li>Grouping by all columns from Sectors and Companies we want to display</li>
+            <li>The ORDER BY to show highest revenue first (though this doesn't limit to top 1 per sector)</li>
+          </ul>
 
-        <Callout type="ai" title="AI-Assisted JOINs: Describing Relationships">
-          <p>
-            AI can generate JOIN queries when you clearly describe your database relationships and what you want to know.
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            When Multi-Table JOINs Go Wrong: Common Mistakes
           </p>
 
-          <div className="mt-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-500 dark:border-teal-700 rounded-lg p-4">
-            <p className="font-semibold text-teal-900 dark:text-teal-200 mb-2">Example Prompt:</p>
-            <pre className="text-sm text-teal-800 dark:text-teal-300 whitespace-pre-wrap">
-{`Schema relationships:
-- Companies (company_id PK, sector_id FK → Sectors)
-- Sectors (sector_id PK)
-- Financial_Statements (statement_id PK, company_id FK → Companies)
-- Line_Items (item_id PK, statement_id FK → Financial_Statements)
-
-Task: Write a query to find all technology companies (sector = 'Technology')
-that reported revenue above $100B in 2024. Show company name, revenue, and
-rank them by revenue descending.
-
-Generate: SQLite-compatible query with clear aliases and comments.`}
-            </pre>
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-red-100 dark:bg-red-900/30">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Symptom</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Likely Cause</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Solution</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Millions of rows from small tables</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Missing or incorrect join condition (accidental CROSS JOIN)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Verify every JOIN has an ON clause matching the correct keys</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Zero rows returned unexpectedly</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Using INNER JOIN when you need LEFT JOIN</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Change to LEFT JOIN for optional relationships</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Duplicate rows for same entity</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">One-to-many relationship creating cartesian product</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use DISTINCT, or rethink aggregation strategy</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Aggregations returning wrong numbers</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Counting/summing across duplicated rows from JOINs</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use COUNT(DISTINCT ...) or SUM(DISTINCT ...), or subqueries</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Query takes forever to run</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Missing indexes on join columns</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Add indexes to foreign key columns (covered in Query Optimization)</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
-          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-            <strong>Key to good AI JOIN queries:</strong> Clearly specify PK→FK relationships. AI needs to understand how
-            tables connect to generate correct <code>ON</code> clauses.
+          <Callout type="ai" title="AI-Assisted Multi-Table JOIN Construction">
+            <p>
+              AI excels at translating complex natural language queries into multi-table JOINs—but you need to provide 
+              schema context. Here's how to prompt effectively:
+            </p>
+
+            <div className="mt-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-500 dark:border-teal-700 rounded-lg p-4">
+              <p className="font-semibold text-teal-900 dark:text-teal-200 mb-2">Effective Prompt Template:</p>
+              <pre className="text-sm text-teal-800 dark:text-teal-300 whitespace-pre-wrap">
+{`Schema:
+- Customers (customer_id PK, name, email)
+- Orders (order_id PK, customer_id FK, order_date, total)
+- OrderItems (item_id PK, order_id FK, product_id FK, quantity, price)
+- Products (product_id PK, name, category, price)
+
+Relationships:
+- Customers → Orders (one-to-many)
+- Orders → OrderItems (one-to-many)
+- Products → OrderItems (one-to-many)
+
+Question: Show me the top 5 product categories by revenue in 2024, 
+including how many unique customers bought from each category.
+
+Requirements:
+- Use PostgreSQL syntax
+- Include comments explaining each JOIN
+- Handle NULL values appropriately`}
+              </pre>
+            </div>
+
+            <p className="mt-4 text-sm">
+              <strong>Key point:</strong> Even with AI help, <em>you</em> need to verify the logic. Run the query with 
+              <code>LIMIT 10</code> first, check the row count, and ensure the JOINs make sense for your data model.
+            </p>
+          </Callout>
+
+          <p className="mt-6">
+            Multi-table JOINs are a core skill that you'll use daily as a developer or analyst. Start simple, build incrementally, 
+            test frequently, and soon you'll be confidently navigating schemas with dozens of tables. The methodology above works 
+            whether you're joining 3 tables or 13.
           </p>
-        </Callout>
+        </Subsection>
 
         <p className="mt-6">
           Mastering JOINs unlocks the full power of relational databases. Next, we'll explore how to summarize and aggregate
@@ -2262,7 +2520,7 @@ ORDER BY avg_salary DESC;`}
           </p>
 
           <SQLPlayground
-            preset={ECOMMERCE_PRESET}
+            preset={FINANCIAL_FULL_PRESET}
             defaultQuery={`-- Advanced aggregation techniques
 
 -- COUNT DISTINCT: Count unique values
@@ -3937,7 +4195,7 @@ flowchart LR
         </p>
 
         <SQLPlayground
-          preset={ECOMMERCE_PRESET}
+          preset={FINANCIAL_FULL_PRESET}
           defaultQuery={`-- This query demonstrates logical execution order
 -- Study how aliases can/can't be used in different clauses
 
