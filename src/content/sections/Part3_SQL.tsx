@@ -4,711 +4,4854 @@ import { CodeExample } from '../../components/Content/CodeExample';
 import { MermaidDiagram } from '../../components/Content/MermaidDiagram';
 import { SQLPlayground } from '../../components/Playground/SQLPlayground';
 import { Callout } from '../../components/Callout';
-import { FINANCIAL_FULL_PRESET, EMPLOYEES_PRESET, EMPTY_PRESET } from '../../lib/database/presets';
+import { CRUDFigure } from '../../components/Content/CRUDFigure';
+import { JoinFigure } from '../../components/Content/JoinFigure';
+import { 
+  EMPLOYEES_PRESET, 
+  EMPTY_PRESET,
+  ECOMMERCE_PRESET
+} from '../../lib/database/presets';
 
 export function Part3_SQL() {
   return (
     <>
-      <Section id="part3" title="Part III: The Language of Data - Mastering SQL" level={1}>
+      <Section id="part3" title="Part III: Mastering SQL - The Language of Data" level={1}>
         <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-          This part transitions from the theory and design of databases to the practical language used to 
-          create, manipulate, and retrieve data from them: Structured Query Language (SQL).
+          Having established the theoretical foundations and design principles of relational databases in Parts I and II,
+          we now turn to the practical language that brings these concepts to life: <strong>Structured Query Language (SQL)</strong>.
+          This part will take you from fundamental operations to advanced techniques, with a deep understanding of how SQL
+          actually works under the hood, and how to leverage modern AI tools to accelerate your SQL development.
+        </p>
+        
+        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
+          SQL is more than just syntax—it's a declarative paradigm that has powered data-driven applications for over four decades.
+          By the end of this part, you'll not only write sophisticated queries but understand the internals of query execution,
+          optimization strategies, and how to prompt AI assistants effectively for SQL development.
         </p>
       </Section>
 
-      <Section id="section6" title="Introduction to SQL - Speaking to the Database" level={2}>
+      {/* SECTION 1: Introduction to SQL */}
+      <Section id="section6" title="Introduction to SQL - The Universal Language of Data" level={2}>
         <p>
-          <strong>Structured Query Language (SQL)</strong> is the standard, domain-specific programming language 
-          used to communicate with and manage data held in a relational database management system (RDBMS).
+          <strong>Structured Query Language (SQL)</strong> is the standard language for interacting with relational database
+          management systems (RDBMS). Whether you're querying a small SQLite database on your phone or a massive PostgreSQL
+          cluster serving millions of users, SQL is the common tongue.
         </p>
 
-        <Subsection title='The Declarative Approach ("What," not "How")'>
+        <p className="mt-6 text-sm text-gray-600 dark:text-gray-400">
+          <strong>Note:</strong> For the fascinating origin story of SQL and its creators Donald Chamberlin and Raymond Boyce,
+          see the historical note in{' '}
+          <a href="#section1" className="text-blue-600 dark:text-blue-400 hover:underline">Part I</a>.
+        </p>
+
+        <p className="mt-6">
+          What makes SQL remarkable is its longevity and ubiquity. The SQL you learn today will remain relevant for decades,
+          as it has since the 1970s. While programming languages come and go, SQL endures.
+        </p>
+
+        <Subsection title='The Declarative Paradigm: "What," Not "How"'>
           <p>
-            SQL is a <strong>declarative language</strong>. This means you specify <em>what</em> data you want 
-            to retrieve or modify, rather than providing step-by-step instructions for <em>how</em> to accomplish 
-            the task.
+            SQL is fundamentally different from imperative programming languages like Python, Java, or C++. It's a{' '}
+            <strong>declarative language</strong>, meaning you describe <em>what</em> result you want, not <em>how</em>{' '}
+            to compute it.
+          </p>
+
+          <Callout type="tip" title="Analogy: Ordering Food vs. Cooking">
+            <p>
+              Think of SQL like ordering at a restaurant. You don't tell the chef <em>how</em> to make your meal
+              ("First, heat the pan to 350°F, then sauté the onions for 3 minutes..."). Instead, you simply declare
+              <em>what</em> you want: "I'll have the salmon with roasted vegetables."
+            </p>
+            <p className="mt-2">
+              The chef (database query optimizer) decides the most efficient way to prepare your order based on available
+              ingredients, equipment, and expertise. Similarly, SQL lets you declare your data requirements, and the database
+              engine determines the optimal execution plan.
+            </p>
+          </Callout>
+
+          <p className="mt-4">
+            Let's see this in action with a simple example:
           </p>
 
           <CodeExample
-            title="Example: Declarative SQL query"
-            code={`SELECT CompanyName
+            title="Declarative SQL Query"
+            code={`-- Find all technology companies founded after 2000
+SELECT CompanyName, Founded, StockTicker
 FROM Companies
 WHERE SectorID = (
   SELECT SectorID 
   FROM Sectors 
   WHERE SectorName = 'Technology'
-);`}
+)
+AND Founded > 2000
+ORDER BY Founded ASC;`}
           />
 
-          <p>
-            You simply declare the desired outcome—the database's <strong>query optimizer</strong> determines 
-            the most efficient execution plan to retrieve the requested data.
+          <p className="mt-4">
+            Notice what we <em>didn't</em> specify: which index to use, how to scan the table, whether to use a hash join
+            or nested loop, what order to execute the subquery, or where the data is physically stored. The database's{' '}
+            <strong>query optimizer</strong> handles all of these implementation details automatically.
           </p>
         </Subsection>
 
-        <Subsection title="The Sublanguages of SQL">
-          <div className="overflow-x-auto my-4">
-            <table className="min-w-full text-sm">
+        <p className="mt-6">
+          This declarative nature is SQL's superpower. It provides a stable, logical interface that remains unchanged
+          even as database internals evolve. Physical storage can move from hard drives to SSDs, indexes can be restructured,
+          and query optimizers can improve—all without breaking your SQL code.
+        </p>
+
+        <Subsection title="SQL Timeline: From SEQUEL to Modern SQL">
+          <p>
+            SQL's evolution over five decades reflects the changing needs of data management:
+          </p>
+
+          <div className="my-6 overflow-x-auto">
+            <table className="min-w-full text-sm border-collapse">
               <thead>
-                <tr>
-                  <th>Sublanguage</th>
-                  <th>Purpose</th>
-                  <th>Commands</th>
+                <tr className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900">
+                  <th className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left font-bold text-gray-900 dark:text-gray-100">
+                    Year
+                  </th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left font-bold text-gray-900 dark:text-gray-100">
+                    Milestone
+                  </th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left font-bold text-gray-900 dark:text-gray-100">
+                    Key Features
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="font-semibold">DDL</td>
-                  <td>Data Definition Language</td>
-                  <td>CREATE, ALTER, DROP</td>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold text-blue-700 dark:text-blue-400">
+                    1974
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold">
+                    SEQUEL Prototype
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3">
+                    IBM System R - first implementation
+                  </td>
                 </tr>
-                <tr>
-                  <td className="font-semibold">DML</td>
-                  <td>Data Manipulation Language</td>
-                  <td>INSERT, UPDATE, DELETE</td>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold text-blue-700 dark:text-blue-400">
+                    1979
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold">
+                    Renamed to SQL
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3">
+                    Oracle releases first commercial RDBMS
+                  </td>
                 </tr>
-                <tr>
-                  <td className="font-semibold">DQL</td>
-                  <td>Data Query Language</td>
-                  <td>SELECT</td>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold text-blue-700 dark:text-blue-400">
+                    1986
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold">
+                    SQL-86 (ANSI)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3">
+                    First official standardization
+                  </td>
                 </tr>
-                <tr>
-                  <td className="font-semibold">DCL</td>
-                  <td>Data Control Language</td>
-                  <td>GRANT, REVOKE</td>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold text-purple-700 dark:text-purple-400">
+                    1992
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold">
+                    SQL-92
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3">
+                    Major expansion: integrity constraints, schema manipulation
+                  </td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold text-purple-700 dark:text-purple-400">
+                    1999
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold">
+                    SQL:1999
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3">
+                    Triggers, recursive queries, regular expressions
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold text-purple-700 dark:text-purple-400">
+                    2003
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold">
+                    SQL:2003
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3">
+                    Window functions, XML support, MERGE statement
+                  </td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold text-indigo-700 dark:text-indigo-400">
+                    2006-2016
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold">
+                    SQL:2006-2016
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3">
+                    JSON support, temporal databases, pattern matching
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold text-indigo-700 dark:text-indigo-400">
+                    2023
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 font-semibold">
+                    SQL:2023
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-3">
+                    Graph queries, property graphs, multi-dimensional arrays
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
+              SQL Evolution Timeline: Five Decades of Innovation
+            </p>
+          </div>
+
+          <p className="mt-4">
+            Each SQL standard adds new features while maintaining backward compatibility—a testament to SQL's robust design.
+            However, real-world SQL implementations vary by vendor, which brings us to an important distinction.
+          </p>
+        </Subsection>
+
+        <Callout type="info" title="SQL Dialects and SQLite">
+          <p>
+            While ANSI/ISO SQL provides a common standard, each database system has its own <strong>dialect</strong>:
+            PostgreSQL, MySQL, SQL Server, Oracle, and SQLite all implement the standard differently and add vendor-specific extensions.
+          </p>
+          <p className="mt-2">
+            In this course, our interactive playgrounds use <strong>SQLite</strong>, a lightweight, serverless database engine.
+            SQLite is an excellent learning environment and powers billions of devices worldwide (it's in your phone, browser, and operating system).
+          </p>
+          <p className="mt-2">
+            We'll note when features differ across dialects, but the core SQL concepts you learn here translate to any RDBMS.
+          </p>
+        </Callout>
+
+        <Subsection title="The Sublanguages of SQL">
+          <p>
+            SQL is actually a collection of sublanguages, each serving a specific purpose. Understanding these categories
+            helps you grasp SQL's comprehensive nature:
+          </p>
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Sublanguage</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Full Name</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Key Commands</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">DDL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Data Definition Language</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Define and modify database structure</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">CREATE, ALTER, DROP</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">DML</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Data Manipulation Language</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Modify data within tables</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">INSERT, UPDATE, DELETE</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">DQL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Data Query Language</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Retrieve data from tables</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SELECT</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">DCL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Data Control Language</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Control access and permissions</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">GRANT, REVOKE</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">TCL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Transaction Control Language</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Manage database transactions</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">BEGIN, COMMIT, ROLLBACK</td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </Subsection>
-      </Section>
 
-      <Section id="section7" title="The Four Horsemen of DML - CRUD Operations" level={2}>
-        <p>
-          The four fundamental operations that form the basis of most data interaction are <strong>Create, 
-          Read, Update, and Delete</strong>, often abbreviated as CRUD.
+          <p className="mt-4">
+            In this part, we'll focus primarily on <strong>DQL</strong> (querying data), <strong>DML</strong> (manipulating data),
+            and touch on <strong>DDL</strong> (creating structures) and <strong>TCL</strong> (transactions). DCL is typically
+            covered in database administration courses.
+          </p>
+        </Subsection>
+
+        <p className="mt-6">
+          Now that we understand what SQL is and where it came from, let's write our first query:
         </p>
 
-        <Subsection title="CREATE (INSERT)">
+        <SQLPlayground
+          preset={EMPTY_PRESET}
+          defaultQuery={`-- Your first SQL query: Hello, World!
+-- This demonstrates SQL's declarative nature
+
+SELECT 'Hello, SQL!' AS message;
+
+-- Try modifying the message or adding more columns:
+SELECT 
+  'Hello, SQL!' AS greeting,
+  'Welcome to Part III' AS subtitle,
+  2024 AS year;`}
+        />
+
+        <p className="mt-4">
+          Simple, yet profound. With just a few words, you've instructed the database to return data. No loops, no variables,
+          no explicit memory management—just a clear declaration of intent. This is the essence of SQL.
+        </p>
+      </Section>
+
+      {/* SECTION 2: CRUD Operations - The Foundation */}
+      <Section id="section7" title="CRUD Operations - The Foundation of Data Manipulation" level={2}>
+        <p>
+          Let's start building your practical SQL skills! Every database interaction ultimately boils down to four fundamental
+          operations, collectively known as <strong> CRUD</strong>: <strong>Create</strong>, <strong>Read</strong>,{' '}
+          <strong>Update</strong>, and <strong>Delete</strong>. These are the building blocks of all data manipulation.
+        </p>
+
+        <CRUDFigure />
+
+        <p className="mt-4">
+          These operations correspond to SQL's Data Manipulation Language (DML) commands. Master these, and you'll be able to
+          handle the vast majority of real-world database tasks. In this section, we'll not only learn the syntax but also
+          explore best practices, common pitfalls, and how to leverage AI assistance for writing better SQL.
+        </p>
+
+        <p className="mt-4">
+          Let's see these operations in action with concrete examples. Throughout this section, we'll use actual tables with real data
+          to make each concept crystal clear. If anything seems confusing, remember that the interactive playgrounds are there for you
+          to experiment—jump ahead and try the queries yourself!
+        </p>
+
+        <Subsection title="CREATE: Adding Data with INSERT">
           <p>
-            The <code>INSERT INTO</code> statement adds new rows of data into a table.
+            The <code>INSERT INTO</code> statement adds new rows to a table. Let's see what this looks like with actual data.
+          </p>
+
+          <p className="mt-4">
+            Imagine you have an <strong>Employees</strong> table. Here's what happens when you insert a new employee:
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+            {/* Before INSERT */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">Before INSERT</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">EmployeeID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Name</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Department</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Salary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">1</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Alice Johnson</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Engineering</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">95000</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">2</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Bob Smith</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Sales</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">78000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">2 rows in table</p>
+            </div>
+
+            {/* After INSERT */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">After INSERT</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">EmployeeID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Name</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Department</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Salary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">1</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Alice Johnson</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Engineering</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">95000</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">2</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Bob Smith</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Sales</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">78000</td>
+                    </tr>
+                    <tr className="bg-green-50 dark:bg-green-900/30">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold">3</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold">Carol Williams</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold">Marketing</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold">82000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">3 rows in table</p>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            <strong>The SQL:</strong> <code>INSERT INTO Employees (EmployeeID, Name, Department, Salary) VALUES (3, 'Carol Williams', 'Marketing', 82000);</code>
+            <br />✅ <strong>Result:</strong> A new row (highlighted in green) is added to the table. The existing rows remain unchanged.
+          </p>
+
+          <p className="mt-6">
+            Now let's learn the syntax and see it in action:
+          </p>
+
+          <CodeExample
+            title="INSERT Statement Syntax"
+            code={`-- Basic syntax: explicitly specify columns (recommended)
+INSERT INTO table_name (column1, column2, column3)
+VALUES (value1, value2, value3);
+
+-- Multi-row INSERT (efficient for bulk operations)
+INSERT INTO table_name (column1, column2, column3)
+VALUES 
+  (value1a, value2a, value3a),
+  (value1b, value2b, value3b),
+  (value1c, value2c, value3c);
+
+-- INSERT from SELECT (copy data from another query)
+INSERT INTO destination_table (col1, col2)
+SELECT col_a, col_b
+FROM source_table
+WHERE condition;`}
+          />
+
+          <p className="mt-4">
+            Let's see INSERT in action with a practical example:
           </p>
 
           <SQLPlayground
             preset={EMPTY_PRESET}
-            defaultQuery={`-- First, create a table
+            defaultQuery={`-- First, create a table to insert data into
 CREATE TABLE Companies (
   CompanyID INTEGER PRIMARY KEY,
   CompanyName TEXT NOT NULL,
-  StockTicker TEXT UNIQUE
+  StockTicker TEXT UNIQUE,
+  Founded INTEGER,
+  SectorID INTEGER
 );
 
--- Insert a single row
-INSERT INTO Companies (CompanyID, CompanyName, StockTicker)
-VALUES (101, 'Apple Inc.', 'AAPL');
+-- Insert a single company
+INSERT INTO Companies (CompanyID, CompanyName, StockTicker, Founded, SectorID)
+VALUES (101, 'Apple Inc.', 'AAPL', 1976, 1);
 
--- Insert multiple rows at once
-INSERT INTO Companies (CompanyID, CompanyName, StockTicker) VALUES
-  (102, 'Microsoft Corp.', 'MSFT'),
-  (103, 'NVIDIA Corp.', 'NVDA');
+-- View what we just inserted
+SELECT * FROM Companies;
 
--- View the results
-SELECT * FROM Companies;`}
+-- Now add more companies using multi-row INSERT (more efficient)
+INSERT INTO Companies (CompanyID, CompanyName, StockTicker, Founded, SectorID)
+VALUES 
+  (102, 'Microsoft Corporation', 'MSFT', 1975, 1),
+  (103, 'Alphabet Inc.', 'GOOGL', 1998, 1),
+  (104, 'NVIDIA Corporation', 'NVDA', 1993, 1);
+
+-- View all companies
+SELECT CompanyName, StockTicker, Founded 
+FROM Companies 
+ORDER BY Founded;`}
           />
 
           <Callout type="tip" title="INSERT Best Practices">
             <ul className="list-disc pl-5 space-y-1">
-              <li>Always specify column names (don't rely on column order)</li>
-              <li>Use multi-row INSERT for better performance when adding multiple records</li>
-              <li>Validate data before INSERT to avoid constraint violations</li>
-              <li>Consider using transactions when inserting related data across tables</li>
+              <li><strong>Always specify column names:</strong> Don't rely on column order. It makes your code fragile when the table structure changes.</li>
+              <li><strong>Use multi-row INSERT for bulk operations:</strong> Inserting 1000 rows with one statement is dramatically faster than 1000 separate INSERTs.</li>
+              <li><strong>Validate data before INSERT:</strong> Check for constraint violations (NULL, UNIQUE, CHECK) before attempting the insert to provide better error messages.</li>
+              <li><strong>Use transactions for related inserts:</strong> When inserting data across multiple related tables, wrap them in a transaction to ensure atomicity.</li>
             </ul>
           </Callout>
 
+          <p className="mt-6">
+            A powerful INSERT variant is <code>INSERT ... SELECT</code>, which allows you to copy data from one table to another
+            (or even within the same table):
+          </p>
+
           <SQLPlayground
             preset={EMPTY_PRESET}
-            defaultQuery={`-- Advanced INSERT: Insert from SELECT (copy data)
-CREATE TABLE source_products (
-  id INTEGER PRIMARY KEY,
-  name TEXT,
-  price DECIMAL(10, 2)
-);
+            defaultQuery={`-- Scenario: Archive old product data
 
-INSERT INTO source_products VALUES
-  (1, 'Widget', 19.99),
-  (2, 'Gadget', 29.99),
-  (3, 'Gizmo', 39.99);
-
--- Create destination table
-CREATE TABLE archived_products (
-  id INTEGER PRIMARY KEY,
-  name TEXT,
+-- Create source table with current products
+CREATE TABLE products (
+  product_id INTEGER PRIMARY KEY,
+  product_name TEXT,
   price DECIMAL(10, 2),
-  archived_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_date DATE DEFAULT CURRENT_DATE
 );
 
--- INSERT from SELECT: copy expensive products
-INSERT INTO archived_products (id, name, price)
-SELECT id, name, price
-FROM source_products
-WHERE price > 25;
+INSERT INTO products (product_id, product_name, price) VALUES
+  (1, 'Laptop Pro', 1299.99),
+  (2, 'Wireless Mouse', 29.99),
+  (3, 'Mechanical Keyboard', 149.99),
+  (4, 'USB-C Hub', 79.99),
+  (5, 'Monitor 27"', 449.99);
 
--- Verify the copy
-SELECT * FROM archived_products;`}
+-- Create archive table with same structure plus archive timestamp
+CREATE TABLE products_archive (
+  product_id INTEGER,
+  product_name TEXT,
+  price DECIMAL(10, 2),
+  created_date DATE,
+  archived_date DATE DEFAULT CURRENT_DATE
+);
+
+-- INSERT...SELECT: Copy expensive products to archive
+INSERT INTO products_archive (product_id, product_name, price, created_date)
+SELECT product_id, product_name, price, created_date
+FROM products
+WHERE price > 100;
+
+-- Verify the archive
+SELECT 
+  product_name, 
+  price, 
+  'Archived on ' || archived_date AS status
+FROM products_archive;`}
           />
-        </Subsection>
 
-        <Subsection title="READ (SELECT)">
-          <p>
-            The <code>SELECT</code> statement retrieves data from one or more tables. It's the most frequently 
-            used command in SQL.
+          <p className="mt-6">
+            Now let's talk about constraint violations—what happens when an INSERT violates table rules:
           </p>
 
           <SQLPlayground
-            preset={EMPLOYEES_PRESET}
-            defaultQuery={`-- Select all columns
+            preset={EMPTY_PRESET}
+            defaultQuery={`-- Create a table with various constraints
+CREATE TABLE employees (
+  employee_id INTEGER PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  salary INTEGER CHECK(salary > 0),
+  department TEXT DEFAULT 'Unassigned'
+);
+
+-- Valid insert
+INSERT INTO employees (employee_id, email, name, salary)
+VALUES (1, 'alice@company.com', 'Alice Smith', 75000);
+
 SELECT * FROM employees;
 
--- Select specific columns with filtering
-SELECT name, department, salary
-FROM employees
-WHERE department = 'Engineering'
-ORDER BY salary DESC;
+-- Try these experiments (uncomment one at a time to see errors):
 
--- Aggregate functions
-SELECT
-  department,
-  COUNT(*) as employee_count,
-  AVG(salary) as avg_salary
-FROM employees
-GROUP BY department;`}
+-- 1. PRIMARY KEY violation (duplicate ID)
+-- INSERT INTO employees (employee_id, email, name, salary)
+-- VALUES (1, 'bob@company.com', 'Bob Jones', 80000);
+
+-- 2. UNIQUE violation (duplicate email)
+-- INSERT INTO employees (employee_id, email, name, salary)
+-- VALUES (2, 'alice@company.com', 'Alice Johnson', 70000);
+
+-- 3. NOT NULL violation (missing required column)
+-- INSERT INTO employees (employee_id, email, salary)
+-- VALUES (2, 'charlie@company.com', 85000);
+
+-- 4. CHECK constraint violation (negative salary)
+-- INSERT INTO employees (employee_id, email, name, salary)
+-- VALUES (2, 'david@company.com', 'David Lee', -5000);
+
+-- 5. DEFAULT value demonstration (omit department)
+INSERT INTO employees (employee_id, email, name, salary)
+VALUES (2, 'eve@company.com', 'Eve Davis', 90000);
+
+SELECT * FROM employees;`}
           />
+
+          <Callout type="ai" title="AI-Assisted INSERT: Generating Test Data">
+            <p>
+              One of AI's superpowers is generating realistic test data. Instead of manually writing dozens of INSERT statements,
+              you can describe your requirements and let AI generate them.
+            </p>
+
+            <div className="mt-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-500 dark:border-teal-700 rounded-lg p-4">
+              <p className="font-semibold text-teal-900 dark:text-teal-200 mb-2">Example Prompt:</p>
+              <pre className="text-sm text-teal-800 dark:text-teal-300 whitespace-pre-wrap">
+{`Generate 20 INSERT statements for a Companies table with these columns:
+- CompanyID (integer, starts at 1)
+- CompanyName (realistic tech company names)
+- StockTicker (3-4 letter symbols, all caps)
+- Founded (years between 1990-2020)
+- SectorID (1 for Technology, 2 for Healthcare, 3 for Finance)
+
+Make the data realistic and diverse. Use multi-row INSERT format.`}
+              </pre>
+            </div>
+
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+              AI will generate properly formatted SQL with realistic, randomized data—saving you significant time when setting
+              up test databases or creating demos.
+            </p>
+          </Callout>
         </Subsection>
 
-        <Subsection title="UPDATE (UPDATE)">
+        <Subsection title="READ: Querying Data with SELECT">
           <p>
-            The <code>UPDATE</code> statement modifies existing records in a table.
+            The <code>SELECT</code> statement is the most frequently used SQL command. It retrieves data from one or more tables
+            based on criteria you specify. Let's build up from simple to sophisticated queries.
           </p>
-          
-          <Callout type="warning" title="Critical Warning">
-            Always use a WHERE clause with UPDATE! Without it, ALL rows will be updated.
-          </Callout>
+
+          <CodeExample
+            title="SELECT Statement Anatomy"
+            code={`SELECT column1, column2, column3         -- What columns to retrieve
+FROM table_name                          -- Which table(s)
+WHERE condition                          -- Filter rows (optional)
+GROUP BY column                          -- Group rows (optional)
+HAVING aggregate_condition               -- Filter groups (optional)
+ORDER BY column ASC/DESC                 -- Sort results (optional)
+LIMIT n OFFSET m;                        -- Pagination (optional)`}
+          />
+
+          <p className="mt-4">
+            Let's explore SELECT with progressively complex examples:
+          </p>
 
           <SQLPlayground
             preset={EMPLOYEES_PRESET}
-            defaultQuery={`-- View current data
-SELECT * FROM employees WHERE name = 'Alice Smith';
+            defaultQuery={`-- 1. SELECT all columns (use sparingly!)
+SELECT * FROM employees;
 
--- Update a specific employee's salary
+-- 2. SELECT specific columns (better practice)
+SELECT name, department, salary 
+FROM employees;
+
+-- 3. SELECT with column aliases for readability
+SELECT 
+  name AS employee_name,
+  department AS dept,
+  salary AS annual_salary
+FROM employees;
+
+-- 4. SELECT with expressions and calculations
+SELECT 
+  name,
+  salary AS current_salary,
+  salary * 1.10 AS salary_after_raise,
+  salary / 12 AS monthly_salary
+FROM employees;`}
+          />
+
+          <p className="mt-6">
+            Now let's explore the <code>WHERE</code> clause for filtering data. This is where SELECT becomes powerful:
+          </p>
+
+          <CodeExample
+            title="WHERE Clause Operators"
+            code={`-- Comparison operators
+WHERE salary > 80000              -- Greater than
+WHERE department = 'Engineering'  -- Equality
+WHERE hire_date >= '2020-01-01'   -- Greater than or equal
+
+-- Logical operators
+WHERE salary > 70000 AND department = 'Sales'  -- AND
+WHERE department = 'HR' OR department = 'IT'   -- OR
+WHERE NOT (salary < 50000)                      -- NOT
+
+-- Range checking
+WHERE salary BETWEEN 60000 AND 90000   -- Inclusive range
+WHERE hire_date BETWEEN '2020-01-01' AND '2023-12-31'
+
+-- Set membership
+WHERE department IN ('Engineering', 'Product', 'Design')
+WHERE employee_id NOT IN (SELECT manager_id FROM managers)
+
+-- Pattern matching
+WHERE name LIKE 'John%'           -- Starts with 'John'
+WHERE email LIKE '%@gmail.com'    -- Ends with '@gmail.com'
+WHERE product_code LIKE 'A_3%'    -- A, any char, 3, then anything
+
+-- NULL handling
+WHERE manager_id IS NULL          -- Has no manager
+WHERE phone IS NOT NULL           -- Has a phone number`}
+          />
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Demonstrate different WHERE clause patterns
+
+-- 1. Simple comparison
+SELECT name, department, salary
+FROM employees
+WHERE salary > 80000;
+
+-- 2. Multiple conditions with AND
+SELECT name, department, hire_date
+FROM employees
+WHERE department = 'Engineering'
+  AND hire_date < '2021-01-01';
+
+-- 3. Set membership with IN
+SELECT name, department
+FROM employees
+WHERE department IN ('Sales', 'Marketing', 'HR')
+ORDER BY department, name;
+
+-- 4. Pattern matching with LIKE
+SELECT name, email
+FROM employees
+WHERE email LIKE '%@company.com'
+ORDER BY name;`}
+          />
+
+          <p className="mt-6">
+            Let's explore <code>ORDER BY</code> for sorting results, and <code>DISTINCT</code> for removing duplicates:
+          </p>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- 1. Sort by single column (ascending by default)
+SELECT name, salary
+FROM employees
+ORDER BY salary;
+
+-- 2. Sort descending (highest salary first)
+SELECT name, salary
+FROM employees
+ORDER BY salary DESC;
+
+-- 3. Sort by multiple columns (department, then salary)
+SELECT name, department, salary
+FROM employees
+ORDER BY department ASC, salary DESC;
+
+-- 4. DISTINCT: Get unique departments
+SELECT DISTINCT department
+FROM employees
+ORDER BY department;
+
+-- 5. Count employees per department (preview of aggregation)
+SELECT department, COUNT(*) AS employee_count
+FROM employees
+GROUP BY department
+ORDER BY employee_count DESC;`}
+          />
+
+          <p className="mt-6">
+            Finally, <code>LIMIT</code> and <code>OFFSET</code> are essential for pagination—showing results one page at a time:
+          </p>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Pagination example: Show 3 employees at a time
+
+-- Page 1: First 3 employees
+SELECT name, department, salary
+FROM employees
+ORDER BY name
+LIMIT 3 OFFSET 0;
+
+-- Page 2: Next 3 employees
+-- SELECT name, department, salary
+-- FROM employees
+-- ORDER BY name
+-- LIMIT 3 OFFSET 3;
+
+-- Page 3: Next 3 employees
+-- SELECT name, department, salary
+-- FROM employees
+-- ORDER BY name
+-- LIMIT 3 OFFSET 6;
+
+-- Pagination formula: OFFSET = (page_number - 1) * page_size
+-- For page_size = 3:
+--   Page 1: OFFSET 0
+--   Page 2: OFFSET 3
+--   Page 3: OFFSET 6
+--   etc.`}
+          />
+
+          <Callout type="ai" title="AI-Assisted SELECT: Translating Questions to Queries">
+            <p>
+              AI excels at translating natural language questions into SQL queries. The key is providing enough context about
+              your database schema.
+            </p>
+
+            <div className="mt-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-500 dark:border-teal-700 rounded-lg p-4">
+              <p className="font-semibold text-teal-900 dark:text-teal-200 mb-2">Example Prompt:</p>
+              <pre className="text-sm text-teal-800 dark:text-teal-300 whitespace-pre-wrap">
+{`Schema:
+- employees (id, name, email, department, salary, hire_date, manager_id)
+
+Question: Find all Engineering employees hired after 2020, 
+earning more than $90,000, sorted by salary descending.
+
+Generate: SQLite-compatible SELECT query with clear column names.`}
+              </pre>
+            </div>
+
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+              <strong>Pro tip:</strong> For complex queries, ask AI to add comments explaining each clause. This helps you learn
+              while also making the query maintainable.
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="UPDATE: Modifying Existing Data">
+          <p>
+            The <code>UPDATE</code> statement modifies existing records in a table. Let's see what happens when we update employee data:
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+            {/* Before UPDATE */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">Before UPDATE</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">EmployeeID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Name</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Department</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Salary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">1</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Alice Johnson</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Engineering</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">95000</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">2</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Bob Smith</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-yellow-100 dark:bg-yellow-900/30 font-semibold">Sales</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">78000</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">3</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Carol Williams</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Marketing</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">82000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* After UPDATE */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">After UPDATE</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">EmployeeID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Name</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Department</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Salary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">1</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Alice Johnson</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Engineering</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">95000</td>
+                    </tr>
+                    <tr className="bg-blue-50 dark:bg-blue-900/30">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">2</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Bob Smith</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold">Engineering</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">78000</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">3</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Carol Williams</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Marketing</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">82000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            <strong>The SQL:</strong> <code>UPDATE Employees SET Department = 'Engineering' WHERE EmployeeID = 2;</code>
+            <br />✅ <strong>Result:</strong> Bob's department (highlighted) changed from <span className="bg-yellow-100 dark:bg-yellow-900/30 px-1 rounded font-semibold">"Sales"</span> to <span className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded font-semibold">"Engineering"</span>. Only the targeted row was affected because of the WHERE clause.
+          </p>
+
+          <Callout type="warning" title="Critical Warning: The WHERE Clause">
+            <p className="font-semibold text-amber-900 dark:text-amber-200">
+              ⚠️ ALWAYS use a WHERE clause with UPDATE!
+            </p>
+            <p className="mt-2">
+              Without WHERE, <em>every single row</em> in the table will be updated. This is rarely what you want and can cause
+              catastrophic data loss. Many production incidents start with "I forgot the WHERE clause."
+            </p>
+            <code className="block mt-2 bg-amber-100 dark:bg-amber-900/30 p-2 rounded text-sm">
+              -- DANGER: Updates EVERY row!<br/>
+              UPDATE employees SET salary = 100000;
+            </code>
+          </Callout>
+
+          <CodeExample
+            title="UPDATE Statement Syntax"
+            code={`-- Update a single column for specific rows
+UPDATE table_name
+SET column1 = new_value
+WHERE condition;
+
+-- Update multiple columns simultaneously
+UPDATE table_name
+SET 
+  column1 = new_value1,
+  column2 = new_value2,
+  column3 = new_value3
+WHERE condition;
+
+-- Update with calculated values
+UPDATE table_name
+SET column = column * 1.10  -- Increase by 10%
+WHERE condition;
+
+-- Update using subquery
+UPDATE table_name
+SET column = (SELECT value FROM other_table WHERE ...)
+WHERE condition;`}
+          />
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Safe UPDATE patterns: always check before modifying
+
+-- 1. Check current data BEFORE update
+SELECT name, salary, department
+FROM employees
+WHERE name = 'Alice Smith';
+
+-- 2. Perform the update
 UPDATE employees
 SET salary = 95000
 WHERE name = 'Alice Smith';
 
--- View the updated data
-SELECT * FROM employees WHERE name = 'Alice Smith';`}
-          />
+-- 3. Verify the change AFTER update
+SELECT name, salary, department
+FROM employees
+WHERE name = 'Alice Smith';
 
-          <SQLPlayground
-            preset={EMPLOYEES_PRESET}
-            defaultQuery={`-- Bulk UPDATE: Give 10% raise to all Engineering employees
--- First, see current Engineering salaries
-SELECT name, department, salary FROM employees
+-- Bulk update with calculated values
+-- Give 10% raise to all Engineering employees
+
+-- Check who will be affected
+SELECT name, salary, salary * 1.10 AS new_salary
+FROM employees
 WHERE department = 'Engineering';
 
--- Apply bulk update
-UPDATE employees
-SET salary = salary * 1.10
-WHERE department = 'Engineering';
+-- Uncomment to execute:
+-- UPDATE employees
+-- SET salary = salary * 1.10
+-- WHERE department = 'Engineering';
 
--- Verify the changes
-SELECT name, department, salary FROM employees
-WHERE department = 'Engineering';`}
-          />
-
-          <SQLPlayground
-            preset={EMPLOYEES_PRESET}
-            defaultQuery={`-- UPDATE with multiple columns and complex conditions
-UPDATE employees
-SET
-  salary = salary * 1.15,
-  department = 'Senior ' || department
-WHERE salary > 80000
-  AND hire_date < '2020-01-01';
-
--- View employees affected
-SELECT * FROM employees
-WHERE department LIKE 'Senior%';`}
+-- Update multiple columns with complex conditions
+-- UPDATE employees
+-- SET 
+--   salary = salary * 1.15,
+--   department = 'Senior ' || department
+-- WHERE salary > 80000 AND hire_date < '2020-01-01';`}
           />
         </Subsection>
 
-        <Subsection title="DELETE (DELETE)">
+        <Subsection title="DELETE: Removing Data">
           <p>
-            The <code>DELETE</code> statement removes one or more rows from a table.
+            The <code>DELETE</code> statement removes rows from a table. Let's see what happens when we delete an employee record:
           </p>
 
-          <Callout type="warning" title="Critical Warning">
-            Always use a WHERE clause with DELETE! Without it, ALL rows will be deleted.
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+            {/* Before DELETE */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">Before DELETE</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">EmployeeID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Name</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Department</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Salary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">1</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Alice Johnson</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Engineering</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">95000</td>
+                    </tr>
+                    <tr className="bg-red-50 dark:bg-red-900/30">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold">2</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold">Bob Smith</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold">Engineering</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold">78000</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">3</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Carol Williams</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Marketing</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">82000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">3 rows in table</p>
+            </div>
+
+            {/* After DELETE */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">After DELETE</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">EmployeeID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Name</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Department</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Salary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">1</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Alice Johnson</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Engineering</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">95000</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">3</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Carol Williams</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Marketing</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">82000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">2 rows remaining</p>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            <strong>The SQL:</strong> <code>DELETE FROM Employees WHERE EmployeeID = 2;</code>
+            <br />✅ <strong>Result:</strong> Bob's entire row (highlighted in red) was permanently removed from the table. The WHERE clause ensured only the targeted employee was deleted.
+          </p>
+
+          <Callout type="warning" title="Critical Warning: The WHERE Clause (Again!)">
+            <p className="font-semibold text-amber-900 dark:text-amber-200">
+              ⚠️ ALWAYS use a WHERE clause with DELETE!
+            </p>
+            <p className="mt-2">
+              Without WHERE, <em>every single row</em> will be deleted (but the table structure remains). There is no "undo"
+              button—once deleted, data is gone unless you have backups.
+            </p>
+            <code className="block mt-2 bg-amber-100 dark:bg-amber-900/30 p-2 rounded text-sm">
+              -- DANGER: Deletes ALL rows!<br/>
+              DELETE FROM employees;
+            </code>
           </Callout>
 
-          <SQLPlayground
-            preset={EMPLOYEES_PRESET}
-            defaultQuery={`-- View all employees
-SELECT * FROM employees;
+          <CodeExample
+            title="DELETE Statement Syntax"
+            code={`-- Delete specific rows based on condition
+DELETE FROM table_name
+WHERE condition;
 
--- Delete a specific employee
-DELETE FROM employees
-WHERE name = 'Eve Davis';
-
--- View remaining employees
-SELECT * FROM employees;`}
-          />
-
-          <SQLPlayground
-            preset={EMPLOYEES_PRESET}
-            defaultQuery={`-- Bulk DELETE: Remove all employees from a department
--- Count employees in Sales before deletion
-SELECT COUNT(*) as sales_count FROM employees
-WHERE department = 'Sales';
-
--- Delete all Sales employees
-DELETE FROM employees
-WHERE department = 'Sales';
-
--- Verify deletion
-SELECT COUNT(*) as sales_count FROM employees
-WHERE department = 'Sales';`}
-          />
-
-          <SQLPlayground
-            preset={EMPTY_PRESET}
-            defaultQuery={`-- DELETE vs TRUNCATE (demonstration)
-CREATE TABLE test_data (
-  id INTEGER PRIMARY KEY,
-  value TEXT
+-- Delete using subquery (complex conditions)
+DELETE FROM table_name
+WHERE column IN (
+  SELECT column FROM other_table WHERE condition
 );
 
-INSERT INTO test_data VALUES (1, 'A'), (2, 'B'), (3, 'C');
+-- Delete with complex logic
+DELETE FROM table_name
+WHERE condition1 AND (condition2 OR condition3);
 
--- DELETE: Removes specific rows (or all with no WHERE)
-DELETE FROM test_data WHERE id > 1;
-SELECT * FROM test_data;  -- Only id=1 remains
+-- Note: In SQLite, TRUNCATE doesn't exist
+-- To delete all rows quickly, use:
+DELETE FROM table_name;  -- But be careful!
 
--- Re-populate
-INSERT INTO test_data VALUES (2, 'B'), (3, 'C');
-
--- In SQLite, no TRUNCATE command exists
--- Use DELETE without WHERE to remove all rows
-DELETE FROM test_data;
-SELECT * FROM test_data;  -- Empty table
-
--- Note: In PostgreSQL/MySQL, you would use:
--- TRUNCATE TABLE test_data;  -- Faster than DELETE for all rows`}
+-- In PostgreSQL/MySQL/SQL Server, you would use:
+-- TRUNCATE TABLE table_name;  -- Faster, resets auto-increment`}
           />
-        </Subsection>
-
-        <Subsection title="DELETE with Subqueries">
-          <p>
-            You can use subqueries to identify which rows to delete based on complex conditions.
-          </p>
 
           <SQLPlayground
             preset={EMPLOYEES_PRESET}
-            defaultQuery={`-- Delete employees with below-average salary
--- First, see who will be affected
-SELECT name, salary,
-  (SELECT AVG(salary) FROM employees) as avg_salary
+            defaultQuery={`-- Safe DELETE pattern: always count before deleting
+
+-- 1. Count rows that match your condition
+SELECT COUNT(*) AS rows_to_delete
+FROM employees
+WHERE department = 'Sales';
+
+-- 2. View the actual rows that will be deleted
+SELECT name, department, salary
+FROM employees
+WHERE department = 'Sales';
+
+-- 3. Delete the rows (uncomment to execute)
+-- DELETE FROM employees
+-- WHERE department = 'Sales';
+
+-- 4. Verify deletion
+-- SELECT COUNT(*) AS remaining_count
+-- FROM employees;
+
+-- DELETE with subquery: remove below-average earners
+SELECT name, salary, 
+  (SELECT AVG(salary) FROM employees) AS avg_salary
 FROM employees
 WHERE salary < (SELECT AVG(salary) FROM employees);
 
--- Uncomment to execute the deletion:
+-- Uncomment to execute:
 -- DELETE FROM employees
 -- WHERE salary < (SELECT AVG(salary) FROM employees);`}
           />
-        </Subsection>
-      </Section>
 
-      <Section id="section8" title="Asking Complex Questions - Advanced Querying" level={2}>
-        <p>
-          The true power of SQL lies in its ability to answer complex questions by combining, filtering, 
-          and summarizing data from multiple tables.
-        </p>
-
-        <Subsection title="Connecting the Dots: JOINs">
-          <p>
-            A <code>JOIN</code> clause combines rows from two or more tables based on a related column between them.
-            Understanding the different types of JOINs is crucial for effective data retrieval.
+          <p className="mt-6">
+            When you delete a row that's referenced by another table (via foreign key), the database's behavior depends on the
+            foreign key's <code>ON DELETE</code> action. Let's revisit what we learned in{' '}
+            <a href="#section5" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">Part II</a>:
           </p>
 
-          <MermaidDiagram
-            caption="JOIN Types Visual Comparison (Venn Diagram Style)"
-            chart={`
-graph TB
-    subgraph INNER["INNER JOIN"]
-        I1["Table A"] 
-        I2["Table B"]
-        I3["Result: Only<br/>matching rows<br/>from both"]
-        I1 -.-> I3
-        I2 -.-> I3
-    end
-    
-    subgraph LEFT["LEFT JOIN (LEFT OUTER)"]
-        L1["Table A<br/>(All rows)"] 
-        L2["Table B<br/>(Matching only)"]
-        L3["Result: All A +<br/>matching B<br/>(NULL if no match)"]
-        L1 --> L3
-        L2 -.-> L3
-    end
-    
-    subgraph RIGHT["RIGHT JOIN (RIGHT OUTER)"]
-        R1["Table A<br/>(Matching only)"] 
-        R2["Table B<br/>(All rows)"]
-        R3["Result: All B +<br/>matching A<br/>(NULL if no match)"]
-        R1 -.-> R3
-        R2 --> R3
-    end
-    
-    subgraph FULL["FULL OUTER JOIN"]
-        F1["Table A"] 
-        F2["Table B"]
-        F3["Result: All rows<br/>from both tables<br/>(NULL for non-matches)"]
-        F1 --> F3
-        F2 --> F3
-    end
-    
-    style I3 fill:#dbeafe,stroke:#2563eb,color:#000
-    style L3 fill:#d1fae5,stroke:#059669,color:#000
-    style R3 fill:#fef3c7,stroke:#d97706,color:#000
-    style F3 fill:#e9d5ff,stroke:#9333ea,color:#000
-            `}
-          />
-
           <div className="overflow-x-auto my-4">
-            <table className="min-w-full text-sm">
+            <table className="min-w-full text-sm border-collapse">
               <thead>
-                <tr>
-                  <th>JOIN Type</th>
-                  <th>Description</th>
-                  <th>Use Case</th>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">ON DELETE Action</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Behavior</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Use Case</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="font-semibold">INNER JOIN</td>
-                  <td>Returns only matching records from both tables</td>
-                  <td>Find companies WITH financial statements</td>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">CASCADE</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Automatically delete referencing rows</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Delete user → delete their posts</td>
                 </tr>
-                <tr>
-                  <td className="font-semibold">LEFT JOIN</td>
-                  <td>Returns all records from left table, matched records from right (or NULL)</td>
-                  <td>List all companies, show statements if they exist</td>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">SET NULL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set foreign key to NULL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Delete manager → set manager_id to NULL</td>
                 </tr>
-                <tr>
-                  <td className="font-semibold">RIGHT JOIN</td>
-                  <td>Returns all records from right table, matched records from left (or NULL)</td>
-                  <td>Rarely used (use LEFT JOIN instead)</td>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">RESTRICT</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prevent deletion if references exist</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prevent deleting category with products</td>
                 </tr>
-                <tr>
-                  <td className="font-semibold">FULL OUTER JOIN</td>
-                  <td>Returns all records when there is a match in either table</td>
-                  <td>Compare two datasets, find all differences</td>
-                </tr>
-                <tr>
-                  <td className="font-semibold">CROSS JOIN</td>
-                  <td>Cartesian product - every row from A with every row from B</td>
-                  <td>Generate all possible combinations</td>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">NO ACTION</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Similar to RESTRICT (implementation varies)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Default in many databases</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <MermaidDiagram
-            caption="INNER JOIN vs LEFT JOIN: Practical Difference"
-            chart={`
-graph LR
-    subgraph Example["Companies & Statements Example"]
-        direction TB
-        C["Companies: 5 rows"]
-        S["Statements: 3 rows<br/>(Only 3 companies<br/>have filed)"]
-    end
-    
-    subgraph InnerResult["INNER JOIN Result"]
-        IR["3 rows<br/>(Only companies<br/>WITH statements)"]
-    end
-    
-    subgraph LeftResult["LEFT JOIN Result"]
-        LR["5 rows<br/>(All companies,<br/>NULLs for 2)"]
-    end
-    
-    Example --> InnerResult
-    Example --> LeftResult
-    
-    style IR fill:#dbeafe,stroke:#2563eb,color:#000
-    style LR fill:#d1fae5,stroke:#059669,color:#000
-            `}
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+            For a refresher on foreign keys and referential integrity, see{' '}
+            <a href="#section5" className="text-blue-600 dark:text-blue-400 hover:underline">
+              Part II: Data Integrity
+            </a>.
+          </p>
+        </Subsection>
+
+        <p className="mt-6">
+          You've now mastered the four fundamental CRUD operations. These form the foundation of all database interactions.
+          Next, we'll explore how to combine data from multiple tables using JOINs—unlocking the true power of relational databases.
+        </p>
+      </Section>
+
+      {/* SECTION 3: JOINs - Connecting the Dots */}
+      <Section id="section8" title="Relationships and JOINs - Connecting the Dots" level={2}>
+        <p>
+          The true power of relational databases emerges when you combine data from multiple related tables. This is where
+          the word "relational" truly shines—not just from the formal relational model, but from the practical ability to
+          establish and query <em>relationships</em> between entities.
+        </p>
+
+        <p className="mt-4">
+          In <a href="#section2" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">Part I</a>, we
+          learned how to design relationships using primary and foreign keys. Now we'll learn how to <em>query</em> those
+          relationships using <code>JOIN</code> operations.
+        </p>
+
+        <Subsection title="Understanding JOINs: The Conceptual Model">
+          <p>
+            A <code>JOIN</code> clause combines rows from two or more tables based on a related column between them—typically
+            a primary key-foreign key relationship. Think of it as answering questions like:
+          </p>
+
+          <ul className="list-disc pl-6 space-y-2 my-4">
+            <li>"Show me each company <em>along with</em> its sector name"</li>
+            <li>"Find all financial statements <em>and</em> their associated companies"</li>
+            <li>"List employees <em>with</em> their managers"</li>
+          </ul>
+
+          <p>
+            Without JOINs, relational databases would be little more than spreadsheets. JOINs enable the rich interconnected
+            data models that make databases powerful.
+          </p>
+        </Subsection>
+
+        <Callout type="tip" title="Analogy: JOINs as Real-World Connections">
+          <p>
+            <strong>INNER JOIN</strong> is like a dating app showing only mutual matches—both sides must connect.
+          </p>
+          <p className="mt-2">
+            <strong>LEFT JOIN</strong> is like your contact list—you see everyone you know, even if they haven't responded lately (NULLs for missing data).
+          </p>
+          <p className="mt-2">
+            <strong>CROSS JOIN</strong> is like generating every possible pairing for a round-robin tournament—every combination, regardless of actual relationships.
+          </p>
+        </Callout>
+
+        <Subsection title="JOIN Types: Visual Understanding">
+          <p>
+            There are six fundamental types of JOINs in SQL, each answering different questions about how data from two tables
+            should be combined. Before we dive into the syntax and detailed examples of each type, let's get a visual overview
+            of all six types to understand the "big picture" of how JOINs work:
+          </p>
+
+          <JoinFigure />
+
+          <p className="mt-6 text-gray-700 dark:text-gray-300">
+            Each visualization above shows a simplified example of how rows from two tables combine. In the sections that follow,
+            we'll explore each JOIN type in detail with real queries and data. But first, here's a quick reference table summarizing
+            when you'd use each type:
+          </p>
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">JOIN Type</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Returns</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">When to Use</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">SQLite Support</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">INNER JOIN</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Only matching rows from both tables</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find companies WITH statements</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">LEFT JOIN</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All from left + matched from right (NULL if no match)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All companies, show statements if exist</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">RIGHT JOIN</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All from right + matched from left (NULL if no match)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Rarely used (use LEFT instead)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No (rewrite as LEFT)</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">FULL OUTER JOIN</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All rows from both (NULL for non-matches)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Compare datasets, find all differences</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No (use UNION workaround)</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">CROSS JOIN</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cartesian product (every combination)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Generate all possible pairs</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">SELF JOIN</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Table joined to itself</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Hierarchies, comparing rows in same table</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Now let's explore each JOIN type in depth, starting with the most common and essential: INNER JOIN. We'll use concrete
+            examples with real data to make each concept crystal clear. If any JOIN type seems confusing, remember that the interactive
+            playgrounds are there for you to experiment and build intuition—feel free to jump ahead to try the queries yourself!
+          </p>
+        </Subsection>
+
+        <Subsection title="INNER JOIN: The Foundation">
+          <p>
+            <code>INNER JOIN</code> returns only rows where there's a match in <em>both</em> tables. It's the most common JOIN
+            and the one you'll use most frequently. Let's see this in action with a concrete example.
+          </p>
+
+          <p className="mt-4">
+            Imagine we have two tables: <strong>Companies</strong> (with company details) and <strong>Sectors</strong> (with sector information).
+            Each company has a <code>SectorID</code> foreign key pointing to the Sectors table:
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+            {/* Companies Table */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">Companies Table</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">CompanyID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">CompanyName</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-blue-100 dark:bg-blue-900/30">SectorID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">101</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Apple Inc.</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 font-semibold">1</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">102</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">JPMorgan Chase</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 font-semibold">2</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">103</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Microsoft Corp.</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 font-semibold">1</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">104</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Unknown Startup</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-red-100 dark:bg-red-900/30 font-semibold">99</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Sectors Table */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">Sectors Table</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-blue-100 dark:bg-blue-900/30">SectorID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">SectorName</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 font-semibold">1</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Technology</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 font-semibold">2</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Financial Services</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 bg-green-100 dark:bg-green-900/30 font-semibold">3</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Healthcare</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <strong>Notice:</strong> The <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">SectorID</code> columns (highlighted in blue) are how these tables connect.
+            The <code className="bg-red-100 dark:bg-red-900/30 px-1 rounded">red-highlighted</code> company has SectorID 99, which doesn't exist in Sectors.
+            The <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">green-highlighted</code> sector (Healthcare) has no companies referencing it.
+          </p>
+
+          <p className="font-semibold text-gray-900 dark:text-white mb-2">After INNER JOIN (only matching rows):</p>
+          <div className="overflow-x-auto mb-4">
+            <table className="min-w-full text-xs border-collapse">
+              <thead>
+                <tr className="bg-green-100 dark:bg-green-900/30">
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">CompanyName</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">SectorName</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Apple Inc.</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Technology</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-850">
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Microsoft Corp.</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Technology</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">JPMorgan Chase</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Financial Services</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            ✅ <strong>Result:</strong> Only 3 rows appear—companies that have a matching SectorID. "Unknown Startup" (SectorID 99) is excluded because 99 doesn't exist in Sectors.
+            "Healthcare" (SectorID 3) doesn't appear because no company references it. This is the defining characteristic of INNER JOIN: <em>both sides must match</em>.
+          </p>
+
+          <CodeExample
+            title="INNER JOIN Syntax"
+            code={`SELECT 
+  t1.column1,
+  t1.column2,
+  t2.column3,
+  t2.column4
+FROM table1 t1
+INNER JOIN table2 t2 
+  ON t1.foreign_key = t2.primary_key
+WHERE condition;
+
+-- Note: INNER is optional, you can just write JOIN
+SELECT ...
+FROM table1 t1
+JOIN table2 t2 ON t1.fk = t2.pk;`}
           />
 
           <SQLPlayground
-            preset={FINANCIAL_FULL_PRESET}
+            preset={ECOMMERCE_PRESET}
             defaultQuery={`-- INNER JOIN: Companies with their sectors
-SELECT
+-- Only returns companies that HAVE a sector
+
+SELECT 
   c.CompanyName,
   c.StockTicker,
   s.SectorName
 FROM Companies c
-INNER JOIN Sectors s ON c.SectorID = s.SectorID;
+INNER JOIN Sectors s 
+  ON c.SectorID = s.SectorID
+ORDER BY s.SectorName, c.CompanyName;
 
--- Complex JOIN across multiple tables
-SELECT
+-- Multi-table INNER JOIN: Companies → Statements → Line Items
+-- Find Revenue and Net Income for Apple in 2024
+SELECT 
   c.CompanyName,
   fs.Year,
   li.ItemName,
   li.Value
 FROM Companies c
-INNER JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
-INNER JOIN Line_Items li ON fs.StatementID = li.StatementID
+INNER JOIN Financial_Statements fs 
+  ON c.CompanyID = fs.CompanyID
+INNER JOIN Line_Items li 
+  ON fs.StatementID = li.StatementID
 WHERE c.CompanyName = 'Apple Inc.'
   AND fs.Year = 2024
   AND li.ItemName IN ('Revenue', 'Net Income');`}
           />
+
+          <p className="mt-6">
+            The <code>ON</code> clause specifies the join condition—how rows from the two tables are matched. Almost always,
+            this is a foreign key = primary key comparison.
+          </p>
         </Subsection>
 
-        <Subsection title="Summarizing Information: Aggregate Functions">
+        <Subsection title="LEFT JOIN: Keeping All From the Left">
           <p>
-            Aggregate functions perform calculations on a set of rows and return a single summary value.
+            <code>LEFT JOIN</code> (also called <code>LEFT OUTER JOIN</code>) returns <em>all</em> rows from the left table,
+            plus matched rows from the right table. If there's no match, the right table's columns are NULL.
+          </p>
+
+          <p className="mt-4">
+            Let's use the same Companies and Sectors example. Notice how LEFT JOIN differs from INNER JOIN:
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 my-6">
+            {/* Companies Table */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white text-xs">Companies</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">ID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">Name</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-blue-100 dark:bg-blue-900/30">SectorID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">101</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Apple</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 font-semibold">1</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">102</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">JPMorgan</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 font-semibold">2</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">104</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-green-100 dark:bg-green-900/30 font-semibold">Startup</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-red-100 dark:bg-red-900/30 font-semibold">99</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Sectors Table */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white text-xs">Sectors</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-blue-100 dark:bg-blue-900/30">SectorID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">SectorName</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 font-semibold">1</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Technology</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 font-semibold">2</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Financial</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* LEFT JOIN result */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white text-xs">After LEFT JOIN</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-green-100 dark:bg-green-900/30">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">CompanyName</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">SectorName</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Apple</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Technology</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">JPMorgan</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Financial</td>
+                    </tr>
+                    <tr className="bg-green-50 dark:bg-green-900/30">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold">Startup</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2 font-semibold italic text-gray-500">NULL</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            <strong>The SQL:</strong> <code>SELECT c.CompanyName, s.SectorName FROM Companies c LEFT JOIN Sectors s ON c.SectorID = s.SectorID;</code>
+            <br />✅ <strong>Key difference from INNER JOIN:</strong> The <span className="bg-green-100 dark:bg-green-900/30 px-1 rounded">green-highlighted</span> Startup company appears in the result even though it has no matching sector (SectorID 99 doesn't exist). Its SectorName is NULL.
+            <br />💡 <strong>Use case:</strong> "Show me ALL companies, and their sector info if available." LEFT JOIN keeps everything from the left table (Companies).
+          </p>
+
+          <p className="mt-6">
+            This is incredibly useful for finding "missing" relationships—like companies without financial statements, users
+            who haven't placed orders, or products with no reviews.
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- LEFT JOIN: Show ALL companies, with sector info if available
+-- If a company has no sector, show NULL for sector columns
+
+SELECT 
+  c.CompanyName,
+  c.StockTicker,
+  s.SectorName
+FROM Companies c
+LEFT JOIN Sectors s 
+  ON c.SectorID = s.SectorID
+ORDER BY s.SectorName, c.CompanyName;
+
+-- Find companies WITHOUT financial statements (NULLs mean no match)
+SELECT 
+  c.CompanyName,
+  c.StockTicker,
+  fs.StatementID
+FROM Companies c
+LEFT JOIN Financial_Statements fs 
+  ON c.CompanyID = fs.CompanyID
+WHERE fs.StatementID IS NULL;  -- Only show companies with NO statements
+
+-- Count statements per company (including 0 for companies with none)
+SELECT 
+  c.CompanyName,
+  COUNT(fs.StatementID) AS statement_count  -- COUNT ignores NULLs
+FROM Companies c
+LEFT JOIN Financial_Statements fs 
+  ON c.CompanyID = fs.CompanyID
+GROUP BY c.CompanyID, c.CompanyName
+ORDER BY statement_count DESC;`}
+          />
+
+          <Callout type="tip" title="LEFT JOIN Pattern: Finding Missing Relationships">
+            <p>
+              A common pattern: Use LEFT JOIN and filter for <code>WHERE right_table.id IS NULL</code> to find rows in the
+              left table that have NO corresponding rows in the right table.
+            </p>
+            <p className="mt-2">
+              Examples:
+            </p>
+            <ul className="list-disc pl-5 space-y-1 mt-2">
+              <li>Customers who've never placed an order</li>
+              <li>Products with no reviews</li>
+              <li>Employees with no assigned projects</li>
+            </ul>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="CROSS JOIN: The Cartesian Product">
+          <p>
+            <code>CROSS JOIN</code> produces every possible combination of rows from two tables: rows_in_A × rows_in_B.
+            Let's see this with a simple example:
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 my-6">
+            {/* Sizes table */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white text-xs">Sizes (2 rows)</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Size</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Small</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Large</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Colors table */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white text-xs">Colors (3 rows)</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Color</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Red</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Blue</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Green</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* CROSS JOIN result */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white text-xs">After CROSS JOIN</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-purple-100 dark:bg-purple-900/30">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Size</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Color</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Small</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Red</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Small</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Blue</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Small</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Green</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Large</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Red</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Large</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Blue</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Large</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Green</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            <strong>The SQL:</strong> <code>SELECT s.Size, c.Color FROM Sizes s CROSS JOIN Colors c;</code>
+            <br />✅ <strong>Result:</strong> Every possible combination of size and color. No ON clause needed—CROSS JOIN has no matching condition.
+            <br />💡 <strong>Use cases:</strong> Generate product variants, create test data combinations, schedule all possible time slots, or populate recommendation matrices.
+          </p>
+
+          <Callout type="warning" title="Danger: Result Set Explosion">
+            <p>
+              If Table A has 100 rows and Table B has 1,000 rows, CROSS JOIN produces 100,000 rows. Always verify your
+              table sizes before using CROSS JOIN on production data.
+            </p>
+          </Callout>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- CROSS JOIN: Generate all customer-product combinations
+-- Useful for recommendation systems, promotional targeting, etc.
+
+SELECT 
+  c.first_name || ' ' || c.last_name AS customer,
+  p.product_name,
+  p.category,
+  p.price
+FROM customers c
+CROSS JOIN products p
+WHERE p.category = 'Electronics'  -- Filter AFTER cross join
+ORDER BY customer, p.price DESC
+LIMIT 15;
+
+-- Use case: Generate all possible product pairs for "frequently bought together"
+SELECT 
+  p1.product_name AS product_1,
+  p2.product_name AS product_2,
+  p1.price + p2.price AS bundle_price
+FROM products p1
+CROSS JOIN products p2
+WHERE p1.product_id < p2.product_id  -- Avoid duplicate pairs (A-B and B-A)
+  AND p1.category = p2.category      -- Same category bundles
+LIMIT 10;`}
+          />
+        </Subsection>
+
+        <Subsection title="SELF JOIN: When a Table References Itself">
+          <p>
+            A <strong>SELF JOIN</strong> is when a table is joined to itself. This is essential for hierarchical data like
+            employee-manager relationships. Let's see a concrete example:
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+            {/* Left: Source table */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">Employees Table (single table)</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800">
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">ID</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">Name</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-blue-100 dark:bg-blue-900/30">ManagerID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 font-semibold">1</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Alice (CEO)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-gray-400 italic">NULL</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 font-semibold">2</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Bob (VP)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 font-semibold">1</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 font-semibold">3</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">Carol (VP)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 font-semibold">1</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 font-semibold">4</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">David (Eng)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 font-semibold">2</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                <span className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">ManagerID</span> references{' '}
+                <span className="bg-yellow-100 dark:bg-yellow-900/30 px-1 rounded">ID</span> in the same table!
+              </p>
+            </div>
+
+            {/* Right: SELF JOIN result */}
+            <div>
+              <p className="font-semibold text-center mb-2 text-gray-900 dark:text-white">After SELF JOIN</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-green-100 dark:bg-green-900/30">
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Employee</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-3 py-2">Manager</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Bob (VP)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Alice (CEO)</td>
+                    </tr>
+                    <tr className="bg-gray-50 dark:bg-gray-850">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Carol (VP)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Alice (CEO)</td>
+                    </tr>
+                    <tr className="bg-white dark:bg-gray-900">
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">David (Eng)</td>
+                      <td className="border border-gray-300 dark:border-gray-700 px-3 py-2">Bob (VP)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                Each employee paired with their manager (Alice has no manager, so she doesn't appear)
+              </p>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            <strong>The SQL:</strong> <code>SELECT e.Name AS Employee, m.Name AS Manager FROM Employees e JOIN Employees m ON e.ManagerID = m.ID;</code>
+            <br />✅ <strong>Key concept:</strong> The same Employees table appears twice in the query with different aliases (<code>e</code> and <code>m</code>). We join the table to itself by matching ManagerID to ID.
+            <br />💡 <strong>Use cases:</strong> Employee hierarchies, comment threads (parent_comment_id), category trees, friend networks, file system folders.
           </p>
 
           <MermaidDiagram
-            caption="How Aggregate Functions Work"
+            caption="SELF JOIN Use Case: Employee-Manager Hierarchy"
             chart={`
-graph TB
-    subgraph Input["Input: Multiple Rows"]
-        R1["Row 1: Value = 100"]
-        R2["Row 2: Value = 200"]
-        R3["Row 3: Value = 150"]
-        R4["Row 4: Value = 175"]
-    end
+flowchart TD
+    CEO["👔 CEO Alice"]
+    VP1["📊 VP Bob"]
+    VP2["📊 VP Carol"]
+    ENG1["💻 Engineer David"]
+    ENG2["💻 Engineer Eve"]
+    SALES1["📈 Sales Frank"]
     
-    subgraph Process["Aggregate Function Applied"]
-        COUNT["COUNT(*) = 4"]
-        SUM["SUM(Value) = 625"]
-        AVG["AVG(Value) = 156.25"]
-        MIN["MIN(Value) = 100"]
-        MAX["MAX(Value) = 200"]
-    end
-    
-    subgraph Output["Output: Single Value"]
-        Result["One row with<br/>aggregated result"]
-    end
-    
-    Input --> Process
-    Process --> Output
-    
-    style Output fill:#dcfce7,stroke:#16a34a,color:#000
+    CEO --> VP1
+    CEO --> VP2
+    VP1 --> ENG1
+    VP1 --> ENG2
+    VP2 --> SALES1
             `}
           />
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 my-4">
-            {['COUNT()', 'SUM()', 'AVG()', 'MIN()', 'MAX()'].map((func) => (
-              <div key={func} className="bg-gray-100 dark:bg-gray-800 p-3 rounded border border-gray-300 dark:border-gray-700">
-                <code className="font-semibold text-blue-600 dark:text-blue-400">{func}</code>
-              </div>
-            ))}
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- SELF JOIN: Find pairs of employees in the same department
+-- Useful for team analysis, collaboration patterns, etc.
+
+SELECT 
+  e1.name AS employee_1,
+  e2.name AS employee_2,
+  e1.department AS shared_department
+FROM employees e1
+JOIN employees e2 
+  ON e1.department = e2.department
+  AND e1.id < e2.id  -- Avoid duplicates (A-B and B-A) and self-pairs (A-A)
+WHERE e1.department = 'Engineering'
+ORDER BY e1.name, e2.name;
+
+-- Note: For actual hierarchies (employee-manager), you'd have a manager_id column:
+-- SELECT 
+--   e.name AS employee,
+--   m.name AS manager
+-- FROM employees e
+-- LEFT JOIN employees m ON e.manager_id = m.id;`}
+          />
+
+          <Callout type="tip" title="Common SELF JOIN Use Cases">
+            <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Organizational hierarchies:</strong> employee → manager chains</li>
+              <li><strong>Finding duplicates:</strong> Compare rows to themselves to find similar records</li>
+              <li><strong>Sequential analysis:</strong> Compare current month to previous month (time series)</li>
+              <li><strong>Graph traversal:</strong> Nodes and edges in the same table</li>
+            </ul>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="Complex Multi-Table JOINs">
+          <p>
+            Real-world queries often JOIN three, four, or more tables. The key is building them incrementally and understanding
+            the logical flow:
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- Complex 4-table JOIN: Full financial analysis
+-- Goal: Show average revenue per sector
+
+SELECT 
+  s.SectorName,
+  COUNT(DISTINCT c.CompanyID) AS company_count,
+  COUNT(DISTINCT fs.StatementID) AS statement_count,
+  AVG(li.Value) AS avg_revenue
+FROM Sectors s
+JOIN Companies c 
+  ON s.SectorID = c.SectorID
+JOIN Financial_Statements fs 
+  ON c.CompanyID = fs.CompanyID
+JOIN Line_Items li 
+  ON fs.StatementID = li.StatementID
+WHERE li.ItemName = 'Revenue'
+GROUP BY s.SectorName
+ORDER BY avg_revenue DESC;
+
+-- Tip: Build complex JOINs incrementally
+-- Start with 2 tables, verify results, then add the 3rd, etc.`}
+          />
+
+          <p className="mt-6">
+            <strong>Pro tip:</strong> When debugging complex JOINs, add <code>COUNT(*)</code> at each step to see how many
+            rows you're getting. Unexpected row counts often indicate missing or incorrect join conditions.
+          </p>
+        </Subsection>
+
+        <Callout type="ai" title="AI-Assisted JOINs: Describing Relationships">
+          <p>
+            AI can generate JOIN queries when you clearly describe your database relationships and what you want to know.
+          </p>
+
+          <div className="mt-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-500 dark:border-teal-700 rounded-lg p-4">
+            <p className="font-semibold text-teal-900 dark:text-teal-200 mb-2">Example Prompt:</p>
+            <pre className="text-sm text-teal-800 dark:text-teal-300 whitespace-pre-wrap">
+{`Schema relationships:
+- Companies (company_id PK, sector_id FK → Sectors)
+- Sectors (sector_id PK)
+- Financial_Statements (statement_id PK, company_id FK → Companies)
+- Line_Items (item_id PK, statement_id FK → Financial_Statements)
+
+Task: Write a query to find all technology companies (sector = 'Technology')
+that reported revenue above $100B in 2024. Show company name, revenue, and
+rank them by revenue descending.
+
+Generate: SQLite-compatible query with clear aliases and comments.`}
+            </pre>
+          </div>
+
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+            <strong>Key to good AI JOIN queries:</strong> Clearly specify PK→FK relationships. AI needs to understand how
+            tables connect to generate correct <code>ON</code> clauses.
+          </p>
+        </Callout>
+
+        <p className="mt-6">
+          Mastering JOINs unlocks the full power of relational databases. Next, we'll explore how to summarize and aggregate
+          joined data using GROUP BY—transforming raw rows into meaningful insights.
+        </p>
+      </Section>
+
+      {/* SECTION 4: Aggregation and GROUP BY */}
+      <Section id="section9" title="Aggregation and Grouping - From Rows to Insights" level={2}>
+        <p>
+          So far, we've retrieved individual rows from tables. But often, you don't want raw rows—you want <em>summaries</em>:
+          "How many customers per country?", "What's the average salary per department?", "Total revenue by quarter?"
+        </p>
+
+        <p className="mt-4">
+          This is where <strong>aggregate functions</strong> and <code>GROUP BY</code> transform SQL from a data retrieval tool
+          into an analytical powerhouse. These features turn databases into real-time reporting engines.
+        </p>
+
+        <Subsection title="Aggregate Functions: Crunching Numbers">
+          <p>
+            Aggregate functions perform calculations across multiple rows and return a single summary value. SQL provides five
+            core aggregate functions:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2"><code className="text-blue-600 dark:text-blue-400">COUNT()</code></h4>
+              <p className="text-sm">Counts rows. <code>COUNT(*)</code> counts all rows; <code>COUNT(column)</code> counts non-NULL values.</p>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2"><code className="text-blue-600 dark:text-blue-400">SUM()</code></h4>
+              <p className="text-sm">Calculates the total of numeric values in a column.</p>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2"><code className="text-blue-600 dark:text-blue-400">AVG()</code></h4>
+              <p className="text-sm">Computes the average (mean) of numeric values.</p>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2"><code className="text-blue-600 dark:text-blue-400">MIN()</code></h4>
+              <p className="text-sm">Finds the minimum value in a column (works on numbers, dates, strings).</p>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2"><code className="text-blue-600 dark:text-blue-400">MAX()</code></h4>
+              <p className="text-sm">Finds the maximum value in a column.</p>
+            </div>
           </div>
 
           <SQLPlayground
-            preset={FINANCIAL_FULL_PRESET}
-            defaultQuery={`-- Aggregate functions in action
-SELECT
-  COUNT(DISTINCT CompanyID) AS total_companies,
-  AVG(Value) AS average_revenue
-FROM Line_Items
-WHERE ItemName = 'Revenue';
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Basic aggregate functions on employees table
 
--- GROUP BY: aggregate per group
-SELECT
+-- Count all employees
+SELECT COUNT(*) AS total_employees FROM employees;
+
+-- Count employees with non-NULL salaries
+SELECT COUNT(salary) AS employees_with_salary FROM employees;
+
+-- Calculate aggregate statistics for salaries
+SELECT 
+  COUNT(*) AS employee_count,
+  SUM(salary) AS total_payroll,
+  AVG(salary) AS average_salary,
+  MIN(salary) AS lowest_salary,
+  MAX(salary) AS highest_salary
+FROM employees;
+
+-- Fun fact: MIN/MAX work on dates and strings too!
+SELECT 
+  MIN(hire_date) AS earliest_hire,
+  MAX(hire_date) AS latest_hire,
+  MIN(name) AS alphabetically_first,
+  MAX(name) AS alphabetically_last
+FROM employees;`}
+          />
+        </Subsection>
+
+        <Subsection title="GROUP BY: Organizing Data into Buckets">
+          <p>
+            <code>GROUP BY</code> is where aggregation gets really powerful. It divides rows into groups based on column values,
+            then applies aggregate functions to each group separately.
+          </p>
+
+          <MermaidDiagram
+            caption="How GROUP BY Works: Organizing Rows into Groups"
+            chart={`
+flowchart LR
+    subgraph Input["📋 Original Rows"]
+        direction TB
+        R1["Alice | Eng | 90k"]
+        R2["Bob | Eng | 85k"]
+        R3["Carol | Sales | 75k"]
+        R4["David | Sales | 70k"]
+        R5["Eve | HR | 65k"]
+    end
+    
+    subgraph GroupBy["🗂️ GROUP BY dept"]
+        direction TB
+        G1["Eng: Alice, Bob"]
+        G2["Sales: Carol, David"]
+        G3["HR: Eve"]
+    end
+    
+    subgraph Aggregate["🔢 Aggregate"]
+        direction TB
+        A1["Eng:<br/>AVG=87.5k, COUNT=2"]
+        A2["Sales:<br/>AVG=72.5k, COUNT=2"]
+        A3["HR:<br/>AVG=65k, COUNT=1"]
+    end
+    
+    Input ==> GroupBy
+    GroupBy ==> Aggregate
+            `}
+          />
+
+          <CodeExample
+            title="GROUP BY Syntax"
+            code={`SELECT 
+  grouping_column,
+  AGG_FUNCTION(column) AS alias
+FROM table
+WHERE row_filter          -- Filter BEFORE grouping
+GROUP BY grouping_column
+HAVING group_filter       -- Filter AFTER aggregation
+ORDER BY column;
+
+-- Multiple grouping columns
+SELECT col1, col2, AGG_FUNCTION(col3)
+FROM table
+GROUP BY col1, col2;`}
+          />
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- GROUP BY: Analyze employees by department
+
+-- Count employees per department
+SELECT 
+  department,
+  COUNT(*) AS employee_count
+FROM employees
+GROUP BY department
+ORDER BY employee_count DESC;
+
+-- Salary statistics per department
+SELECT 
+  department,
+  COUNT(*) AS employee_count,
+  AVG(salary) AS avg_salary,
+  MIN(salary) AS min_salary,
+  MAX(salary) AS max_salary,
+  SUM(salary) AS dept_payroll
+FROM employees
+GROUP BY department
+ORDER BY avg_salary DESC;
+
+-- Multiple grouping columns: department + hire year
+SELECT 
+  department,
+  strftime('%Y', hire_date) AS hire_year,  -- Extract year from date
+  COUNT(*) AS hires_that_year
+FROM employees
+GROUP BY department, hire_year
+ORDER BY department, hire_year;`}
+          />
+
+          <Callout type="info" title="GROUP BY Rule: SELECT Only Grouped or Aggregated Columns">
+            <p>
+              When using GROUP BY, your SELECT clause can only include:
+            </p>
+            <ol className="list-decimal pl-5 space-y-1 mt-2">
+              <li>Columns listed in the GROUP BY clause</li>
+              <li>Aggregate functions (COUNT, SUM, AVG, etc.)</li>
+            </ol>
+            <p className="mt-2">
+              <strong>Why?</strong> Each group produces one output row. If you try to SELECT a column that's NOT grouped,
+              SQL doesn't know which value from the group to show.
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="WHERE vs. HAVING: Two Levels of Filtering">
+          <p>
+            This is one of SQL's most confusing concepts for beginners: when to use WHERE vs. HAVING. The key is understanding
+            <em>when</em> each operates in the query execution order (we'll explore this in detail in <a href="#section14" className="text-blue-600 dark:text-blue-400 hover:underline">Section 9: How SQL Really Works</a>):
+          </p>
+
+          <MermaidDiagram
+            caption="WHERE vs HAVING: Different Stages of Filtering"
+            chart={`
+flowchart LR
+    Start["📊 All Rows"] 
+    
+    Start ==>|"1️⃣ WHERE<br/>(filter rows)"| Filtered["Filtered Rows"]
+    
+    Filtered ==>|"2️⃣ GROUP BY<br/>(group)"| Grouped["Grouped Data"]
+    
+    Grouped ==>|"3️⃣ Aggregate<br/>(calculate)"| Aggregated["Group Results"]
+    
+    Aggregated ==>|"4️⃣ HAVING<br/>(filter groups)"| Final["✅ Final Result"]
+            `}
+          />
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Aspect</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">WHERE</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">HAVING</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Operates on</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Individual rows</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Grouped results</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Executes</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">BEFORE GROUP BY</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">AFTER GROUP BY</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Can use aggregates?</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Example</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>WHERE salary &gt; 80000</code></td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>HAVING AVG(salary) &gt; 80000</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- WHERE vs HAVING demonstration
+
+-- WRONG: Can't use aggregate in WHERE
+-- SELECT department, AVG(salary)
+-- FROM employees
+-- WHERE AVG(salary) > 75000  -- ERROR!
+-- GROUP BY department;
+
+-- CORRECT: Use HAVING to filter groups
+SELECT 
+  department,
+  COUNT(*) AS employee_count,
+  AVG(salary) AS avg_salary
+FROM employees
+GROUP BY department
+HAVING AVG(salary) > 75000  -- Filter departments with high avg salary
+ORDER BY avg_salary DESC;
+
+-- Using BOTH WHERE and HAVING (common pattern)
+SELECT 
+  department,
+  COUNT(*) AS employee_count,
+  AVG(salary) AS avg_salary
+FROM employees
+WHERE hire_date >= '2020-01-01'  -- Filter rows: only recent hires
+GROUP BY department
+HAVING COUNT(*) >= 2             -- Filter groups: only depts with 2+ recent hires
+ORDER BY avg_salary DESC;`}
+          />
+        </Subsection>
+
+        <Subsection title="Advanced Aggregation: DISTINCT and Complex Expressions">
+          <p>
+            Aggregate functions have additional capabilities beyond basic usage:
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- Advanced aggregation techniques
+
+-- COUNT DISTINCT: Count unique values
+SELECT 
+  COUNT(*) AS total_statements,
+  COUNT(DISTINCT CompanyID) AS companies_with_statements,
+  COUNT(DISTINCT Year) AS years_covered
+FROM Financial_Statements;
+
+-- Aggregates on calculated expressions
+SELECT 
   s.SectorName,
-  COUNT(c.CompanyID) AS company_count,
-  AVG(li.Value) AS avg_revenue
+  COUNT(*) AS line_item_count,
+  AVG(li.Value) AS avg_value,
+  SUM(li.Value) / 1000000000 AS total_billions,  -- Convert to billions
+  MAX(li.Value) - MIN(li.Value) AS value_range
 FROM Sectors s
 JOIN Companies c ON s.SectorID = c.SectorID
 JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
 JOIN Line_Items li ON fs.StatementID = li.StatementID
 WHERE li.ItemName = 'Revenue'
-GROUP BY s.SectorName;`}
+GROUP BY s.SectorName
+HAVING COUNT(*) >= 3  -- Only sectors with 3+ revenue line items
+ORDER BY total_billions DESC;`}
           />
         </Subsection>
 
-        <Subsection title="GROUP BY and HAVING">
+        <Callout type="ai" title="AI-Assisted Aggregation: Generating Summary Reports">
           <p>
-            <strong>GROUP BY</strong> groups rows with the same values in specified columns. 
-            <strong>HAVING</strong> filters groups (unlike WHERE which filters individual rows).
+            AI excels at writing GROUP BY queries when you describe what insights you want. The key is being specific about
+            grouping dimensions and metrics.
+          </p>
+
+          <div className="mt-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-500 dark:border-teal-700 rounded-lg p-4">
+            <p className="font-semibold text-teal-900 dark:text-teal-200 mb-2">Example Prompt:</p>
+            <pre className="text-sm text-teal-800 dark:text-teal-300 whitespace-pre-wrap">
+{`Schema: employees (id, name, department, salary, hire_date)
+
+Task: Create a department summary report showing:
+- Department name
+- Total employee count
+- Average salary
+- Salary range (max - min)
+- Total department payroll
+
+Filter: Only include departments with 3+ employees
+Sort: By average salary descending
+
+Generate: SQLite query with clear column aliases`}
+            </pre>
+          </div>
+        </Callout>
+
+        <p className="mt-6">
+          Aggregation and GROUP BY are essential for analytical queries. Next, we'll explore subqueries and CTEs—techniques
+          for building complex, multi-step analytical logic.
+        </p>
+      </Section>
+
+      {/* SECTION 5: Subqueries and CTEs */}
+      <Section id="section10" title="Subqueries and CTEs - Breaking Down Complexity" level={2}>
+        <p>
+          As your analytical questions grow more complex, single-level queries become unwieldy. You need to break problems
+          into logical steps: "First find X, then use that result to find Y." This is where <strong>subqueries</strong> and
+          <strong>Common Table Expressions (CTEs)</strong> shine.
+        </p>
+
+        <p className="mt-4">
+          These features let you compose complex logic from simple building blocks—making SQL queries more readable, maintainable,
+          and easier to debug.
+        </p>
+
+        <Subsection title="Subqueries: Queries Within Queries">
+          <p>
+            A <strong>subquery</strong> (or nested query) is a SELECT statement embedded inside another SQL statement. Subqueries
+            can appear in various places—SELECT, FROM, WHERE, HAVING—and return different types of results.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Scalar Subquery</h4>
+              <p className="text-sm">Returns a single value (one row, one column). Use with =, &lt;, &gt;, etc.</p>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Row Subquery</h4>
+              <p className="text-sm">Returns a single row with multiple columns. Rarely used in practice.</p>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Table Subquery</h4>
+              <p className="text-sm">Returns multiple rows. Use with IN, EXISTS, or as a derived table in FROM.</p>
+            </div>
+          </div>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Scalar subquery: Compare to average
+-- Find employees earning more than the average salary
+
+SELECT 
+  name,
+  department,
+  salary,
+  (SELECT AVG(salary) FROM employees) AS company_avg
+FROM employees
+WHERE salary > (SELECT AVG(salary) FROM employees)
+ORDER BY salary DESC;
+
+-- Subquery with IN: Find employees in high-paying departments
+SELECT name, department, salary
+FROM employees
+WHERE department IN (
+  SELECT department
+  FROM employees
+  GROUP BY department
+  HAVING AVG(salary) > 75000
+)
+ORDER BY department, salary DESC;`}
+          />
+
+          <p className="mt-6">
+            <strong>Subqueries in FROM:</strong> You can use a subquery as a "derived table" in the FROM clause, treating
+            the subquery result as a temporary table:
+          </p>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Derived table: Calculate dept stats, then rank departments
+
+SELECT 
+  dept_name,
+  avg_salary,
+  CASE 
+    WHEN avg_salary > 85000 THEN 'Premium'
+    WHEN avg_salary > 70000 THEN 'Competitive'
+    ELSE 'Standard'
+  END AS pay_tier
+FROM (
+  -- This subquery calculates per-department averages
+  SELECT 
+    department AS dept_name,
+    AVG(salary) AS avg_salary
+  FROM employees
+  GROUP BY department
+) AS dept_stats
+ORDER BY avg_salary DESC;`}
+          />
+        </Subsection>
+
+        <Subsection title="Correlated Subqueries: Referencing Outer Query">
+          <p>
+            A <strong>correlated subquery</strong> references columns from the outer query. It's executed once per row of the
+            outer query, making it potentially slow but very powerful for row-by-row comparisons.
+          </p>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Correlated subquery: Find employees earning above their department average
+
+SELECT 
+  e1.name,
+  e1.department,
+  e1.salary,
+  (
+    -- This subquery runs for EACH employee (e1)
+    SELECT AVG(salary)
+    FROM employees e2
+    WHERE e2.department = e1.department  -- Correlation: refers to outer query
+  ) AS dept_avg
+FROM employees e1
+WHERE e1.salary > (
+  SELECT AVG(salary)
+  FROM employees e2
+  WHERE e2.department = e1.department
+)
+ORDER BY e1.department, e1.salary DESC;`}
+          />
+
+          <Callout type="warning" title="Performance Warning: Correlated Subqueries">
+            <p>
+              Correlated subqueries execute once per row of the outer query. For a table with 10,000 rows, the inner query
+              runs 10,000 times! Modern optimizers sometimes rewrite them as joins, but not always.
+            </p>
+            <p className="mt-2">
+              <strong>Better alternative:</strong> Use JOINs or window functions when possible (covered in Section 7).
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="EXISTS and NOT EXISTS: Testing for Existence">
+          <p>
+            <code>EXISTS</code> is a special operator that returns TRUE if a subquery returns any rows. It's optimized to stop
+            as soon as it finds the first match (unlike IN, which processes all results).
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- EXISTS: Find customers who have placed at least one order
+-- (More efficient than IN for large datasets)
+
+SELECT 
+  customer_id,
+  first_name,
+  last_name,
+  email
+FROM customers c
+WHERE EXISTS (
+  SELECT 1  -- The SELECT clause doesn't matter for EXISTS
+  FROM orders o
+  WHERE o.customer_id = c.customer_id
+)
+ORDER BY last_name, first_name;
+
+-- NOT EXISTS: Find customers who have NEVER placed an order
+SELECT 
+  customer_id,
+  first_name,
+  last_name,
+  email
+FROM customers c
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM orders o
+  WHERE o.customer_id = c.customer_id
+)
+ORDER BY last_name, first_name;`}
+          />
+        </Subsection>
+
+        <Subsection title="Common Table Expressions (CTEs): WITH Clause">
+          <p>
+            <strong>CTEs</strong> (Common Table Expressions) provide a cleaner, more readable way to write complex queries.
+            Think of them as named temporary result sets that exist only for the duration of the query.
           </p>
 
           <MermaidDiagram
-            caption="GROUP BY: Organizing Data into Buckets"
+            caption="CTE Benefits: Readability and Reusability"
             chart={`
-graph TB
-    subgraph Input["All Rows (Mixed Sectors)"]
-        R1["Apple | Tech | 383B"]
-        R2["Microsoft | Tech | 211B"]
-        R3["JPMorgan | Finance | 158B"]
-        R4["Goldman | Finance | 47B"]
+flowchart LR
+    subgraph Complex["❌ Nested Subqueries"]
+        direction TB
+        C1["😵 Hard to read"]
+        C2["🐛 Hard to debug"]
+        C3["📋 Copy-paste reuse"]
     end
     
-    subgraph GroupBy["GROUP BY SectorName"]
-        G1["Tech Group:<br/>Apple, Microsoft"]
-        G2["Finance Group:<br/>JPMorgan, Goldman"]
+    subgraph CTE["✅ CTEs (WITH)"]
+        direction TB
+        T1["✨ Clear step-by-step"]
+        T2["🔍 Test each CTE"]
+        T3["♻️ Reuse by name"]
     end
     
-    subgraph Aggregate["Apply Aggregate Functions"]
-        A1["Tech: AVG = 297B"]
-        A2["Finance: AVG = 102.5B"]
-    end
-    
-    Input --> GroupBy
-    GroupBy --> Aggregate
-    
-    style GroupBy fill:#dbeafe,stroke:#2563eb,color:#000
-    style Aggregate fill:#dcfce7,stroke:#16a34a,color:#000
+    Complex ==> |"Refactor"| CTE
             `}
           />
 
-          <MermaidDiagram
-            caption="WHERE vs HAVING: Different Filtering Stages"
-            chart={`
-graph LR
-    Start["Original Table"] 
-    
-    Start -->|"1. WHERE<br/>(Filter Rows)"| Filtered["Filtered Rows"]
-    
-    Filtered -->|"2. GROUP BY<br/>(Create Groups)"| Grouped["Grouped Data"]
-    
-    Grouped -->|"3. Aggregate<br/>(Calculate)"| Aggregated["Group Results"]
-    
-    Aggregated -->|"4. HAVING<br/>(Filter Groups)"| Final["Final Result"]
-    
-    style Filtered fill:#fef3c7,stroke:#d97706,color:#000
-    style Final fill:#dcfce7,stroke:#16a34a,color:#000
-            `}
+          <CodeExample
+            title="CTE Syntax"
+            code={`-- Single CTE
+WITH cte_name AS (
+  SELECT column1, column2
+  FROM table
+  WHERE condition
+)
+SELECT * FROM cte_name;
+
+-- Multiple CTEs (separated by commas, not semicolons!)
+WITH
+  cte1 AS (SELECT ...),
+  cte2 AS (SELECT ...),
+  cte3 AS (SELECT ...)
+SELECT * FROM cte1
+JOIN cte2 ON ...
+JOIN cte3 ON ...;`}
           />
 
-          <Callout type="info" title="Key Distinction">
-            WHERE filters rows <em>before</em> grouping; HAVING filters groups <em>after</em> aggregation.
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- CTE example: Multi-step customer analysis
+
+WITH 
+  -- Step 1: Calculate per-customer order statistics
+  customer_orders AS (
+    SELECT 
+      customer_id,
+      COUNT(*) AS order_count,
+      SUM(total_amount) AS total_spent,
+      AVG(total_amount) AS avg_order_value,
+      MAX(order_date) AS last_order_date
+    FROM orders
+    GROUP BY customer_id
+  ),
+  -- Step 2: Categorize customers by spending
+  customer_tiers AS (
+    SELECT 
+      *,
+      CASE
+        WHEN total_spent >= 1000 THEN 'VIP'
+        WHEN total_spent >= 500 THEN 'Premium'
+        ELSE 'Standard'
+      END AS customer_tier
+    FROM customer_orders
+  )
+-- Step 3: Join with customer details and final filter
+SELECT 
+  c.first_name || ' ' || c.last_name AS customer_name,
+  c.email,
+  ct.order_count,
+  ct.total_spent,
+  ct.avg_order_value,
+  ct.customer_tier,
+  ct.last_order_date
+FROM customer_tiers ct
+JOIN customers c ON ct.customer_id = c.customer_id
+WHERE ct.customer_tier IN ('VIP', 'Premium')
+ORDER BY ct.total_spent DESC;`}
+          />
+
+          <p className="mt-6">
+            CTEs make complex queries dramatically more readable. Each CTE represents a logical step, and you can test
+            each step independently by selecting from that CTE alone.
+          </p>
+        </Subsection>
+
+        <Subsection title="Recursive CTEs: Hierarchies and Graphs">
+          <p>
+            <strong>Recursive CTEs</strong> are CTEs that reference themselves—enabling queries on hierarchical or graph-structured
+            data like organizational charts, bill-of-materials, or category trees.
+          </p>
+
+          <Callout type="tip" title="Recursive CTE Structure">
+            <p>A recursive CTE has two parts:</p>
+            <ol className="list-decimal pl-5 space-y-1 mt-2">
+              <li><strong>Anchor member:</strong> The base case (non-recursive SELECT)</li>
+              <li><strong>Recursive member:</strong> References the CTE itself (connected by UNION ALL)</li>
+            </ol>
+            <p className="mt-2">
+              The recursion continues until the recursive member returns no rows.
+            </p>
           </Callout>
 
-          <SQLPlayground
-            preset={FINANCIAL_FULL_PRESET}
-            defaultQuery={`-- Use WHERE and HAVING together
-SELECT
-  s.SectorName,
-  AVG(li.Value) AS avg_net_income
-FROM Sectors s
-JOIN Companies c ON s.SectorID = c.SectorID
-JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
-JOIN Line_Items li ON fs.StatementID = li.StatementID
-WHERE
-  li.ItemName = 'Net Income'  -- Filter rows first
-GROUP BY
-  s.SectorName
-HAVING
-  AVG(li.Value) > 50000000000;  -- Filter groups after aggregation`}
+          <CodeExample
+            title="Recursive CTE Syntax"
+            code={`WITH RECURSIVE cte_name AS (
+  -- Anchor: Base case
+  SELECT ...
+  FROM table
+  WHERE ...
+  
+  UNION ALL
+  
+  -- Recursive: References cte_name
+  SELECT ...
+  FROM table
+  JOIN cte_name ON ...  -- Self-reference!
+  WHERE ...              -- Termination condition
+)
+SELECT * FROM cte_name;`}
           />
+
+          <SQLPlayground
+            preset={EMPTY_PRESET}
+            defaultQuery={`-- Recursive CTE: Generate a sequence of numbers
+
+WITH RECURSIVE number_sequence AS (
+  -- Anchor: Start at 1
+  SELECT 1 AS n
+  
+  UNION ALL
+  
+  -- Recursive: Add 1 each time, stop at 10
+  SELECT n + 1
+  FROM number_sequence
+  WHERE n < 10
+)
+SELECT n AS number FROM number_sequence;
+
+-- Practical use: Generate date range for reporting
+WITH RECURSIVE date_range AS (
+  SELECT DATE('2024-01-01') AS report_date
+  
+  UNION ALL
+  
+  SELECT DATE(report_date, '+1 day')
+  FROM date_range
+  WHERE report_date < DATE('2024-01-10')
+)
+SELECT 
+  report_date,
+  strftime('%w', report_date) AS day_of_week,
+  CASE strftime('%w', report_date)
+    WHEN '0' THEN 'Sunday'
+    WHEN '6' THEN 'Saturday'
+    ELSE 'Weekday'
+  END AS day_type
+FROM date_range;`}
+          />
+
+          <p className="mt-6">
+            Recursive CTEs are powerful but can be tricky. Always ensure you have a proper termination condition to avoid
+            infinite recursion!
+          </p>
         </Subsection>
 
-        <Subsection title="Subqueries">
+        <Callout type="ai" title="AI-Assisted Query Decomposition with CTEs">
           <p>
-            A <strong>subquery</strong> is a query nested inside another query, allowing for multi-step logic.
+            When facing a complex analytical question, ask AI to break it down into CTEs. This makes the query easier to
+            understand and debug.
+          </p>
+
+          <div className="mt-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-500 dark:border-teal-700 rounded-lg p-4">
+            <p className="font-semibold text-teal-900 dark:text-teal-200 mb-2">Example Prompt:</p>
+            <pre className="text-sm text-teal-800 dark:text-teal-300 whitespace-pre-wrap">
+{`Schema: 
+- orders (order_id, customer_id, order_date, total_amount)
+- customers (customer_id, name, email, region)
+
+Task: Find the top 3 customers by total spending in each region,
+but only for customers who've placed at least 3 orders.
+
+Generate: SQLite query using CTEs to break down the logic into clear steps.
+Add comments explaining each CTE's purpose.`}
+            </pre>
+          </div>
+        </Callout>
+
+        <p className="mt-6">
+          Subqueries and CTEs are essential tools for complex analytical queries. Next, we'll explore Window Functions—a
+          modern SQL feature that provides even more powerful analytical capabilities.
+        </p>
+      </Section>
+
+      {/* ============================================
+          SECTION 6: Window Functions - Advanced Analytics
+          ============================================ */}
+      <Section id="section11" title="7. Window Functions: Analytics Without Grouping">
+        <p>
+          <strong>Window functions</strong> are one of SQL's most powerful modern features, introduced in SQL:2003. They perform
+          calculations across a "window" of rows related to the current row—<em>without collapsing rows like GROUP BY</em>.
+        </p>
+
+        <p className="mt-4">
+          Think of window functions as adding a "sidebar calculation" to each row. You get to keep all your individual rows
+          while also seeing aggregate or ranking information computed over related rows.
+        </p>
+
+        <Callout type="tip" title="Window Functions vs. GROUP BY">
+          <p>
+            <strong>GROUP BY</strong> collapses multiple rows into summary rows (e.g., total sales per department).
+            <br />
+            <strong>Window functions</strong> add calculated columns to existing rows without collapsing (e.g., each employee
+            row shows their rank within their department).
+          </p>
+          <p className="mt-2">
+            This means you can answer questions like "show each employee's salary <em>and</em> how they rank in their department"
+            in a single query, without joins or subqueries.
+          </p>
+        </Callout>
+
+        <Subsection title="Ranking Functions: ROW_NUMBER, RANK, DENSE_RANK">
+          <p>
+            The most common window functions assign ranks or row numbers based on an ordering. Understanding the differences
+            between these three is crucial:
+          </p>
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Function</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Behavior on Ties</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example (Salaries: 100K, 100K, 90K)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">ROW_NUMBER()</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Assigns unique numbers arbitrarily for ties</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">1, 2, 3</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">RANK()</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Same rank for ties, then skips numbers</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">1, 1, 3</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">DENSE_RANK()</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Same rank for ties, no gaps</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">1, 1, 2</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Compare ranking functions: Finding top earners
+
+SELECT 
+  name,
+  department,
+  salary,
+  ROW_NUMBER() OVER (ORDER BY salary DESC) AS row_num,
+  RANK() OVER (ORDER BY salary DESC) AS rank,
+  DENSE_RANK() OVER (ORDER BY salary DESC) AS dense_rank
+FROM employees
+ORDER BY salary DESC, name;
+
+-- Notice the difference when there are salary ties!`}
+          />
+
+          <p className="mt-4">
+            The <code>OVER</code> clause defines the "window" of rows to consider. Here, <code>ORDER BY salary DESC</code>
+            ranks all employees by salary (highest first).
+          </p>
+        </Subsection>
+
+        <Subsection title="PARTITION BY: Ranking Within Groups">
+          <p>
+            The real power of window functions emerges with <code>PARTITION BY</code>, which divides rows into groups before
+            applying the window function. This lets you rank or calculate statistics <em>within each partition</em> independently.
           </p>
 
           <SQLPlayground
-            preset={FINANCIAL_FULL_PRESET}
-            defaultQuery={`-- Scalar subquery (returns single value)
-SELECT CompanyName, StockTicker
-FROM Companies
-WHERE SectorID = (
-  SELECT SectorID
-  FROM Sectors
-  WHERE SectorName = 'Technology'
-);
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Rank employees within their own department
 
--- Subquery with IN
-SELECT ItemName, Value
-FROM Line_Items
-WHERE StatementID IN (
-  SELECT StatementID
-  FROM Financial_Statements
-  WHERE Year = 2024
-);`}
+SELECT 
+  name,
+  department,
+  salary,
+  RANK() OVER (
+    PARTITION BY department 
+    ORDER BY salary DESC
+  ) AS dept_rank
+FROM employees
+ORDER BY department, dept_rank;
+
+-- Each department's ranking resets independently!
+-- Engineering rank 1 vs Sales rank 1 are unrelated`}
+          />
+
+          <p className="mt-4">
+            This query answers: "Within each department, how does this employee's salary rank?" Without window functions,
+            you'd need complex self-joins or correlated subqueries.
+          </p>
+        </Subsection>
+
+        <Subsection title="Aggregate Window Functions: Running Totals and Moving Averages">
+          <p>
+            You can use familiar aggregate functions (<code>SUM</code>, <code>AVG</code>, <code>COUNT</code>, etc.) as window
+            functions by adding an <code>OVER</code> clause. This creates powerful analytical capabilities like running totals
+            and moving averages.
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- Running total of order amounts over time
+
+SELECT 
+  order_id,
+  order_date,
+  total_amount,
+  -- Running total: sum of all orders up to and including this one
+  SUM(total_amount) OVER (
+    ORDER BY order_date, order_id
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+  ) AS running_total,
+  -- Rolling 3-order average
+  AVG(total_amount) OVER (
+    ORDER BY order_date, order_id
+    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+  ) AS rolling_avg_3
+FROM orders
+ORDER BY order_date, order_id
+LIMIT 20;`}
+          />
+
+          <Callout type="info" title="Window Frame Specification">
+            <p>
+              The <code>ROWS BETWEEN ... AND ...</code> clause defines the <strong>window frame</strong>—which rows relative
+              to the current row are included in the calculation:
+            </p>
+            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm">
+              <li><code>UNBOUNDED PRECEDING</code>: From the first row of the partition</li>
+              <li><code>CURRENT ROW</code>: The current row</li>
+              <li><code>N PRECEDING</code>: N rows before the current row</li>
+              <li><code>N FOLLOWING</code>: N rows after the current row</li>
+              <li><code>UNBOUNDED FOLLOWING</code>: To the last row of the partition</li>
+            </ul>
+            <p className="mt-2">
+              Default (if omitted): <code>RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</code>
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="LAG and LEAD: Accessing Adjacent Rows">
+          <p>
+            <code>LAG()</code> and <code>LEAD()</code> let you access values from previous or subsequent rows without self-joins.
+            This is invaluable for time-series analysis, calculating changes, or comparing sequential records.
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- Calculate time between orders for each customer
+
+SELECT 
+  customer_id,
+  order_id,
+  order_date,
+  total_amount,
+  -- Previous order date for this customer
+  LAG(order_date) OVER (
+    PARTITION BY customer_id 
+    ORDER BY order_date
+  ) AS prev_order_date,
+  -- Days since previous order
+  JULIANDAY(order_date) - JULIANDAY(
+    LAG(order_date) OVER (
+      PARTITION BY customer_id 
+      ORDER BY order_date
+    )
+  ) AS days_since_last_order,
+  -- Compare to next order amount
+  LEAD(total_amount) OVER (
+    PARTITION BY customer_id 
+    ORDER BY order_date
+  ) AS next_order_amount
+FROM orders
+WHERE customer_id IN (1, 2)
+ORDER BY customer_id, order_date;`}
+          />
+
+          <p className="mt-4">
+            <code>LAG(column, offset, default)</code> retrieves the value from <code>offset</code> rows before the current row.
+            <br />
+            <code>LEAD(column, offset, default)</code> retrieves the value from <code>offset</code> rows after.
+            <br />
+            The <code>default</code> value is returned when no such row exists (e.g., first row for LAG).
+          </p>
+        </Subsection>
+
+        <Subsection title="NTILE: Dividing Data into Buckets">
+          <p>
+            <code>NTILE(n)</code> distributes rows into <code>n</code> roughly equal groups (buckets). This is perfect for
+            percentile analysis, creating quartiles, or segmenting data for A/B testing.
+          </p>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Divide employees into salary quartiles (4 buckets)
+
+SELECT 
+  name,
+  department,
+  salary,
+  NTILE(4) OVER (ORDER BY salary) AS salary_quartile,
+  CASE NTILE(4) OVER (ORDER BY salary)
+    WHEN 4 THEN 'Top 25%'
+    WHEN 3 THEN 'Upper Middle'
+    WHEN 2 THEN 'Lower Middle'
+    WHEN 1 THEN 'Bottom 25%'
+  END AS salary_bracket
+FROM employees
+ORDER BY salary DESC;
+
+-- Each quartile contains ~25% of employees`}
           />
         </Subsection>
 
-        <Subsection title="SQL Query Execution Order">
+        <Subsection title="Combining Window Functions: Real-World Analytics">
           <p>
-            Understanding the logical order in which SQL processes a query is fundamental to mastering SQL.
-            The order you <em>write</em> the query is different from how the database <em>executes</em> it:
+            The true power of window functions shines when you combine multiple in a single query for sophisticated analysis.
           </p>
 
-          <MermaidDiagram
-            caption="Logical SQL Query Execution Order (How Database Actually Processes)"
-            chart={`
-graph TD
-    Start["SQL Query Written"] --> Step1
-    
-    Step1["1. FROM & JOIN<br/>Identify and combine tables"] --> Step2
-    Step2["2. WHERE<br/>Filter individual rows<br/>(before grouping)"] --> Step3
-    Step3["3. GROUP BY<br/>Organize rows into groups"] --> Step4
-    Step4["4. HAVING<br/>Filter groups<br/>(after aggregation)"] --> Step5
-    Step5["5. SELECT<br/>Choose columns and<br/>create aliases"] --> Step6
-    Step6["6. DISTINCT<br/>Remove duplicate rows"] --> Step7
-    Step7["7. ORDER BY<br/>Sort the result set"] --> Step8
-    Step8["8. LIMIT/OFFSET<br/>Paginate results"] --> End
-    
-    End["Final Result Set"]
-    
-    style Step1 fill:#fee2e2,stroke:#dc2626,color:#000
-    style Step2 fill:#fed7aa,stroke:#ea580c,color:#000
-    style Step3 fill:#fef3c7,stroke:#d97706,color:#000
-    style Step4 fill:#fef9c3,stroke:#ca8a04,color:#000
-    style Step5 fill:#dbeafe,stroke:#2563eb,color:#000
-    style Step6 fill:#e0e7ff,stroke:#6366f1,color:#000
-    style Step7 fill:#ddd6fe,stroke:#8b5cf6,color:#000
-    style Step8 fill:#fce7f3,stroke:#db2777,color:#000
-    style End fill:#dcfce7,stroke:#16a34a,color:#000
-            `}
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Comprehensive employee analytics in one query
+
+SELECT 
+  name,
+  department,
+  salary,
+  -- Rankings within department
+  RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS dept_rank,
+  -- Percentile within company
+  NTILE(100) OVER (ORDER BY salary) AS percentile,
+  -- Department statistics
+  AVG(salary) OVER (PARTITION BY department) AS dept_avg_salary,
+  -- Deviation from department average
+  ROUND(salary - AVG(salary) OVER (PARTITION BY department), 0) AS diff_from_dept_avg,
+  -- Company-wide statistics
+  AVG(salary) OVER () AS company_avg_salary,
+  -- Salary as percentage of department total
+  ROUND(100.0 * salary / SUM(salary) OVER (PARTITION BY department), 2) AS pct_of_dept_payroll
+FROM employees
+ORDER BY department, salary DESC;`}
           />
 
-          <Callout type="info" title="Why This Matters">
-            <ul className="list-disc pl-5 space-y-1">
-              <li>Column aliases defined in SELECT cannot be used in WHERE (WHERE executes first!)</li>
-              <li>Column aliases CAN be used in ORDER BY (ORDER BY executes after SELECT)</li>
-              <li>Aggregate functions can't be used in WHERE, only in HAVING</li>
-              <li>HAVING can reference aggregates because it runs after GROUP BY</li>
+          <p className="mt-4">
+            This single query provides multi-dimensional insights: individual performance, departmental comparisons, and
+            company-wide context—all without GROUP BY collapsing the rows.
+          </p>
+        </Subsection>
+
+        <Callout type="ai" title="AI-Assisted Window Function Design">
+          <p>
+            Window functions can be tricky to design correctly. AI assistants excel at translating analytical questions
+            into window function syntax.
+          </p>
+
+          <div className="mt-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-500 dark:border-teal-700 rounded-lg p-4">
+            <p className="font-semibold text-teal-900 dark:text-teal-200 mb-2">Example Prompt:</p>
+            <pre className="text-sm text-teal-800 dark:text-teal-300 whitespace-pre-wrap">
+{`Schema:
+- sales (sale_id, product_id, sale_date, quantity, revenue)
+
+Task: For each sale, show:
+1. The sale's rank within its month (by revenue)
+2. The 7-day moving average of revenue (including current sale)
+3. The percentage change from the previous sale's revenue
+
+Generate: SQLite query using appropriate window functions.`}
+            </pre>
+          </div>
+
+          <p className="mt-4 text-sm">
+            <strong>Pro tip:</strong> When debugging window functions, test each one separately before combining them.
+            Add one window function at a time to identify which calculation isn't behaving as expected.
+          </p>
+        </Callout>
+
+        <p className="mt-6">
+          Window functions are essential for modern data analysis. They eliminate complex self-joins and correlated subqueries
+          while providing clearer, more maintainable SQL. In the next section, we'll explore additional advanced SQL techniques
+          to round out your toolkit.
+        </p>
+      </Section>
+
+      {/* ============================================
+          SECTION 7: Advanced SQL Techniques
+          ============================================ */}
+      <Section id="section12" title="8. Advanced SQL Techniques">
+        <p>
+          Beyond the core SQL features we've covered, several specialized techniques handle common real-world challenges:
+          conditional logic, set operations, text manipulation, date/time calculations, and NULL handling. Mastering these
+          techniques separates SQL novices from practitioners.
+        </p>
+
+        <Subsection title="CASE Expressions: Conditional Logic in SQL">
+          <p>
+            The <code>CASE</code> expression is SQL's if/then/else mechanism. It evaluates conditions and returns different
+            values based on the result. There are two forms: <strong>simple CASE</strong> and <strong>searched CASE</strong>.
+          </p>
+
+          <CodeExample
+            title="CASE Expression Syntax"
+            code={`-- Searched CASE (most flexible)
+CASE
+  WHEN condition1 THEN result1
+  WHEN condition2 THEN result2
+  ...
+  ELSE default_result
+END
+
+-- Simple CASE (for equality checks)
+CASE expression
+  WHEN value1 THEN result1
+  WHEN value2 THEN result2
+  ...
+  ELSE default_result
+END`}
+          />
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Categorize employees using CASE
+
+SELECT 
+  name,
+  department,
+  salary,
+  -- Searched CASE: Complex conditions
+  CASE
+    WHEN salary >= 100000 THEN 'Executive'
+    WHEN salary >= 75000 THEN 'Senior'
+    WHEN salary >= 50000 THEN 'Mid-Level'
+    ELSE 'Entry-Level'
+  END AS seniority_level,
+  -- Simple CASE: Equality checks
+  CASE department
+    WHEN 'Engineering' THEN 'Tech'
+    WHEN 'Product' THEN 'Tech'
+    WHEN 'Sales' THEN 'Revenue'
+    WHEN 'Marketing' THEN 'Revenue'
+    ELSE 'Operations'
+  END AS division,
+  -- CASE in aggregate functions
+  CASE
+    WHEN salary > 80000 THEN salary
+    ELSE 0
+  END AS premium_salary
+FROM employees
+ORDER BY salary DESC;`}
+          />
+
+          <p className="mt-4">
+            <code>CASE</code> expressions can appear anywhere: in SELECT, WHERE, ORDER BY, or even within aggregate functions
+            to conditionally include values in calculations.
+          </p>
+        </Subsection>
+
+        <Subsection title="Set Operations: UNION, INTERSECT, EXCEPT">
+          <p>
+            Set operations combine results from multiple queries, treating them as mathematical sets. These operations require
+            that both queries return the same number of columns with compatible data types.
+          </p>
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Operation</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Removes Duplicates?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">UNION</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Combine results from both queries</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Yes</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">UNION ALL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Combine results, keep all rows</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No (faster)</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">INTERSECT</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Return only rows in both queries</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Yes</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">EXCEPT</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Return rows in first query but not second</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Yes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- UNION: Combine customers from different sources
+
+SELECT 'Online Buyer' AS source, first_name, last_name, email
+FROM customers
+WHERE customer_id IN (SELECT DISTINCT customer_id FROM orders)
+
+UNION
+
+SELECT 'Newsletter Sub' AS source, first_name, last_name, email
+FROM customers
+WHERE email LIKE '%@gmail.com'
+
+ORDER BY last_name;
+
+-- EXCEPT: Find customers who never ordered
+SELECT customer_id, first_name, last_name
+FROM customers
+
+EXCEPT
+
+SELECT DISTINCT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id;`}
+          />
+
+          <Callout type="warning" title="UNION vs UNION ALL Performance">
+            <p>
+              <code>UNION</code> must sort and deduplicate results, which can be slow for large datasets.
+              Use <code>UNION ALL</code> when you know there are no duplicates or when duplicates are acceptable—it's
+              significantly faster.
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="String Functions: Text Manipulation">
+          <p>
+            SQL provides powerful string functions for cleaning, transforming, and analyzing text data. While syntax varies
+            slightly across databases, SQLite offers a solid foundation.
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- String function examples
+
+SELECT 
+  customer_id,
+  first_name,
+  last_name,
+  email,
+  -- Concatenation
+  first_name || ' ' || last_name AS full_name,
+  -- Case conversion
+  UPPER(email) AS email_upper,
+  LOWER(last_name) AS last_name_lower,
+  -- Length
+  LENGTH(email) AS email_length,
+  -- Substring (0-indexed in SQLite)
+  SUBSTR(email, 1, INSTR(email, '@') - 1) AS email_username,
+  SUBSTR(email, INSTR(email, '@') + 1) AS email_domain,
+  -- Replace
+  REPLACE(email, '@', ' [AT] ') AS obfuscated_email,
+  -- Trim whitespace
+  TRIM(first_name) AS trimmed_name
+FROM customers
+LIMIT 10;`}
+          />
+
+          <Callout type="info" title="SQLite String Function Notes">
+            <p>
+              SQLite's string functions differ slightly from other databases:
+            </p>
+            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm">
+              <li><code>||</code> for concatenation (not <code>CONCAT()</code>)</li>
+              <li><code>SUBSTR()</code> is 1-indexed, not 0-indexed</li>
+              <li><code>INSTR()</code> finds position of substring (returns 0 if not found)</li>
+              <li>No native <code>SPLIT_PART()</code> or regex functions (use extension)</li>
             </ul>
           </Callout>
+        </Subsection>
+
+        <Subsection title="Date and Time Functions: Temporal Operations">
+          <p>
+            Working with dates and times is a common SQL task. SQLite's date/time functions are unique but powerful once
+            you understand the patterns.
+          </p>
 
           <SQLPlayground
-            preset={FINANCIAL_FULL_PRESET}
-            defaultQuery={`-- Demonstrating execution order
-SELECT
-  s.SectorName,
-  COUNT(*) as company_count,  -- Alias defined here
-  AVG(li.Value) as avg_revenue
-FROM Sectors s
-JOIN Companies c ON s.SectorID = c.SectorID
-JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
-JOIN Line_Items li ON fs.StatementID = li.StatementID
-WHERE li.ItemName = 'Revenue'  -- Can't use avg_revenue here!
-GROUP BY s.SectorName
-HAVING COUNT(*) >= 2  -- Filter groups
-ORDER BY avg_revenue DESC;  -- CAN use alias here!`}
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- Date/time function examples
+
+SELECT 
+  order_id,
+  order_date,
+  -- Extract components
+  DATE(order_date) AS date_only,
+  TIME(order_date) AS time_only,
+  strftime('%Y', order_date) AS year,
+  strftime('%m', order_date) AS month,
+  strftime('%d', order_date) AS day,
+  strftime('%w', order_date) AS day_of_week,  -- 0=Sunday, 6=Saturday
+  strftime('%W', order_date) AS week_of_year,
+  -- Date arithmetic
+  DATE(order_date, '+7 days') AS one_week_later,
+  DATE(order_date, '-1 month') AS one_month_earlier,
+  DATE(order_date, 'start of month') AS month_start,
+  DATE(order_date, 'start of year') AS year_start,
+  -- Date difference (in days)
+  JULIANDAY('now') - JULIANDAY(order_date) AS days_since_order
+FROM orders
+ORDER BY order_date DESC
+LIMIT 15;`}
           />
 
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
-            This explains why column aliases defined in SELECT can't be used in WHERE, but CAN be used in ORDER BY.
+          <p className="mt-4">
+            SQLite's <code>strftime(format, date)</code> is your Swiss Army knife for date manipulation. Common format codes:
+            <code>%Y</code> (year), <code>%m</code> (month), <code>%d</code> (day), <code>%H</code> (hour),
+            <code>%M</code> (minute), <code>%S</code> (second), <code>%w</code> (weekday).
           </p>
         </Subsection>
+
+        <Subsection title="NULL Handling: COALESCE and NULLIF">
+          <p>
+            SQL provides specialized functions for working with NULLs. We covered <code>IS NULL</code> and <code>IS NOT NULL</code>
+            earlier; now let's explore <code>COALESCE</code> and <code>NULLIF</code>.
+          </p>
+
+          <CodeExample
+            title="NULL Handling Functions"
+            code={`-- COALESCE: Return first non-NULL value
+COALESCE(column1, column2, ..., default_value)
+
+-- NULLIF: Return NULL if two values are equal
+NULLIF(value1, value2)  -- NULL if equal, else value1`}
+          />
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- NULL handling examples
+
+SELECT 
+  name,
+  department,
+  salary,
+  -- COALESCE: Provide default for potential NULLs
+  COALESCE(department, 'Unassigned') AS dept_with_default,
+  -- Multiple fallbacks
+  COALESCE(NULL, NULL, department, 'Unknown') AS multi_fallback,
+  -- NULLIF: Convert specific values to NULL
+  NULLIF(department, 'Engineering') AS non_eng_dept,
+  -- Combining: Replace empty strings with NULL, then with default
+  COALESCE(NULLIF(department, ''), 'Not Specified') AS cleaned_dept,
+  -- Practical: Avoid division by zero
+  CASE 
+    WHEN NULLIF(salary, 0) IS NULL THEN NULL
+    ELSE 100000.0 / salary 
+  END AS salary_ratio
+FROM employees;`}
+          />
+
+          <p className="mt-4">
+            <strong>Common pattern:</strong> <code>COALESCE(NULLIF(column, ''), 'default')</code> converts empty strings
+            to NULL, then replaces NULL with a default value.
+          </p>
+        </Subsection>
+
+        <p className="mt-6">
+          These advanced techniques—conditional logic, set operations, string/date functions, and NULL handling—form the
+          polish on your SQL skills. Combined with JOINs, aggregations, subqueries, and window functions, you now have a
+          comprehensive SQL toolkit. Next, we'll learn how to make your queries fast through optimization.
+        </p>
+      </Section>
+
+      {/* ============================================
+          SECTION 8: Query Optimization and Performance
+          ============================================ */}
+      <Section id="section13" title="9. Query Optimization: Making SQL Fast">
+        <p>
+          A working query is good. A <em>fast</em> query is great. Query optimization is the art and science of making your
+          SQL execute efficiently, even on massive datasets. Understanding how databases execute queries and how to leverage
+          indexes is essential for production systems.
+        </p>
+
+        <p className="mt-4">
+          The database's <strong>query optimizer</strong> automatically chooses an execution plan, but you can guide it with
+          proper schema design, indexes, and query structure.
+        </p>
+
+        <Subsection title="Understanding Indexes: The Roadmap to Your Data">
+          <p>
+            An <strong>index</strong> is a data structure that speeds up data retrieval at the cost of additional storage and
+            slower writes. Think of it like a book's index: instead of scanning every page to find "SQL" mentions, you look
+            it up in the index and jump directly to the relevant pages.
+          </p>
+
+          <Callout type="tip" title="Analogy: Library Card Catalog">
+            <p>
+              Imagine a library with 10,000 books arranged randomly on shelves. Without a catalog (index), finding "Database
+              Systems" requires checking every book—O(n) complexity. With a catalog organized alphabetically by title, you
+              can find it in seconds—O(log n) with binary search.
+            </p>
+            <p className="mt-2">
+              Database indexes work the same way: they maintain an ordered structure (typically a B-tree) that allows fast
+              lookups, range scans, and sorted retrieval.
+            </p>
+          </Callout>
+
+          <p className="mt-4">
+            Most databases automatically create an index on PRIMARY KEY columns. You'll want to create additional indexes on
+            columns frequently used in <code>WHERE</code>, <code>JOIN</code>, or <code>ORDER BY</code> clauses.
+          </p>
+
+          <CodeExample
+            title="Creating Indexes"
+            code={`-- Single-column index
+CREATE INDEX idx_employees_department ON employees(department);
+
+-- Multi-column index (order matters!)
+CREATE INDEX idx_employees_dept_salary ON employees(department, salary);
+
+-- Unique index (enforces uniqueness)
+CREATE UNIQUE INDEX idx_customers_email ON customers(email);
+
+-- Drop index
+DROP INDEX idx_employees_department;`}
+          />
+
+          <Callout type="warning" title="Index Trade-offs">
+            <p>
+              <strong>Pros:</strong> Dramatically faster SELECT queries (10x-1000x for large tables)
+              <br />
+              <strong>Cons:</strong> Slower INSERT/UPDATE/DELETE (index must be updated), increased storage
+            </p>
+            <p className="mt-2">
+              <strong>Rule of thumb:</strong> Index columns used in WHERE, JOIN, and ORDER BY frequently. Don't index
+              everything—each index has overhead.
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="EXPLAIN QUERY PLAN: Seeing How Queries Execute">
+          <p>
+            SQLite's <code>EXPLAIN QUERY PLAN</code> shows you how the database will execute your query: which tables it scans,
+            which indexes it uses, and what order it processes operations. This is your primary tool for query optimization.
+          </p>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- First, see the query plan WITHOUT an index
+
+EXPLAIN QUERY PLAN
+SELECT * FROM employees
+WHERE department = 'Engineering'
+ORDER BY salary DESC;
+
+-- You'll see "SCAN employees" - a full table scan (slow for large tables)
+
+-- Now create an index and see the difference
+CREATE INDEX idx_emp_dept ON employees(department);
+
+EXPLAIN QUERY PLAN
+SELECT * FROM employees
+WHERE department = 'Engineering'
+ORDER BY salary DESC;
+
+-- Now you'll see "SEARCH employees USING INDEX" - much faster!`}
+          />
+
+          <p className="mt-4">
+            Key things to look for in query plans:
+          </p>
+
+          <ul className="list-disc pl-6 space-y-2 mt-2 text-sm">
+            <li><strong>SCAN vs SEARCH:</strong> SCAN means full table scan (reads every row). SEARCH means index is used.</li>
+            <li><strong>USING INDEX:</strong> Confirms index usage—exactly what you want for WHERE/JOIN conditions.</li>
+            <li><strong>USING COVERING INDEX:</strong> Even better—all needed columns are in the index (no table lookup needed).</li>
+            <li><strong>TEMP B-TREE FOR ORDER BY:</strong> Expensive temporary sort. Consider index on ORDER BY column.</li>
+          </ul>
+        </Subsection>
+
+        <Subsection title="Query Anti-Patterns: Common Performance Killers">
+          <p>
+            Certain query patterns prevent index usage or cause unnecessary work. Recognizing and avoiding these anti-patterns
+            is key to writing performant SQL.
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- ❌ Anti-pattern: Function on indexed column prevents index use
+
+-- Bad: Can't use index on email
+SELECT * FROM customers
+WHERE LOWER(email) = 'john@example.com';
+
+-- Good: Store emails lowercase or create functional index
+SELECT * FROM customers
+WHERE email = 'john@example.com';
+
+-- ❌ Anti-pattern: Leading wildcard in LIKE prevents index use
+
+-- Bad: Can't use index (must scan all rows)
+SELECT * FROM customers
+WHERE email LIKE '%@gmail.com';
+
+-- Good: Index can help (if database supports prefix search)
+SELECT * FROM customers
+WHERE email LIKE 'john%';
+
+-- ❌ Anti-pattern: OR conditions can prevent index use
+
+-- Bad: May not use indexes efficiently
+SELECT * FROM customers
+WHERE first_name = 'John' OR last_name = 'Smith';
+
+-- Good: Use UNION (if selective enough)
+SELECT * FROM customers WHERE first_name = 'John'
+UNION
+SELECT * FROM customers WHERE last_name = 'Smith';`}
+          />
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Anti-Pattern</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Why It's Bad</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Better Approach</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">SELECT *</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Retrieves unnecessary columns</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SELECT only needed columns</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">WHERE func(col) = val</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prevents index usage</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">WHERE col = val (no function)</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">LIKE '%val%'</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Can't use index (leading wildcard)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Full-text search index or LIKE 'val%'</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">NOT IN (subquery)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Can be slow with NULLs</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">NOT EXISTS or LEFT JOIN ... WHERE IS NULL</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">Implicit type conversion</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prevents index use</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Match column types in comparisons</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Subsection>
+
+        <Subsection title="Practical Optimization Example">
+          <p>
+            Let's take a real-world query and optimize it step by step.
+          </p>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- Scenario: Find high-value customers who ordered recently
+
+-- ❌ Unoptimized version
+SELECT 
+  c.first_name || ' ' || c.last_name AS customer_name,
+  COUNT(*) AS order_count,
+  SUM(o.total_amount) AS lifetime_value
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+WHERE o.order_date >= DATE('now', '-6 months')
+GROUP BY c.customer_id
+HAVING SUM(o.total_amount) > 500
+ORDER BY lifetime_value DESC;
+
+-- Check the query plan
+EXPLAIN QUERY PLAN
+SELECT 
+  c.first_name || ' ' || c.last_name AS customer_name,
+  COUNT(*) AS order_count,
+  SUM(o.total_amount) AS lifetime_value
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+WHERE o.order_date >= DATE('now', '-6 months')
+GROUP BY c.customer_id
+HAVING SUM(o.total_amount) > 500
+ORDER BY lifetime_value DESC;
+
+-- ✅ Optimized: Add index on order_date
+CREATE INDEX idx_orders_date ON orders(order_date);
+
+-- Now run EXPLAIN QUERY PLAN again to see improvement`}
+          />
+        </Subsection>
+
+        <p className="mt-6">
+          Query optimization is an iterative process: write the query, check the plan with <code>EXPLAIN QUERY PLAN</code>,
+          add strategic indexes, and verify improvement. With practice, you'll develop intuition for writing efficient SQL
+          from the start.
+        </p>
+      </Section>
+
+      {/* SECTION 9: How SQL Really Works */}
+      <Section id="section14" title="How SQL Really Works - Under the Hood" level={2}>
+        <p>
+          Now that you've learned practical SQL—from basic CRUD operations through advanced optimization techniques—it's time to
+          peek under the hood. Understanding what happens when you execute a query will deepen your intuition, help you write more
+          efficient queries, debug problems faster, and make informed optimization decisions.
+        </p>
+
+        <Callout type="info" title="Why Learn This Now?">
+          <p>
+            You've been writing SQL queries throughout this chapter. Now that you understand <em>what</em> SQL can do, learning
+            <em>how</em> it works internally will transform you from someone who writes SQL to someone who <em>thinks in SQL</em>.
+          </p>
+          <p className="mt-2">
+            This knowledge—seeing the journey your query takes from text to results—is what separates junior developers from
+            senior ones. It's the "aha!" moment that makes optimization patterns and best practices click into place.
+          </p>
+        </Callout>
+
+        <Subsection title="The Query Lifecycle: From Text to Results">
+          <p>
+            When you hit "Execute" on a SQL query, it embarks on a sophisticated journey through multiple stages of the database engine.
+            Each stage transforms the query from one representation to another, ultimately producing the results you see.
+          </p>
+
+          <MermaidDiagram
+            caption="SQL Query Lifecycle: The Five Stages of Execution"
+            chart={`
+flowchart LR
+    Start(["📝 SQL"]) ==> Parser["1️⃣ Parser"]
+    Parser ==> Rewriter["2️⃣ Rewriter"]
+    Rewriter ==> Planner["3️⃣ Planner"]
+    Planner ==> Optimizer["4️⃣ Optimizer"]
+    Optimizer ==> Executor["5️⃣ Executor"]
+    Executor ==> Result(["📊 Result"])
+            `}
+          />
+
+          <p className="mt-4">
+            Let's walk through each stage with a concrete example. Consider this query:
+          </p>
+
+          <CodeExample
+            title="Example Query for Analysis"
+            code={`SELECT c.CompanyName, c.StockTicker, s.SectorName
+FROM Companies c
+INNER JOIN Sectors s ON c.SectorID = s.SectorID
+WHERE c.Founded > 2000
+ORDER BY c.CompanyName;`}
+          />
+        </Subsection>
+
+        <Subsection title="Stage 1: The Parser - Syntax and Semantics">
+          <p>
+            The <strong>parser</strong> is the first stop. Its job is to validate that your SQL text is syntactically correct
+            and semantically meaningful. It performs several critical checks:
+          </p>
+
+          <ul className="list-disc pl-6 space-y-2 my-4">
+            <li><strong>Syntax validation:</strong> Is this valid SQL? (e.g., no typos like "SELCT" instead of "SELECT")</li>
+            <li><strong>Object existence:</strong> Do the tables and columns you reference actually exist?</li>
+            <li><strong>Type checking:</strong> Are you comparing compatible data types?</li>
+            <li><strong>Permission verification:</strong> Do you have permission to access these tables?</li>
+          </ul>
+
+          <p>
+            If any check fails, the parser immediately returns an error—the query never reaches later stages.
+          </p>
+
+          <p className="mt-4">
+            Upon successful validation, the parser constructs an <strong>Abstract Syntax Tree (AST)</strong>—a hierarchical
+            representation of your query's logical structure:
+          </p>
+
+          <MermaidDiagram
+            caption="Abstract Syntax Tree: How the Parser Understands Your Query"
+            chart={`
+flowchart TD
+    Root(["🎯 SELECT<br/>Statement"]) --> Cols
+    Root --> From
+    Root --> Where
+    Root --> Order
+    
+    Cols["📋 Column List"] --> Col1["c.CompanyName"]
+    Cols --> Col2["c.StockTicker"]
+    Cols --> Col3["s.SectorName"]
+    
+    From["📦 FROM Clause"] --> Join["🔗 INNER JOIN"]
+    Join --> T1["Companies c"]
+    Join --> T2["Sectors s"]
+    Join --> JoinCond["ON c.SectorID<br/>= s.SectorID"]
+    
+    Where["🔍 WHERE Clause"] --> Comp["c.Founded > 2000"]
+    
+    Order["⬆️ ORDER BY"] --> OrdCol["c.CompanyName ASC"]
+            `}
+          />
+
+          <p className="mt-4">
+            This tree structure makes it easy for subsequent stages to analyze and transform the query.
+          </p>
+        </Subsection>
+
+        <Callout type="info" title="Historical Note: System R and Cost-Based Optimization">
+          <p>
+            IBM's <strong>System R</strong> project (1974-1979) was a watershed moment in database history. The System R
+            query optimizer, designed by <strong>Patricia Selinger</strong>, <strong>Morton Astrahan</strong>, and colleagues,
+            introduced <strong>cost-based optimization</strong>—the technique of estimating query execution costs and choosing
+            the cheapest plan.
+          </p>
+          <p className="mt-2">
+            This innovation made SQL practical for real-world use. Before cost-based optimization, queries could be prohibitively
+            slow because the system couldn't automatically find efficient execution strategies. System R's optimizer is the
+            ancestor of every modern query optimizer.
+          </p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            The original paper, "Access Path Selection in a Relational Database Management System" (1979), remains one of the
+            most cited papers in database literature.
+          </p>
+        </Callout>
+
+        <Subsection title="Stage 2: The Rewriter - Transforming the Query">
+          <p>
+            The <strong>rewriter</strong> (sometimes called the query rewriter) takes the parsed AST and applies transformation
+            rules to simplify or standardize the query. Common transformations include:
+          </p>
+
+          <ul className="list-disc pl-6 space-y-2 my-4">
+            <li><strong>View expansion:</strong> If you query a view, the rewriter substitutes the view's definition</li>
+            <li><strong>Subquery flattening:</strong> Simple subqueries may be converted to joins for efficiency</li>
+            <li><strong>Constant folding:</strong> Expressions like <code>2 + 3</code> are computed at rewrite time, not execution</li>
+            <li><strong>Predicate normalization:</strong> Conditions are standardized (e.g., <code>5 &lt; x</code> becomes <code>x &gt; 5</code>)</li>
+          </ul>
+
+          <p className="mt-4">
+            These transformations don't change the query's semantics—they just make it easier for the optimizer to work with.
+          </p>
+        </Subsection>
+
+        <Subsection title="Stage 3 & 4: The Planner and Optimizer - Finding the Best Path">
+          <p>
+            This is where the magic happens. The <strong>query planner</strong> and <strong>optimizer</strong> work together to
+            answer a critical question: "Of all the ways we could execute this query, which is fastest?"
+          </p>
+
+          <Callout type="tip" title="The Optimization Problem">
+            <p>
+              For a query joining multiple tables, the number of possible execution plans grows factorially. A join of 10 tables
+              has over 3.6 million possible join orders alone—and that's before considering different join algorithms, index usage,
+              and other choices!
+            </p>
+            <p className="mt-2">
+              Modern optimizers use sophisticated techniques—dynamic programming, heuristics, and genetic algorithms—to explore
+              the most promising plans without exhaustively evaluating every possibility.
+            </p>
+          </Callout>
+
+          <p className="mt-4">
+            The optimizer considers:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Scan Methods</h4>
+              <ul className="text-sm space-y-1">
+                <li>• Sequential Scan (read every row)</li>
+                <li>• Index Scan (use B-tree)</li>
+                <li>• Index-Only Scan (covering index)</li>
+                <li>• Bitmap Index Scan</li>
+              </ul>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Join Algorithms</h4>
+              <ul className="text-sm space-y-1">
+                <li>• Nested Loop Join</li>
+                <li>• Hash Join</li>
+                <li>• Merge Join (Sort-Merge)</li>
+              </ul>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Join Orders</h4>
+              <ul className="text-sm space-y-1">
+                <li>• Left-deep trees</li>
+                <li>• Right-deep trees</li>
+                <li>• Bushy trees</li>
+              </ul>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Cost Factors</h4>
+              <ul className="text-sm space-y-1">
+                <li>• I/O operations (disk reads)</li>
+                <li>• CPU processing time</li>
+                <li>• Memory usage</li>
+                <li>• Network transfer (distributed)</li>
+              </ul>
+            </div>
+          </div>
+
+          <p className="mt-4">
+            The optimizer relies heavily on <strong>statistics</strong> about your data: table sizes, column cardinalities
+            (number of distinct values), data distribution, and index availability. Poor or outdated statistics can lead to
+            suboptimal query plans.
+          </p>
+
+          <MermaidDiagram
+            caption="Sequential Scan vs Index Scan: Choosing the Right Access Method"
+            chart={`
+flowchart LR
+    Query["🔍 WHERE id = 42"] --> Decision{"Estimated<br/>Rows?"}
+    
+    Decision -->|"> 20% rows<br/>Many"| SeqPath["📖 Sequential Scan"]
+    Decision -->|"< 5% rows<br/>Few"| IdxPath["⚡ Index Scan"]
+    
+    SeqPath --> SeqSteps["Read all rows<br/>Filter matching<br/>Return results"]
+    IdxPath --> IdxSteps["B-Tree lookup<br/>Fetch specific rows<br/>Return results"]
+    
+    SeqSteps --> SeqNote["Slower for few rows<br/>But efficient for many"]
+    IdxSteps --> IdxNote["Fast for few rows<br/>But overhead for many"]
+            `}
+          />
+
+          <p className="mt-4">
+            <strong>Rule of thumb:</strong> Index scans shine when selecting a small percentage of rows. Sequential scans
+            are faster for large result sets because they read data sequentially (which is efficient for disks), whereas index
+            scans require random access.
+          </p>
+        </Subsection>
+
+        <Subsection title="Join Algorithms: Three Ways to Match Rows">
+          <p>
+            When your query joins tables, the optimizer must choose how to physically match rows. Each algorithm has different
+            performance characteristics:
+          </p>
+
+          <MermaidDiagram
+            caption="Join Algorithms Comparison: Nested Loop, Hash Join, and Merge Join"
+            chart={`
+flowchart TB
+    subgraph NL["🔄 Nested Loop Join"]
+        direction TB
+        NL1["For each row in A"]
+        NL2["Scan all rows in B"]
+        NL3["Check condition"]
+        NL1 --> NL2 --> NL3
+        NLNote["✅ Small outer table<br/>❌ No indexes = slow"]
+    end
+    
+    subgraph HJ["# Hash Join"]
+        direction TB
+        HJ1["Build hash from A"]
+        HJ2["Probe with B"]
+        HJ3["Match on hash"]
+        HJ1 --> HJ2 --> HJ3
+        HJNote["✅ Large tables<br/>⚠️ Needs memory"]
+    end
+    
+    subgraph MJ["⚡ Merge Join"]
+        direction TB
+        MJ1["Sort A"]
+        MJ2["Sort B"]
+        MJ3["Merge streams"]
+        MJ1 --> MJ3
+        MJ2 --> MJ3
+        MJNote["✅ Pre-sorted data<br/>⚠️ Needs sort key"]
+    end
+            `}
+          />
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Algorithm</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Time Complexity</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Best For</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Requirements</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Nested Loop</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">O(N × M)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Small tables or indexed inner table</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">None</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Hash Join</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">O(N + M)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Large tables with equi-joins</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Sufficient memory for hash table</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Merge Join</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">O(N log N + M log M)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Pre-sorted data or indexed columns</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Sortable join keys</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Subsection>
+
+        <Subsection title="Stage 5: The Executor - Making It Happen">
+          <p>
+            Finally, the <strong>executor</strong> runs the optimized plan. It's a pipeline of physical operators, each performing
+            a specific task: scanning tables, applying filters, joining rows, sorting, aggregating, and returning results.
+          </p>
+
+          <p className="mt-4">
+            The executor is highly optimized, using techniques like:
+          </p>
+
+          <ul className="list-disc pl-6 space-y-2 my-4">
+            <li><strong>Pipelining:</strong> Results flow from one operator to the next without materializing intermediate results</li>
+            <li><strong>Batch processing:</strong> Operating on multiple rows at once for better CPU cache utilization</li>
+            <li><strong>Parallel execution:</strong> Using multiple CPU cores to process data simultaneously</li>
+            <li><strong>Lazy evaluation:</strong> Computing only what's needed (important for LIMIT clauses)</li>
+          </ul>
+
+          <p>
+            For our example query, the executor might:
+          </p>
+
+          <ol className="list-decimal pl-6 space-y-2 my-4">
+            <li>Scan the Sectors table (it's small)</li>
+            <li>For each sector, use an index to find matching companies</li>
+            <li>Apply the <code>Founded &gt; 2000</code> filter</li>
+            <li>Sort the results by CompanyName</li>
+            <li>Return rows to the client</li>
+          </ol>
+        </Subsection>
+
+        <Subsection title="Query Execution Order: Write vs. Execute">
+          <p>
+            One of the most important concepts for SQL mastery is understanding that <strong>the order you write a query differs
+            from the order the database executes it</strong>. This logical execution order explains many SQL quirks.
+          </p>
+
+          <MermaidDiagram
+            caption="Logical SQL Execution Order: How the Database Actually Processes Your Query"
+            chart={`
+flowchart LR
+    Start(["📝 Query"]) ==> Step1["1️⃣ FROM/JOIN"]
+    Step1 ==> Step2["2️⃣ WHERE"]
+    Step2 ==> Step3["3️⃣ GROUP BY"]
+    Step3 ==> Step4["4️⃣ HAVING"]
+    Step4 ==> Step5["5️⃣ SELECT"]
+    Step5 ==> Step6["6️⃣ DISTINCT"]
+    Step6 ==> Step7["7️⃣ ORDER BY"]
+    Step7 ==> Step8["8️⃣ LIMIT"]
+    Step8 ==> End(["📊 Result"])
+            `}
+          />
+
+          <Callout type="warning" title="Why Execution Order Matters: Common Gotchas">
+            <p className="font-semibold">This execution order explains several SQL behaviors that confuse beginners:</p>
+            
+            <div className="mt-3 space-y-3">
+              <div>
+                <p className="font-medium">❌ You CANNOT use column aliases in WHERE:</p>
+                <code className="block mt-1 bg-gray-100 dark:bg-gray-900 p-2 rounded text-sm">
+                  SELECT salary * 1.1 AS new_salary<br/>
+                  FROM employees<br/>
+                  WHERE new_salary &gt; 100000; -- ERROR!
+                </code>
+                <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+                  Because WHERE executes <em>before</em> SELECT, the alias doesn't exist yet.
+                </p>
+              </div>
+
+              <div>
+                <p className="font-medium">✅ You CAN use aliases in ORDER BY:</p>
+                <code className="block mt-1 bg-gray-100 dark:bg-gray-900 p-2 rounded text-sm">
+                  SELECT salary * 1.1 AS new_salary<br/>
+                  FROM employees<br/>
+                  ORDER BY new_salary DESC; -- Works!
+                </code>
+                <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+                  ORDER BY executes <em>after</em> SELECT, so aliases are available.
+                </p>
+              </div>
+
+              <div>
+                <p className="font-medium">❌ You CANNOT use aggregate functions in WHERE:</p>
+                <code className="block mt-1 bg-gray-100 dark:bg-gray-900 p-2 rounded text-sm">
+                  SELECT department, AVG(salary) AS avg_sal<br/>
+                  FROM employees<br/>
+                  WHERE AVG(salary) &gt; 80000 -- ERROR!<br/>
+                  GROUP BY department;
+                </code>
+                <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+                  Use HAVING instead—it executes after GROUP BY.
+                </p>
+              </div>
+            </div>
+          </Callout>
+
+          <p className="mt-4">
+            Understanding this execution order transforms you from memorizing SQL syntax to reasoning about how queries work.
+            It's the difference between knowing <em>what</em> to type and understanding <em>why</em> it works.
+          </p>
+        </Subsection>
+
+        <p className="mt-6">
+          Let's see execution order in action with a practical example:
+        </p>
+
+        <SQLPlayground
+          preset={ECOMMERCE_PRESET}
+          defaultQuery={`-- This query demonstrates logical execution order
+-- Study how aliases can/can't be used in different clauses
+
+SELECT
+  s.SectorName,
+  COUNT(*) AS company_count,          -- Alias created here (Step 5)
+  AVG(li.Value) AS avg_revenue        -- Another alias
+FROM Sectors s                         -- Step 1: Start with Sectors
+INNER JOIN Companies c                 -- Step 1: Join Companies
+  ON s.SectorID = c.SectorID
+INNER JOIN Financial_Statements fs     -- Step 1: Join Statements
+  ON c.CompanyID = fs.CompanyID
+INNER JOIN Line_Items li               -- Step 1: Join Line Items
+  ON fs.StatementID = li.StatementID
+WHERE li.ItemName = 'Revenue'          -- Step 2: Filter rows
+  -- WHERE can't use avg_revenue alias (doesn't exist yet!)
+GROUP BY s.SectorName                  -- Step 3: Group by sector
+HAVING COUNT(*) >= 2                   -- Step 4: Filter groups (can use aggregates!)
+ORDER BY avg_revenue DESC              -- Step 7: Sort (CAN use alias!)
+LIMIT 5;                               -- Step 8: Take top 5
+
+-- Try these experiments:
+-- 1. Uncomment the next line to see an error:
+-- WHERE avg_revenue > 1000000000;    -- ERROR: alias not available in WHERE
+
+-- 2. Change ORDER BY to use company_count instead
+-- 3. Try HAVING AVG(li.Value) > 50000000000 instead of COUNT(*)
+`}
+        />
+
+        <p className="mt-4">
+          With this foundation of how SQL works internally, you're now equipped to write more sophisticated queries.
+          The rest of this part will build on these concepts, showing you not just <em>what</em> SQL can do, but <em>why</em>
+          and <em>how</em> it works.
+        </p>
+      </Section>
+
+      {/* ============================================
+          SECTION 10: AI-Assisted SQL Development
+          ============================================ */}
+      <Section id="section15" title="10. AI-Assisted SQL Development">
+        <p>
+          The intersection of AI and SQL is transforming how we work with databases. From writing complex queries via natural
+          language to building intelligent SQL assistants, AI amplifies your database productivity—but only if you understand
+          both the capabilities and limitations.
+        </p>
+
+        <p className="mt-4">
+          This section covers practical techniques for leveraging AI in your SQL workflow, whether you're using ChatGPT, Claude,
+          GitHub Copilot, or specialized Text-to-SQL tools.
+        </p>
+
+        <Subsection title="Prompt Engineering for SQL: Effective Communication with AI">
+          <p>
+            The quality of AI-generated SQL depends entirely on your prompt quality. A vague prompt yields vague SQL; a precise,
+            well-structured prompt yields production-ready queries.
+          </p>
+
+          <Callout type="ai" title="Anatomy of a Great SQL Prompt">
+            <p>
+              A high-quality SQL prompt includes:
+            </p>
+            <ol className="list-decimal pl-5 space-y-2 mt-3">
+              <li><strong>Schema description:</strong> Table names, column names, data types, relationships</li>
+              <li><strong>Clear objective:</strong> Exactly what question you're trying to answer</li>
+              <li><strong>Constraints:</strong> Database dialect, performance requirements, edge cases</li>
+              <li><strong>Output format:</strong> What the result should look like</li>
+              <li><strong>Examples (optional):</strong> Sample data or expected output</li>
+            </ol>
+          </Callout>
+
+          <CodeExample
+            title="Poor vs. Excellent SQL Prompts"
+            code={`❌ POOR PROMPT:
+"Write a query to get customer orders"
+
+Problem: Ambiguous, no schema, unclear goal
+
+
+✅ EXCELLENT PROMPT:
+Schema:
+- customers (customer_id PK, first_name, last_name, email, signup_date)
+- orders (order_id PK, customer_id FK, order_date, total_amount, status)
+
+Task: Find all customers who have placed more than 3 orders in 2024,
+showing their name, total number of orders, and total amount spent.
+Sort by total spent (highest first).
+
+Database: SQLite
+Optimization: Include any indexes that would help this query.
+
+Expected output columns: customer_name, order_count, total_spent`}
+          />
+
+          <CodeExample
+            title="Template: Analytical Query Prompt"
+            code={`Schema:
+[Provide CREATE TABLE statements or clear description]
+
+Relationships:
+- [Table A] -> [Table B] via [foreign_key]
+- [Table B] -> [Table C] via [foreign_key]
+
+Business Question:
+[Clear description of what you want to analyze]
+
+Requirements:
+- Database dialect: [SQLite/PostgreSQL/MySQL/etc.]
+- Performance: [Can use subqueries/CTEs/window functions?]
+- Edge cases: [How to handle NULLs? Missing data? Duplicates?]
+
+Expected Output:
+[Column names and sample row]`}
+          />
+
+          <CodeExample
+            title="Template: Debugging/Optimization Prompt"
+            code={`Current Query:
+[Your SQL query here]
+
+Schema:
+[Relevant table definitions]
+
+Problem:
+[Describe what's wrong: incorrect results? too slow? syntax error?]
+
+Current Behavior:
+[What actually happens]
+
+Expected Behavior:
+[What should happen]
+
+Request: [Fix the query | Optimize for performance | Explain what's wrong]`}
+          />
+        </Subsection>
+
+        <Subsection title="Schema Context: The Foundation of AI SQL Generation">
+          <p>
+            AI models need to understand your database schema to generate accurate SQL. The more context you provide, the
+            better the results. Here are three strategies:
+          </p>
+
+          <div className="mt-4 space-y-4">
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+              <p className="font-semibold text-gray-900 dark:text-gray-100">Strategy 1: Inline Schema Description</p>
+              <p className="text-sm mt-2">
+                For one-off queries, paste your schema directly into the prompt. Use <code>CREATE TABLE</code> statements
+                or a concise text description.
+              </p>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+              <p className="font-semibold text-gray-900 dark:text-gray-100">Strategy 2: Schema Files in Project Context</p>
+              <p className="text-sm mt-2">
+                For Copilot/Cursor AI, maintain a <code>schema.sql</code> or <code>SCHEMA.md</code> file in your repository.
+                The AI automatically uses it as context when writing SQL in your codebase.
+              </p>
+            </div>
+
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+              <p className="font-semibold text-gray-900 dark:text-gray-100">Strategy 3: RAG-Enhanced SQL Assistants</p>
+              <p className="text-sm mt-2">
+                For production systems, use Retrieval-Augmented Generation (RAG) to automatically fetch relevant schema
+                information based on the user's question. We'll explore this approach next.
+              </p>
+            </div>
+          </div>
+        </Subsection>
+
+        <Subsection title="Text-to-SQL Systems: From Natural Language to Queries">
+          <p>
+            <strong>Text-to-SQL</strong> (also called <strong>NL-to-SQL</strong>) systems translate natural language questions
+            into executable SQL queries. These systems power chatbots, business intelligence tools, and internal data assistants.
+          </p>
+
+          <MermaidDiagram
+            caption="Text-to-SQL System Architecture"
+            chart={`
+flowchart TB
+    User["👤 User Question<br/>'Show me top customers'"]
+    
+    subgraph System["💡 Text-to-SQL System"]
+        direction TB
+        Parse["1️⃣ Parse Intent"]
+        Schema["2️⃣ Retrieve Schema"]
+        Generate["3️⃣ Generate SQL"]
+        Validate["4️⃣ Validate Query"]
+    end
+    
+    DB["💾 Database"]
+    Results["📊 Results"]
+    
+    User ==> Parse
+    Parse ==> Schema
+    Schema ==> Generate
+    Generate ==> Validate
+    Validate ==> DB
+    DB ==> Results
+    Results ==> User
+            `}
+          />
+
+          <p className="mt-4">
+            <strong>Modern approaches:</strong>
+          </p>
+
+          <ul className="list-disc pl-6 space-y-2 mt-2">
+            <li>
+              <strong>Fine-tuned models:</strong> Train models specifically on SQL generation tasks (e.g., text2sql-t5, CodeT5+)
+            </li>
+            <li>
+              <strong>Few-shot prompting:</strong> Provide examples of question→SQL pairs in the prompt to guide the LLM
+            </li>
+            <li>
+              <strong>Chain-of-thought:</strong> Ask AI to explain its reasoning before generating SQL, improving accuracy
+            </li>
+            <li>
+              <strong>Self-correction:</strong> Let AI execute the query, see results, and refine if incorrect
+            </li>
+          </ul>
+
+          <Callout type="info" title="Popular Text-to-SQL Tools">
+            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm">
+              <li><strong>Vanna AI:</strong> Open-source Python library for RAG-based Text-to-SQL</li>
+              <li><strong>Defog.ai:</strong> Fine-tuned models for production Text-to-SQL</li>
+              <li><strong>MindsDB:</strong> AI layer on top of databases with NL query support</li>
+              <li><strong>Waii:</strong> Enterprise Text-to-SQL with governance</li>
+              <li><strong>Custom LLM + RAG:</strong> Build your own with OpenAI/Anthropic APIs + vector DB</li>
+            </ul>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="RAG for SQL: Retrieval-Augmented Generation">
+          <p>
+            For large schemas (50+ tables), including the entire schema in every prompt is impractical. <strong>RAG</strong>
+            (Retrieval-Augmented Generation) solves this by retrieving only the relevant schema portions for each question.
+          </p>
+
+          <MermaidDiagram
+            caption="RAG Architecture for SQL Assistant"
+            chart={`
+flowchart LR
+    subgraph Offline["📚 Offline: Build Knowledge"]
+        direction TB
+        S1["Schema Metadata"]
+        S2["Sample Queries"]
+        S3["Business Glossary"]
+        S1 & S2 & S3 --> Embed["Embed"]
+        Embed --> Vector["Vector DB"]
+    end
+    
+    subgraph Online["⚡ Online: Answer"]
+        direction TB
+        Q["Question"]
+        Q --> QEmbed["Embed"]
+        QEmbed --> Search["Search"]
+        Vector --> Search
+        Search --> Context["Schema Context"]
+        Context --> LLM["LLM"]
+        LLM --> SQL["✅ SQL"]
+    end
+    
+    Offline ==> Online
+            `}
+          />
+
+          <p className="mt-4">
+            <strong>Key components:</strong>
+          </p>
+
+          <ol className="list-decimal pl-6 space-y-2 mt-2 text-sm">
+            <li>
+              <strong>Embeddings:</strong> Convert table/column descriptions and sample queries into vectors
+            </li>
+            <li>
+              <strong>Vector database:</strong> Store embeddings for fast similarity search
+            </li>
+            <li>
+              <strong>Retrieval:</strong> For each question, find the K most relevant schema elements
+            </li>
+            <li>
+              <strong>Augmented prompt:</strong> Combine question + retrieved schema + examples → LLM → SQL
+            </li>
+          </ol>
+
+          <Callout type="ai" title="Building Your Own SQL Assistant: A Guide">
+            <p className="font-semibold">High-Level Architecture</p>
+            <ol className="list-decimal pl-5 space-y-2 mt-3 text-sm">
+              <li>
+                <strong>Extract schema metadata:</strong>
+                <pre className="text-xs mt-1 bg-gray-100 dark:bg-gray-800 p-2 rounded">
+{`SELECT name, sql FROM sqlite_master WHERE type='table';
+-- Parse CREATE TABLE to get columns, types, constraints`}
+                </pre>
+              </li>
+              <li>
+                <strong>Enrich with business context:</strong> Add human-readable descriptions for tables and columns (e.g., "customer_id: Unique identifier for customers")
+              </li>
+              <li>
+                <strong>Create embeddings:</strong> Use OpenAI's <code>text-embedding-3-small</code> or similar to embed schema descriptions
+              </li>
+              <li>
+                <strong>Store in vector DB:</strong> Populate Pinecone, Weaviate, or Chroma with schema embeddings
+              </li>
+              <li>
+                <strong>Query-time flow:</strong>
+                <ul className="list-disc pl-5 mt-1 space-y-1">
+                  <li>User asks: "Who are our top 10 customers by revenue?"</li>
+                  <li>Embed question → retrieve relevant tables (customers, orders)</li>
+                  <li>Build prompt with retrieved schema + question</li>
+                  <li>Call LLM to generate SQL</li>
+                  <li>Execute SQL, return results</li>
+                </ul>
+              </li>
+              <li>
+                <strong>Self-correction loop:</strong> If SQL errors, feed error back to LLM for retry
+              </li>
+            </ol>
+
+            <p className="mt-4 font-semibold">Sample Stack:</p>
+            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm">
+              <li><strong>Backend:</strong> Python (FastAPI) or Node.js</li>
+              <li><strong>LLM:</strong> OpenAI GPT-4 or Anthropic Claude (via API)</li>
+              <li><strong>Vector DB:</strong> Pinecone (hosted) or Chroma (local/embedded)</li>
+              <li><strong>Frontend:</strong> React chat interface</li>
+              <li><strong>Database:</strong> Your existing database (PostgreSQL, MySQL, SQLite, etc.)</li>
+            </ul>
+
+            <p className="mt-4 text-sm">
+              <strong>Pro tip:</strong> Start simple. Build a basic version that takes a question, includes the full schema
+              in the prompt, generates SQL, and executes it. Then add RAG once you prove the concept works.
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="Debugging AI-Generated SQL: Common Pitfalls">
+          <p>
+            AI-generated SQL is impressive but not infallible. Common issues include incorrect JOINs, missing WHERE clauses,
+            wrong aggregations, or SQL that runs but returns semantically incorrect results.
+          </p>
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Common Error</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Symptom</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Wrong JOIN type</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Missing or extra rows in results</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Verify INNER vs LEFT/RIGHT JOIN matches intent</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Missing WHERE clause</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Returns all data instead of filtered</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Clarify filtering requirements in prompt</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Incorrect aggregation</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Wrong totals or counts</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Check GROUP BY columns and HAVING conditions</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Ambiguous column names</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">"Ambiguous column" error</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prefix columns with table aliases</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">NULL handling issues</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unexpected missing values</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Add COALESCE or IS NOT NULL checks</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Dialect-specific syntax</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Syntax error in your database</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Specify database dialect in prompt</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <SQLPlayground
+            preset={ECOMMERCE_PRESET}
+            defaultQuery={`-- Debugging example: AI-generated query with a subtle bug
+
+-- ❌ AI generated this (looks reasonable, but has a bug!):
+-- "Show customers who placed orders in January 2024"
+SELECT 
+  c.customer_id,
+  c.first_name,
+  c.last_name,
+  COUNT(o.order_id) AS order_count
+FROM customers c
+INNER JOIN orders o ON c.customer_id = o.customer_id
+WHERE strftime('%Y-%m', o.order_date) = '2024-01'
+GROUP BY c.customer_id;
+
+-- Bug: INNER JOIN excludes customers with no orders
+-- If a customer placed orders only outside January, they're missing!
+
+-- ✅ Fixed version (if we want "customers with >= 1 order in Jan"):
+SELECT 
+  c.customer_id,
+  c.first_name,
+  c.last_name,
+  COUNT(o.order_id) AS order_count
+FROM customers c
+INNER JOIN orders o ON c.customer_id = o.customer_id
+WHERE strftime('%Y-%m', o.order_date) = '2024-01'
+GROUP BY c.customer_id, c.first_name, c.last_name;
+
+-- But if we want "all customers, showing Jan 2024 order count":
+SELECT 
+  c.customer_id,
+  c.first_name,
+  c.last_name,
+  COUNT(CASE WHEN strftime('%Y-%m', o.order_date) = '2024-01' THEN 1 END) AS jan_order_count
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name;`}
+          />
+
+          <p className="mt-4">
+            <strong>Debugging checklist:</strong>
+          </p>
+
+          <ol className="list-decimal pl-6 space-y-1 mt-2 text-sm">
+            <li>Does the query execute without errors?</li>
+            <li>Are the row counts reasonable? (Too many/few rows suggests JOIN issues)</li>
+            <li>Do aggregate values make sense? (Verify totals/averages manually)</li>
+            <li>Are NULLs handled correctly? (Check for unexpected NULL results)</li>
+            <li>Does it answer the original question? (Read results carefully)</li>
+            <li>Is it performant? (Run EXPLAIN QUERY PLAN)</li>
+          </ol>
+        </Subsection>
+
+        <p className="mt-6">
+          AI is a powerful SQL copilot, not autopilot. Use it to accelerate your workflow, but always review, test, and
+          understand the generated queries. The combination of your domain knowledge and AI's pattern recognition creates
+          the best results.
+        </p>
+      </Section>
+
+      {/* ============================================
+          SECTION 11: Transactions and ACID
+          ============================================ */}
+      <Section id="section16" title="11. Transactions and ACID: Ensuring Data Consistency">
+        <p>
+          So far, we've focused on reading and writing individual records. But real-world applications often require multiple
+          operations to succeed or fail <em>together</em>. This is where <strong>transactions</strong> come in.
+        </p>
+
+        <p className="mt-4">
+          A <strong>transaction</strong> is a logical unit of work that consists of one or more SQL statements. Transactions
+          guarantee that either all operations succeed (<strong>commit</strong>) or none do (<strong>rollback</strong>),
+          maintaining database consistency even in the face of errors or crashes.
+        </p>
+
+        <Callout type="tip" title="Analogy: Bank Transfer">
+          <p>
+            Imagine transferring $100 from your checking account to savings:
+          </p>
+          <ol className="list-decimal pl-5 space-y-1 mt-2">
+            <li>Deduct $100 from checking</li>
+            <li>Add $100 to savings</li>
+          </ol>
+          <p className="mt-2">
+            If step 1 succeeds but step 2 fails (power outage, crash), you've lost $100! A transaction ensures both steps
+            happen atomically—either both succeed or neither happens. Your money is never lost in limbo.
+          </p>
+        </Callout>
+
+        <Subsection title="ACID Properties: The Foundation of Reliability">
+          <p>
+            Transactions adhere to four key properties, known by the acronym <strong>ACID</strong>:
+          </p>
+
+          <div className="overflow-x-auto my-4">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Property</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Meaning</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Guarantee</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Atomicity</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All or nothing</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Either all operations succeed (commit) or none do (rollback)</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Consistency</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Valid state transitions</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Database goes from one valid state to another (constraints enforced)</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Isolation</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Independent execution</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Concurrent transactions don't interfere with each other</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Durability</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Permanent once committed</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Committed changes survive system failures (written to disk)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Subsection>
+
+        <Subsection title="Transaction Commands">
+          <p>
+            SQL provides three key commands for transaction control:
+          </p>
+
+          <CodeExample
+            title="Transaction Syntax"
+            code={`-- Start a transaction
+BEGIN TRANSACTION;  -- or just BEGIN
+
+-- Execute multiple statements
+UPDATE accounts SET balance = balance - 100 WHERE account_id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE account_id = 2;
+
+-- Commit (make changes permanent)
+COMMIT;
+
+-- OR rollback (undo all changes since BEGIN)
+ROLLBACK;`}
+          />
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Transaction example: Promote employee with salary adjustment
+
+BEGIN TRANSACTION;
+
+-- Step 1: Update salary
+UPDATE employees
+SET salary = salary * 1.15
+WHERE name = 'Alice Johnson';
+
+-- Step 2: Verify change (if this were production, we'd check business logic here)
+SELECT name, department, salary
+FROM employees
+WHERE name = 'Alice Johnson';
+
+-- If everything looks good:
+COMMIT;
+
+-- If there's a problem, you'd use:
+-- ROLLBACK;
+
+-- Note: In this playground, the transaction is auto-committed when successful.
+-- In production, you'd have explicit control over COMMIT/ROLLBACK.`}
+          />
+        </Subsection>
+
+        <Callout type="info" title="SQLite Transaction Behavior">
+          <p>
+            SQLite specifics:
+          </p>
+          <ul className="list-disc pl-5 space-y-1 mt-2 text-sm">
+            <li>By default, each statement is its own auto-committed transaction</li>
+            <li>Use <code>BEGIN</code> to start an explicit transaction</li>
+            <li>SQLite supports three transaction modes: DEFERRED (default), IMMEDIATE, EXCLUSIVE</li>
+            <li>Write-ahead logging (WAL mode) allows concurrent reads during writes</li>
+          </ul>
+        </Callout>
+
+        <p className="mt-6">
+          Transactions are crucial for data integrity in multi-user systems and complex operations. While we've covered the
+          basics here, transaction management in production involves isolation levels, deadlock handling, and concurrency
+          control—topics for advanced database courses. For now, remember: when multiple operations must succeed together,
+          wrap them in a transaction.
+        </p>
+      </Section>
+
+      {/* ============================================
+          SECTION 12: Practice and Real-World Scenarios
+          ============================================ */}
+      <Section id="section17" title="12. Practice: Putting It All Together">
+        <p>
+          You've learned a tremendous amount: from basic SELECT statements to window functions, query optimization, and
+          AI-assisted development. Now it's time to apply this knowledge to realistic scenarios that mirror real-world
+          data challenges.
+        </p>
+
+        <p className="mt-4">
+          These exercises are progressive—each builds on concepts from previous sections. Try solving each on your own first,
+          then review the solution. There's often more than one correct approach!
+        </p>
+
+        <Subsection title="Exercise 1: Customer Lifetime Value Analysis">
+          <p>
+            <strong>Scenario:</strong> You're analyzing customer behavior for an e-commerce company.
+            <br />
+            <strong>Task:</strong> Find customers who have placed at least 3 orders, showing their total order count,
+            total amount spent, average order value, and days since their last order.
+            Sort by total spent (highest first).
+          </p>
+
+          <details className="mt-4 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+            <summary className="cursor-pointer font-semibold text-gray-900 dark:text-gray-100">
+              💡 Hint (click to expand)
+            </summary>
+            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm text-gray-700 dark:text-gray-300">
+              <li>Use JOIN between customers and orders</li>
+              <li>GROUP BY customer and use aggregate functions (COUNT, SUM, AVG)</li>
+              <li>HAVING clause to filter for customers with 3+ orders</li>
+              <li>Use JULIANDAY for date calculations</li>
+            </ul>
+          </details>
+
+          <details className="mt-4 border border-blue-300 dark:border-blue-700 rounded-lg p-4 bg-blue-50 dark:bg-blue-950/20">
+            <summary className="cursor-pointer font-semibold text-blue-900 dark:text-blue-100">
+              ✅ Solution (click to expand)
+            </summary>
+            <SQLPlayground
+              preset={ECOMMERCE_PRESET}
+              defaultQuery={`-- Solution: Customer Lifetime Value Analysis
+
+SELECT 
+  c.customer_id,
+  c.first_name || ' ' || c.last_name AS customer_name,
+  c.email,
+  COUNT(o.order_id) AS total_orders,
+  ROUND(SUM(o.total_amount), 2) AS lifetime_value,
+  ROUND(AVG(o.total_amount), 2) AS avg_order_value,
+  ROUND(JULIANDAY('now') - JULIANDAY(MAX(o.order_date)), 0) AS days_since_last_order
+FROM customers c
+INNER JOIN orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name, c.email
+HAVING COUNT(o.order_id) >= 3
+ORDER BY lifetime_value DESC;`}
+            />
+          </details>
+        </Subsection>
+
+        <Subsection title="Exercise 2: Department Salary Analysis with Window Functions">
+          <p>
+            <strong>Scenario:</strong> You're conducting a compensation analysis.
+            <br />
+            <strong>Task:</strong> For each employee, show their name, department, salary, rank within their department
+            (by salary), the department's average salary, and how much their salary differs from the department average.
+          </p>
+
+          <details className="mt-4 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+            <summary className="cursor-pointer font-semibold text-gray-900 dark:text-gray-100">
+              💡 Hint (click to expand)
+            </summary>
+            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm text-gray-700 dark:text-gray-300">
+              <li>Use RANK() OVER (PARTITION BY department ORDER BY salary DESC)</li>
+              <li>Use AVG() OVER (PARTITION BY department) for department average</li>
+              <li>Calculate difference: salary - AVG(...) OVER (...)</li>
+              <li>No GROUP BY needed—window functions preserve all rows</li>
+            </ul>
+          </details>
+
+          <details className="mt-4 border border-blue-300 dark:border-blue-700 rounded-lg p-4 bg-blue-50 dark:bg-blue-950/20">
+            <summary className="cursor-pointer font-semibold text-blue-900 dark:text-blue-100">
+              ✅ Solution (click to expand)
+            </summary>
+            <SQLPlayground
+              preset={EMPLOYEES_PRESET}
+              defaultQuery={`-- Solution: Department Salary Analysis
+
+SELECT 
+  name,
+  department,
+  salary,
+  RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS dept_rank,
+  ROUND(AVG(salary) OVER (PARTITION BY department), 0) AS dept_avg_salary,
+  ROUND(salary - AVG(salary) OVER (PARTITION BY department), 0) AS diff_from_avg,
+  CASE
+    WHEN salary > AVG(salary) OVER (PARTITION BY department) THEN 'Above Average'
+    WHEN salary < AVG(salary) OVER (PARTITION BY department) THEN 'Below Average'
+    ELSE 'Average'
+  END AS performance_indicator
+FROM employees
+ORDER BY department, dept_rank;`}
+            />
+          </details>
+        </Subsection>
+
+        <Subsection title="Exercise 3: Finding Gaps in Order Sequences">
+          <p>
+            <strong>Scenario:</strong> You're auditing order processing to find missing order IDs (gaps in the sequence).
+            <br />
+            <strong>Task:</strong> Identify all missing order_id values in the orders table. For example, if orders exist
+            for IDs 1, 2, 4, 5, 7, you should identify that IDs 3 and 6 are missing.
+          </p>
+
+          <details className="mt-4 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+            <summary className="cursor-pointer font-semibold text-gray-900 dark:text-gray-100">
+              💡 Hint (click to expand)
+            </summary>
+            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm text-gray-700 dark:text-gray-300">
+              <li>Use recursive CTE to generate all numbers from MIN to MAX order_id</li>
+              <li>Use EXCEPT to find generated numbers not in actual orders</li>
+              <li>Alternatively: use LAG() to find gaps between consecutive order_ids</li>
+            </ul>
+          </details>
+
+          <details className="mt-4 border border-blue-300 dark:border-blue-700 rounded-lg p-4 bg-blue-50 dark:bg-blue-950/20">
+            <summary className="cursor-pointer font-semibold text-blue-900 dark:text-blue-100">
+              ✅ Solution (click to expand)
+            </summary>
+            <SQLPlayground
+              preset={ECOMMERCE_PRESET}
+              defaultQuery={`-- Solution 1: Using Recursive CTE + EXCEPT
+
+WITH RECURSIVE all_ids AS (
+  -- Anchor: Start with minimum order_id
+  SELECT MIN(order_id) AS id FROM orders
+  
+  UNION ALL
+  
+  -- Recursive: Generate next number
+  SELECT id + 1
+  FROM all_ids
+  WHERE id < (SELECT MAX(order_id) FROM orders)
+)
+SELECT id AS missing_order_id
+FROM all_ids
+EXCEPT
+SELECT order_id FROM orders
+ORDER BY id;
+
+-- Solution 2: Using LAG() to find gaps
+-- This shows ranges of missing IDs more clearly
+
+SELECT 
+  order_id + 1 AS gap_start,
+  next_id - 1 AS gap_end,
+  (next_id - order_id - 1) AS missing_count
+FROM (
+  SELECT 
+    order_id,
+    LEAD(order_id) OVER (ORDER BY order_id) AS next_id
+  FROM orders
+) AS gaps
+WHERE next_id > order_id + 1
+ORDER BY gap_start;`}
+            />
+          </details>
+        </Subsection>
+
+        <Subsection title="Exercise 4: Monthly Sales Trend with Moving Average">
+          <p>
+            <strong>Scenario:</strong> You're creating a sales dashboard.
+            <br />
+            <strong>Task:</strong> Show monthly total sales, the 3-month moving average, and the month-over-month
+            percentage change. Display results for all available months.
+          </p>
+
+          <details className="mt-4 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+            <summary className="cursor-pointer font-semibold text-gray-900 dark:text-gray-100">
+              💡 Hint (click to expand)
+            </summary>
+            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm text-gray-700 dark:text-gray-300">
+              <li>Group by year-month: strftime('%Y-%m', order_date)</li>
+              <li>Use SUM() for monthly totals</li>
+              <li>Use AVG() OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) for 3-month average</li>
+              <li>Use LAG() to get previous month's value for percentage change</li>
+            </ul>
+          </details>
+
+          <details className="mt-4 border border-blue-300 dark:border-blue-700 rounded-lg p-4 bg-blue-50 dark:bg-blue-950/20">
+            <summary className="cursor-pointer font-semibold text-blue-900 dark:text-blue-100">
+              ✅ Solution (click to expand)
+            </summary>
+            <SQLPlayground
+              preset={ECOMMERCE_PRESET}
+              defaultQuery={`-- Solution: Monthly Sales Trend Analysis
+
+WITH monthly_sales AS (
+  SELECT 
+    strftime('%Y-%m', order_date) AS month,
+    ROUND(SUM(total_amount), 2) AS monthly_total
+  FROM orders
+  GROUP BY strftime('%Y-%m', order_date)
+)
+SELECT 
+  month,
+  monthly_total,
+  ROUND(AVG(monthly_total) OVER (
+    ORDER BY month 
+    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+  ), 2) AS moving_avg_3mo,
+  ROUND(
+    100.0 * (monthly_total - LAG(monthly_total) OVER (ORDER BY month)) 
+    / LAG(monthly_total) OVER (ORDER BY month),
+    2
+  ) AS pct_change_mom
+FROM monthly_sales
+ORDER BY month;`}
+            />
+          </details>
+        </Subsection>
+
+        <Subsection title="Exercise 5: Complex Multi-Table Analysis with CTEs">
+          <p>
+            <strong>Scenario:</strong> You're preparing an executive report combining multiple datasets.
+            <br />
+            <strong>Task:</strong> Create a comprehensive report showing:
+          </p>
+          <ul className="list-disc pl-5 mt-2 text-sm">
+            <li>Customers who placed orders in the last 30 days</li>
+            <li>Their total number of orders (all time)</li>
+            <li>Total amount spent (all time)</li>
+            <li>Their rank among active customers (by total spent)</li>
+            <li>Percentage of company's total revenue they represent</li>
+          </ul>
+
+          <details className="mt-4 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+            <summary className="cursor-pointer font-semibold text-gray-900 dark:text-gray-100">
+              💡 Hint (click to expand)
+            </summary>
+            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm text-gray-700 dark:text-gray-300">
+              <li>Use multiple CTEs: one for recent customers, one for all-time stats, one for totals</li>
+              <li>JOIN the CTEs together</li>
+              <li>Use RANK() OVER (ORDER BY total_spent DESC)</li>
+              <li>Calculate percentage: 100.0 * customer_total / company_total</li>
+            </ul>
+          </details>
+
+          <details className="mt-4 border border-blue-300 dark:border-blue-700 rounded-lg p-4 bg-blue-50 dark:bg-blue-950/20">
+            <summary className="cursor-pointer font-semibold text-blue-900 dark:text-blue-100">
+              ✅ Solution (click to expand)
+            </summary>
+            <SQLPlayground
+              preset={ECOMMERCE_PRESET}
+              defaultQuery={`-- Solution: Comprehensive Executive Report
+
+WITH 
+  -- CTE 1: Customers with recent activity
+  recent_customers AS (
+    SELECT DISTINCT customer_id
+    FROM orders
+    WHERE order_date >= DATE('now', '-30 days')
+  ),
+  -- CTE 2: All-time customer statistics
+  customer_stats AS (
+    SELECT 
+      c.customer_id,
+      c.first_name || ' ' || c.last_name AS customer_name,
+      c.email,
+      COUNT(o.order_id) AS total_orders,
+      ROUND(SUM(o.total_amount), 2) AS total_spent
+    FROM customers c
+    JOIN orders o ON c.customer_id = o.customer_id
+    GROUP BY c.customer_id, c.first_name, c.last_name, c.email
+  ),
+  -- CTE 3: Company totals
+  company_total AS (
+    SELECT SUM(total_amount) AS total_revenue
+    FROM orders
+  )
+-- Final query: Combine CTEs
+SELECT 
+  cs.customer_name,
+  cs.email,
+  cs.total_orders,
+  cs.total_spent,
+  RANK() OVER (ORDER BY cs.total_spent DESC) AS revenue_rank,
+  ROUND(100.0 * cs.total_spent / ct.total_revenue, 2) AS pct_of_total_revenue
+FROM customer_stats cs
+CROSS JOIN company_total ct
+WHERE cs.customer_id IN (SELECT customer_id FROM recent_customers)
+ORDER BY cs.total_spent DESC;`}
+            />
+          </details>
+        </Subsection>
+
+        <p className="mt-8 text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Congratulations! 🎉
+        </p>
+
+        <p className="mt-4">
+          You've completed Part III: Mastering SQL. You now have a comprehensive understanding of SQL, from basic queries
+          to advanced analytics, optimization, and AI-assisted development. These skills form the foundation for working
+          with any relational database system.
+        </p>
+
+        <p className="mt-4">
+          The best way to solidify this knowledge is through practice. Build projects, explore real datasets, contribute
+          to open-source projects with databases, and keep pushing the boundaries of what you can accomplish with SQL.
+        </p>
+
+        <Callout type="success" title="What You've Mastered">
+          <ul className="list-disc pl-5 space-y-1 mt-2">
+            <li>SQL fundamentals: SELECT, INSERT, UPDATE, DELETE, and DDL</li>
+            <li>Query execution lifecycle and optimization</li>
+            <li>Complex queries: JOINs, subqueries, CTEs, window functions</li>
+            <li>Advanced techniques: CASE, set operations, string/date functions</li>
+            <li>Performance optimization: indexing, EXPLAIN QUERY PLAN, anti-patterns</li>
+            <li>AI-assisted SQL development: prompting, Text-to-SQL, RAG systems</li>
+            <li>Transactions and ACID properties</li>
+            <li>Real-world analytical queries combining multiple concepts</li>
+          </ul>
+        </Callout>
+
+        <p className="mt-6">
+          In the next parts, we'll explore advanced database concepts, the broader database ecosystem, and dive deeper into
+          architectural considerations for production systems. Keep learning, keep building! 🚀
+        </p>
       </Section>
     </>
   );
 }
-

@@ -36,6 +36,8 @@ export function MermaidDiagram({ chart, caption }: MermaidDiagramProps) {
             textColor: '#e5e7eb',
             border1: '#4b5563',
             border2: '#6b7280',
+            edgeLabelBackground: '#1f2937',
+            labelBackground: '#1f2937',
           } : {
             primaryColor: '#dbeafe',
             primaryTextColor: '#1e3a8a',
@@ -49,6 +51,8 @@ export function MermaidDiagram({ chart, caption }: MermaidDiagramProps) {
             textColor: '#111827',
             border1: '#d1d5db',
             border2: '#9ca3af',
+            edgeLabelBackground: '#ffffff',
+            labelBackground: '#ffffff',
           },
         });
 

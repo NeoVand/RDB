@@ -21,7 +21,7 @@ const tocStructure: TOCItem[] = [
     children: [
       { id: 'section1', title: 'What is a Relational Database?', level: 2 },
       { id: 'section2', title: 'Keys to the Kingdom', level: 2 },
-      { id: 'section3', title: 'Modeling the Real World', level: 2 },
+      { id: 'section3', title: 'Modeling the Real World - ERDs', level: 2 },
     ],
   },
   {
@@ -41,8 +41,16 @@ const tocStructure: TOCItem[] = [
     children: [
       { id: 'section6', title: 'Introduction to SQL', level: 2 },
       { id: 'section7', title: 'CRUD Operations', level: 2 },
-      { id: 'section8', title: 'Advanced Querying', level: 2 },
-      { id: 'section8b', title: 'Advanced SQL Features', level: 2 },
+      { id: 'section8', title: 'JOINs - Connecting the Dots', level: 2 },
+      { id: 'section9', title: 'Aggregation and Grouping', level: 2 },
+      { id: 'section10', title: 'Subqueries and CTEs', level: 2 },
+      { id: 'section11', title: 'Window Functions', level: 2 },
+      { id: 'section12', title: 'Advanced SQL Techniques', level: 2 },
+      { id: 'section13', title: 'Query Optimization', level: 2 },
+      { id: 'section14', title: 'How SQL Really Works', level: 2 },
+      { id: 'section15', title: 'AI-Assisted SQL Development', level: 2 },
+      { id: 'section16', title: 'Transactions and ACID', level: 2 },
+      { id: 'section17', title: 'Practice and Exercises', level: 2 },
     ],
   },
   {
@@ -50,9 +58,7 @@ const tocStructure: TOCItem[] = [
     title: 'Part IV: Advanced Concepts',
     level: 1,
     children: [
-      { id: 'section9', title: 'ACID Properties', level: 2 },
-      { id: 'section10', title: 'Performance & Optimization', level: 2 },
-      { id: 'section11', title: "Architect's Perspective", level: 2 },
+      { id: 'section18', title: 'Advanced Topics', level: 2 },
     ],
   },
   {
@@ -60,7 +66,7 @@ const tocStructure: TOCItem[] = [
     title: 'Part V: The Ecosystem',
     level: 1,
     children: [
-      { id: 'section12', title: 'Choosing Your Database', level: 2 },
+      { id: 'section19', title: 'Database Ecosystem', level: 2 },
     ],
   },
   {
@@ -68,9 +74,7 @@ const tocStructure: TOCItem[] = [
     title: 'Part VI: Practice Exercises',
     level: 1,
     children: [
-      { id: 'section13', title: 'Beginner Exercises', level: 2 },
-      { id: 'section14', title: 'Intermediate Exercises', level: 2 },
-      { id: 'section15', title: 'Advanced Exercises', level: 2 },
+      { id: 'section20', title: 'Exercises', level: 2 },
     ],
   },
   {
@@ -78,9 +82,7 @@ const tocStructure: TOCItem[] = [
     title: 'Part VII: Reference Guide',
     level: 1,
     children: [
-      { id: 'section16', title: 'SQL Keywords Reference', level: 2 },
-      { id: 'section17', title: 'Best Practices', level: 2 },
-      { id: 'section18', title: 'Common Pitfalls', level: 2 },
+      { id: 'section21', title: 'Reference', level: 2 },
     ],
   },
 ];
