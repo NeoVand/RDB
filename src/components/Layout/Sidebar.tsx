@@ -45,7 +45,7 @@ const tocStructure: TOCItem[] = [
       { id: 'section9', title: 'Aggregation and Grouping', level: 2 },
       { id: 'section10', title: 'Subqueries and CTEs', level: 2 },
       { id: 'section11', title: 'Window Functions', level: 2 },
-      { id: 'section12', title: 'Advanced SQL Techniques', level: 2 },
+      { id: 'section12', title: 'Data Transformation', level: 2 },
       { id: 'section13', title: 'Query Optimization', level: 2 },
       { id: 'section14', title: 'How SQL Really Works', level: 2 },
       { id: 'section15', title: 'AI-Assisted SQL Development', level: 2 },

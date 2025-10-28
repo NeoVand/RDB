@@ -4492,24 +4492,64 @@ Generate: SQLite query using appropriate window functions.`}
       </Section>
 
       {/* ============================================
-          SECTION 7: Advanced SQL Techniques
+          SECTION 7: Data Transformation
           ============================================ */}
-      <Section id="section12" title="8. Advanced SQL Techniques">
+      <Section id="section12" title="Data Transformation - Text, Dates, and Conditional Logic" level={2}>
         <p>
-          Beyond the core SQL features we've covered, several specialized techniques handle common real-world challenges:
-          conditional logic, set operations, text manipulation, date/time calculations, and NULL handling. Mastering these
-          techniques separates SQL novices from practitioners.
+          You've mastered the fundamental SQL operations—querying with SELECT, combining data with JOINs, aggregating with 
+          GROUP BY, and analyzing with window functions. But real-world data is messy: dates come in different formats, text 
+          needs cleaning, business logic requires conditional processing, and NULL values lurk everywhere waiting to break your queries.
         </p>
+        
+        <p className="mt-3 text-gray-700 dark:text-gray-300">
+          This is where SQL's "utility functions" shine. Think of them as your Swiss Army knife—a collection of specialized 
+          tools that transform raw data into exactly what you need. These aren't theoretical concepts; they're the everyday 
+          workhorses that data analysts, engineers, and scientists use dozens of times per day. A junior developer writes 
+          queries that work on clean data. A senior developer writes queries that work on <em>real</em> data—handling edge 
+          cases, cleaning text, parsing dates, and making decisions with conditional logic.
+        </p>
+
+        <Callout type="info" title="Why These Techniques Matter">
+          <p className="mb-2">
+            <strong>Consider a real scenario:</strong> You're building a customer segmentation dashboard. Your data has:
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-sm">
+            <li>Customer names in inconsistent formats ("john doe", "JANE SMITH", "  Bob  Jones  ")</li>
+            <li>Email addresses needing domain extraction for analysis</li>
+            <li>Purchase dates from three different systems with varying formats</li>
+            <li>NULL values in optional fields that break calculations</li>
+            <li>Business rules like "VIP customers = spent &gt; $10K OR orders &gt; 50 in past year"</li>
+          </ul>
+          <p className="mt-2 text-sm">
+            <strong>Without these utility functions, you'd need to extract data and clean it in Python/JavaScript.</strong> 
+            With them, you handle everything in SQL—cleaner code, fewer bugs, better performance.
+          </p>
+        </Callout>
 
         <Subsection title="CASE Expressions: Conditional Logic in SQL">
           <p>
-            The <code>CASE</code> expression is SQL's if/then/else mechanism. It evaluates conditions and returns different
-            values based on the result. There are two forms: <strong>simple CASE</strong> and <strong>searched CASE</strong>.
+            The <code>CASE</code> expression is SQL's if/then/else mechanism—it's how you implement business logic and 
+            conditional transformations directly in your queries. Think of it as the bridge between your database and 
+            your business rules. Instead of fetching raw data and processing it in application code, CASE lets you apply 
+            logic at the database level, which is often more efficient and clearer.
+          </p>
+
+          <Callout type="tip" title="Analogy: The Traffic Light">
+            Imagine you're a traffic controller at an intersection. A CASE expression is like your decision process: 
+            "IF traffic from north is waiting AND timer expired THEN green light north, ELSE IF traffic from east is 
+            waiting THEN green light east, ELSE yellow all directions." Each WHEN clause is a condition you check in 
+            order, and you take the first matching action. The ELSE is your default when nothing else applies—like 
+            defaulting to yellow lights when no traffic is detected.
+          </Callout>
+
+          <p className="mt-4">
+            There are two forms of CASE: <strong>searched CASE</strong> (tests arbitrary conditions) and <strong>simple CASE</strong> 
+            (tests equality against a single expression). Use searched CASE for most scenarios—it's more flexible.
           </p>
 
           <CodeExample
             title="CASE Expression Syntax"
-            code={`-- Searched CASE (most flexible)
+            code={`-- Searched CASE (most flexible) - use this 95% of the time
 CASE
   WHEN condition1 THEN result1
   WHEN condition2 THEN result2
@@ -4517,8 +4557,8 @@ CASE
   ELSE default_result
 END
 
--- Simple CASE (for equality checks)
-CASE expression
+-- Simple CASE (only for equality checks against one column)
+CASE column_name
   WHEN value1 THEN result1
   WHEN value2 THEN result2
   ...
@@ -4526,22 +4566,30 @@ CASE expression
 END`}
           />
 
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Let's see CASE in action with a realistic employee analysis scenario. Notice how CASE expressions can appear 
+            in SELECT (to create new computed columns), in aggregate functions (to conditionally count or sum), and even 
+            nested inside other CASE expressions for complex logic:
+          </p>
+
           <SQLPlayground
             preset={EMPLOYEES_PRESET}
-            defaultQuery={`-- Categorize employees using CASE
+            defaultQuery={`-- Real-world employee analysis with CASE expressions
+-- Demonstrates categorization, conditional aggregation, and business rules
 
 SELECT 
   name,
   department,
   salary,
-  -- Searched CASE: Complex conditions
+  -- Searched CASE: Create salary bands for compensation analysis
   CASE
     WHEN salary >= 100000 THEN 'Executive'
     WHEN salary >= 75000 THEN 'Senior'
     WHEN salary >= 50000 THEN 'Mid-Level'
     ELSE 'Entry-Level'
   END AS seniority_level,
-  -- Simple CASE: Equality checks
+  
+  -- Simple CASE: Map departments to divisions
   CASE department
     WHEN 'Engineering' THEN 'Tech'
     WHEN 'Product' THEN 'Tech'
@@ -4549,78 +4597,212 @@ SELECT
     WHEN 'Marketing' THEN 'Revenue'
     ELSE 'Operations'
   END AS division,
-  -- CASE in aggregate functions
+  
+  -- CASE with calculations: Bonus eligibility
   CASE
-    WHEN salary > 80000 THEN salary
+    WHEN salary >= 80000 AND department = 'Sales' THEN salary * 0.15
+    WHEN salary >= 80000 THEN salary * 0.10
+    WHEN salary >= 50000 THEN salary * 0.05
     ELSE 0
-  END AS premium_salary
+  END AS annual_bonus_estimate,
+  
+  -- Nested CASE: Complex business rules
+  CASE
+    WHEN department = 'Sales' THEN
+      CASE 
+        WHEN salary > 90000 THEN 'Senior Sales - High Comp'
+        ELSE 'Sales Team'
+      END
+    ELSE department
+  END AS detailed_category
+  
 FROM employees
-ORDER BY salary DESC;`}
+ORDER BY salary DESC;
+
+-- CASE in WHERE clause: Filter using complex conditions
+-- SELECT name, salary FROM employees 
+-- WHERE CASE 
+--   WHEN department = 'Engineering' THEN salary > 70000
+--   WHEN department = 'Sales' THEN salary > 60000
+--   ELSE salary > 50000 
+-- END;`}
           />
 
-          <p className="mt-4">
-            <code>CASE</code> expressions can appear anywhere: in SELECT, WHERE, ORDER BY, or even within aggregate functions
-            to conditionally include values in calculations.
+          <div className="overflow-x-auto my-6">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Common Pattern</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Use Case</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Bucketing/Binning</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Group continuous values into ranges</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">CASE WHEN age &lt; 18 THEN 'Minor' WHEN age &lt; 65 THEN 'Adult' ELSE 'Senior' END</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Conditional Aggregation</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Count/sum only rows meeting criteria</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">SUM(CASE WHEN status='paid' THEN amount ELSE 0 END)</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Pivot/Unpivot</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Transform rows to columns</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">SUM(CASE WHEN month='Jan' THEN revenue END) AS jan_revenue</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Data Cleaning</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Fix inconsistent values</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">CASE WHEN status IN ('complete','done') THEN 'completed' END</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Feature Engineering</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create ML model features</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">CASE WHEN orders &gt; 10 THEN 1 ELSE 0 END AS is_repeat_customer</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <Callout type="warning" title="Common CASE Expression Mistakes">
+            <div className="space-y-3">
+              <div>
+                <p className="font-semibold text-sm">❌ Missing ELSE clause</p>
+                <p className="text-sm mt-1">
+                  If no WHEN matches and there's no ELSE, CASE returns NULL. This can break calculations. 
+                  <strong>Always include ELSE</strong> for safety, even if it's just <code>ELSE NULL</code> to make intent explicit.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm">❌ Order matters!</p>
+                <p className="text-sm mt-1">
+                  CASE evaluates conditions <em>sequentially</em> and stops at the first match. If you have 
+                  <code>WHEN salary &gt; 50000 THEN 'High'</code> before <code>WHEN salary &gt; 100000 THEN 'Executive'</code>, 
+                  executives will be labeled "High" because the first condition matches.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm">❌ Type mismatches</p>
+                <p className="text-sm mt-1">
+                  All THEN results must be the same type (or compatible). Mixing strings and numbers causes errors: 
+                  <code>CASE WHEN x THEN 'yes' ELSE 0 END</code> ❌
+                </p>
+              </div>
+            </div>
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            <strong>Pro tip:</strong> CASE expressions can appear <em>anywhere</em> in SQL—in SELECT (computed columns), 
+            WHERE (complex filters), ORDER BY (custom sort order), GROUP BY (dynamic grouping), and inside aggregate functions 
+            (conditional aggregation). This versatility makes CASE one of the most powerful tools in SQL.
           </p>
         </Subsection>
 
         <Subsection title="Set Operations: UNION, INTERSECT, EXCEPT">
           <p>
-            Set operations combine results from multiple queries, treating them as mathematical sets. These operations require
-            that both queries return the same number of columns with compatible data types.
+            Set operations treat query results as mathematical sets, allowing you to combine, intersect, or subtract them. 
+            These are essential when you need to merge data from similar sources, find overlaps, or identify differences 
+            between datasets. Think of them as the SQL equivalent of Venn diagrams.
           </p>
+
+          <Callout type="tip" title="Analogy: Music Playlist Operations">
+            Imagine you have two Spotify playlists: "Workout" and "Focus". <strong>UNION</strong> is like combining both 
+            playlists into one mega-playlist (removing duplicates if a song appears in both). <strong>INTERSECT</strong> 
+            gives you only the songs that appear in BOTH playlists—your crossover favorites. <strong>EXCEPT</strong> gives 
+            you songs in "Workout" that are NOT in "Focus"—your high-energy tracks that aren't suitable for concentration. 
+            Set operations let you perform these same logical operations on database query results.
+          </Callout>
 
           <div className="overflow-x-auto my-4">
             <table className="min-w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gray-100 dark:bg-gray-800">
                   <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Operation</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Removes Duplicates?</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">SQL Syntax</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Math Equivalent</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Duplicates</th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="bg-white dark:bg-gray-900">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">UNION</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Combine results from both queries</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Yes</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Union</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">UNION</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">A ∪ B</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Removed</td>
                 </tr>
                 <tr className="bg-gray-50 dark:bg-gray-800">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">UNION ALL</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Combine results, keep all rows</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No (faster)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Union All</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">UNION ALL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">A ∪ B (with duplicates)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Kept ⚡ faster</td>
                 </tr>
                 <tr className="bg-white dark:bg-gray-900">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">INTERSECT</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Return only rows in both queries</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Yes</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Intersection</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">INTERSECT</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">A ∩ B</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Removed</td>
                 </tr>
                 <tr className="bg-gray-50 dark:bg-gray-800">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">EXCEPT</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Return rows in first query but not second</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Yes</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Difference</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">EXCEPT</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">A − B</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Removed</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            <strong>Important requirements:</strong> All queries in a set operation must return the same number of columns, 
+            and corresponding columns must have compatible data types. Column names come from the first query.
+          </p>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Let's explore practical scenarios where set operations solve real business problems. These examples demonstrate 
+            common patterns you'll encounter when analyzing customer behavior, finding data inconsistencies, or combining 
+            data from multiple sources:
+          </p>
+
           <SQLPlayground
             preset={ECOMMERCE_PRESET}
-            defaultQuery={`-- UNION: Combine customers from different sources
+            defaultQuery={`-- Scenario 1: UNION - Create a master list of contacts
+-- Combine customers who have ordered with newsletter subscribers
 
-SELECT 'Online Buyer' AS source, first_name, last_name, email
+SELECT 'Customer' AS source, customer_id, first_name, last_name, email
 FROM customers
 WHERE customer_id IN (SELECT DISTINCT customer_id FROM orders)
 
 UNION
 
-SELECT 'Newsletter Sub' AS source, first_name, last_name, email
+SELECT 'Newsletter' AS source, customer_id, first_name, last_name, email
 FROM customers
 WHERE email LIKE '%@gmail.com'
 
 ORDER BY last_name;
+-- UNION removes duplicates - customers in both groups appear once
 
--- EXCEPT: Find customers who never ordered
+
+-- Scenario 2: UNION ALL - Audit log from multiple systems
+-- When you WANT duplicates (e.g., activity from different sources)
+
+SELECT 'Web' AS platform, customer_id, 'Logged In' AS action
+FROM customers
+WHERE customer_id <= 5
+
+UNION ALL
+
+SELECT 'Mobile' AS platform, customer_id, 'Logged In' AS action
+FROM customers
+WHERE customer_id <= 3;
+-- UNION ALL is faster - keeps all rows, including duplicates
+
+
+-- Scenario 3: EXCEPT - Find customers who never ordered
+-- "Give me all customers EXCEPT those who have placed orders"
+
 SELECT customer_id, first_name, last_name
 FROM customers
 
@@ -4628,154 +4810,609 @@ EXCEPT
 
 SELECT DISTINCT c.customer_id, c.first_name, c.last_name
 FROM customers c
-JOIN orders o ON c.customer_id = o.customer_id;`}
+INNER JOIN orders o ON c.customer_id = o.customer_id;
+-- Returns customers with no orders - great for marketing campaigns
+
+
+-- Scenario 4: INTERSECT - Find overlap between two segments
+-- "Customers who ordered AND subscribed to newsletter"
+
+SELECT customer_id, email
+FROM customers
+WHERE customer_id IN (SELECT customer_id FROM orders)
+
+INTERSECT
+
+SELECT customer_id, email
+FROM customers
+WHERE email LIKE '%@gmail.com';
+-- Only customers meeting BOTH criteria`}
           />
 
+          <div className="overflow-x-auto my-6">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Use Case</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Best Operation</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Merge data from similar tables</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">UNION ALL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-xs">sales_2023 UNION ALL sales_2024</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create unified contact list</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">UNION</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-xs">email_list1 UNION email_list2 (dedupe)</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find customers in segment A but not B</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">EXCEPT</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-xs">all_customers EXCEPT purchasers</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find overlap between two segments</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">INTERSECT</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-xs">high_value INTERSECT recent_activity</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <Callout type="warning" title="UNION vs UNION ALL Performance">
+            <p className="mb-2">
+              <strong>UNION</strong> must sort and deduplicate results, which adds significant overhead for large datasets.
+            </p>
             <p>
-              <code>UNION</code> must sort and deduplicate results, which can be slow for large datasets.
-              Use <code>UNION ALL</code> when you know there are no duplicates or when duplicates are acceptable—it's
-              significantly faster.
+              <strong>UNION ALL</strong> simply appends results—no sorting, no deduplication. This makes it 
+              <strong> 10-100x faster</strong> for large result sets. Use UNION ALL whenever you know duplicates don't exist 
+              or when duplicates are acceptable (like audit logs from different sources).
+            </p>
+            <p className="mt-2 text-sm">
+              <strong>Rule of thumb:</strong> Default to UNION ALL for performance, only use UNION when deduplication is 
+              truly necessary.
+            </p>
+          </Callout>
+
+          <Callout type="info" title="Cross-Dialect Note: EXCEPT vs MINUS">
+            <p className="text-sm">
+              <strong>SQLite, PostgreSQL, SQL Server:</strong> Use <code>EXCEPT</code> for set difference.
+              <br />
+              <strong>Oracle, MariaDB:</strong> Use <code>MINUS</code> instead (same functionality, different keyword).
+              <br />
+              <strong>MySQL (before 8.0):</strong> No native EXCEPT/MINUS—use <code>LEFT JOIN ... WHERE IS NULL</code> pattern.
             </p>
           </Callout>
         </Subsection>
 
         <Subsection title="String Functions: Text Manipulation">
           <p>
-            SQL provides powerful string functions for cleaning, transforming, and analyzing text data. While syntax varies
-            slightly across databases, SQLite offers a solid foundation.
+            Real-world data is messy—names have inconsistent capitalization, emails need domain extraction, text has leading/trailing 
+            spaces, and you need to search within strings. SQL's string functions are your data cleaning toolkit. While syntax varies 
+            across databases, mastering these core operations is essential for any data professional.
+          </p>
+
+          <Callout type="tip" title="Real-World Scenario: Cleaning Customer Data">
+            You've inherited a customer database where:
+            <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+              <li>Names are in ALL CAPS: "JOHN SMITH" should be "John Smith"</li>
+              <li>Emails have extra spaces: "  user@example.com  " needs trimming</li>
+              <li>You need to group customers by email domain for B2B analysis</li>
+              <li>Phone numbers have inconsistent formats: "(555) 123-4567", "555-123-4567", "5551234567"</li>
+            </ul>
+            <p className="mt-2 text-sm">
+              String functions let you clean and normalize this data in SQL, avoiding the need to export, clean in Python, 
+              and re-import.
+            </p>
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Let's explore the essential string functions with practical examples. Pay attention to how these can be combined 
+            to solve complex text processing tasks:
           </p>
 
           <SQLPlayground
             preset={ECOMMERCE_PRESET}
-            defaultQuery={`-- String function examples
+            defaultQuery={`-- Practical string manipulation for data cleaning and analysis
 
 SELECT 
   customer_id,
   first_name,
   last_name,
   email,
-  -- Concatenation
+  
+  -- Concatenation: Build full names
   first_name || ' ' || last_name AS full_name,
-  -- Case conversion
-  UPPER(email) AS email_upper,
-  LOWER(last_name) AS last_name_lower,
-  -- Length
+  
+  -- Case conversion: Normalize text for display or comparison
+  UPPER(email) AS email_upper,           -- "john@example.com" → "JOHN@EXAMPLE.COM"
+  LOWER(last_name) AS last_name_lower,   -- "SMITH" → "smith"
+  
+  -- Length: Validate or find long values
   LENGTH(email) AS email_length,
-  -- Substring (0-indexed in SQLite)
+  LENGTH(first_name || last_name) AS name_char_count,
+  
+  -- Substring extraction: Parse structured text
+  -- SUBSTR(string, start, length) - start is 1-indexed!
   SUBSTR(email, 1, INSTR(email, '@') - 1) AS email_username,
   SUBSTR(email, INSTR(email, '@') + 1) AS email_domain,
-  -- Replace
+  
+  -- Replace: Fix patterns or obfuscate data
   REPLACE(email, '@', ' [AT] ') AS obfuscated_email,
-  -- Trim whitespace
-  TRIM(first_name) AS trimmed_name
+  REPLACE(REPLACE(email, '.', ' '), '@', ' ') AS no_punctuation,
+  
+  -- Trim: Remove whitespace (important for data cleaning!)
+  TRIM(first_name) AS trimmed_first,
+  -- LTRIM/RTRIM for left/right only
+  
+  -- INSTR: Find substring position (returns 0 if not found)
+  INSTR(email, '@') AS at_position,
+  INSTR(email, 'gmail') AS gmail_position  -- 0 if not Gmail
+  
 FROM customers
-LIMIT 10;`}
+LIMIT 10;
+
+-- Pro Pattern: Extract email domain for B2B analysis
+-- SELECT 
+--   SUBSTR(email, INSTR(email, '@') + 1) AS domain,
+--   COUNT(*) AS customer_count
+-- FROM customers
+-- GROUP BY domain
+-- ORDER BY customer_count DESC;`}
           />
 
-          <Callout type="info" title="SQLite String Function Notes">
-            <p>
-              SQLite's string functions differ slightly from other databases:
-            </p>
-            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm">
-              <li><code>||</code> for concatenation (not <code>CONCAT()</code>)</li>
-              <li><code>SUBSTR()</code> is 1-indexed, not 0-indexed</li>
-              <li><code>INSTR()</code> finds position of substring (returns 0 if not found)</li>
-              <li>No native <code>SPLIT_PART()</code> or regex functions (use extension)</li>
-            </ul>
+          <div className="overflow-x-auto my-6">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Pattern</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Use Case</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Parse Email</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Extract username or domain</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">SUBSTR(email, INSTR(email, '@')+1)</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Title Case</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Format names properly</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">UPPER(SUBSTR(name,1,1)) || LOWER(SUBSTR(name,2))</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Remove Characters</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Clean phone numbers</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">REPLACE(REPLACE(phone, '-', ''), ' ', '')</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Initials</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create compact identifiers</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">SUBSTR(first,1,1) || SUBSTR(last,1,1)</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Padding</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Format IDs with leading zeros</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">printf('%05d', id) -- "00042"</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <Callout type="info" title="Cross-Dialect String Functions">
+            <div className="space-y-2 text-sm">
+              <div>
+                <strong>Concatenation:</strong>
+                <ul className="list-disc pl-5 mt-1">
+                  <li><strong>SQLite, PostgreSQL:</strong> <code>||</code> operator</li>
+                  <li><strong>MySQL, SQL Server:</strong> <code>CONCAT(str1, str2, ...)</code></li>
+                  <li><strong>SQL Server:</strong> Also supports <code>+</code> operator</li>
+                </ul>
+              </div>
+              <div>
+                <strong>Substring:</strong>
+                <ul className="list-disc pl-5 mt-1">
+                  <li><strong>SQLite, SQL Server:</strong> <code>SUBSTR(str, start, length)</code> (1-indexed)</li>
+                  <li><strong>PostgreSQL, MySQL:</strong> <code>SUBSTRING(str FROM start FOR length)</code></li>
+                </ul>
+              </div>
+              <div>
+                <strong>String Position:</strong>
+                <ul className="list-disc pl-5 mt-1">
+                  <li><strong>SQLite:</strong> <code>INSTR(str, substring)</code></li>
+                  <li><strong>PostgreSQL, MySQL:</strong> <code>POSITION(substring IN str)</code></li>
+                  <li><strong>SQL Server:</strong> <code>CHARINDEX(substring, str)</code></li>
+                </ul>
+              </div>
+            </div>
           </Callout>
         </Subsection>
 
         <Subsection title="Date and Time Functions: Temporal Operations">
           <p>
-            Working with dates and times is a common SQL task. SQLite's date/time functions are unique but powerful once
-            you understand the patterns.
+            Date and time operations are everywhere in data analysis: calculating age, finding records within a date range, 
+            grouping sales by month, computing time differences, and handling timezones. SQLite's date/time functions are 
+            powerful once you understand their patterns—they're based on ISO 8601 format and Julian day numbers.
+          </p>
+
+          <Callout type="tip" title="Common Date/Time Scenarios">
+            <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+              <li><strong>Cohort analysis:</strong> Group customers by signup month to track retention</li>
+              <li><strong>Recency:</strong> Find customers who haven't ordered in 90+ days</li>
+              <li><strong>Seasonality:</strong> Analyze sales by day of week or month</li>
+              <li><strong>Age calculation:</strong> Compute customer age from birthdate</li>
+              <li><strong>Business hours:</strong> Filter transactions to 9 AM - 5 PM</li>
+              <li><strong>Reporting periods:</strong> Get "start of month" or "end of quarter" dates</li>
+            </ul>
+          </Callout>
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            SQLite stores dates as TEXT (ISO8601), REAL (Julian day), or INTEGER (Unix timestamp). The date/time functions 
+            work with all three formats. Let's explore the essential operations with practical examples:
           </p>
 
           <SQLPlayground
             preset={ECOMMERCE_PRESET}
-            defaultQuery={`-- Date/time function examples
+            defaultQuery={`-- Comprehensive date/time operations for analysis
 
 SELECT 
   order_id,
   order_date,
-  -- Extract components
-  DATE(order_date) AS date_only,
-  TIME(order_date) AS time_only,
-  strftime('%Y', order_date) AS year,
-  strftime('%m', order_date) AS month,
-  strftime('%d', order_date) AS day,
+  
+  -- Extract components with strftime (STRing Format TIME)
+  DATE(order_date) AS date_only,              -- "2024-03-15"
+  TIME(order_date) AS time_only,              -- "14:30:00"
+  strftime('%Y', order_date) AS year,         -- "2024"
+  strftime('%m', order_date) AS month,        -- "03"
+  strftime('%d', order_date) AS day,          -- "15"
+  strftime('%H', order_date) AS hour,         -- "14" (24-hour)
+  strftime('%M', order_date) AS minute,       -- "30"
+  
+  -- Day of week and week of year
   strftime('%w', order_date) AS day_of_week,  -- 0=Sunday, 6=Saturday
-  strftime('%W', order_date) AS week_of_year,
-  -- Date arithmetic
+  strftime('%W', order_date) AS week_of_year, -- Week number (00-53)
+  
+  -- Human-readable formats
+  strftime('%Y-%m', order_date) AS year_month,        -- "2024-03"
+  strftime('%Y-%m-%d %H:%M', order_date) AS formatted,-- "2024-03-15 14:30"
+  
+  -- Date arithmetic (modifiers)
   DATE(order_date, '+7 days') AS one_week_later,
   DATE(order_date, '-1 month') AS one_month_earlier,
-  DATE(order_date, 'start of month') AS month_start,
-  DATE(order_date, 'start of year') AS year_start,
-  -- Date difference (in days)
-  JULIANDAY('now') - JULIANDAY(order_date) AS days_since_order
+  DATE(order_date, '+1 year') AS one_year_later,
+  
+  -- Anchoring to start/end of periods
+  DATE(order_date, 'start of month') AS month_start,  -- First day of month
+  DATE(order_date, 'start of year') AS year_start,    -- Jan 1
+  DATE(order_date, '+1 month', 'start of month', '-1 day') AS month_end,
+  
+  -- Date differences (in days)
+  JULIANDAY('now') - JULIANDAY(order_date) AS days_since_order,
+  ROUND((JULIANDAY('now') - JULIANDAY(order_date)) / 7, 1) AS weeks_since,
+  
+  -- Categorize recency
+  CASE
+    WHEN JULIANDAY('now') - JULIANDAY(order_date) <= 30 THEN 'Recent'
+    WHEN JULIANDAY('now') - JULIANDAY(order_date) <= 90 THEN 'Active'
+    ELSE 'Dormant'
+  END AS recency_category
+  
 FROM orders
 ORDER BY order_date DESC
-LIMIT 15;`}
+LIMIT 15;
+
+-- Pro Pattern: Monthly sales aggregation
+-- SELECT 
+--   strftime('%Y-%m', order_date) AS month,
+--   COUNT(*) AS orders,
+--   SUM(total_amount) AS revenue
+-- FROM orders
+-- GROUP BY month
+-- ORDER BY month DESC;`}
           />
 
-          <p className="mt-4">
-            SQLite's <code>strftime(format, date)</code> is your Swiss Army knife for date manipulation. Common format codes:
-            <code>%Y</code> (year), <code>%m</code> (month), <code>%d</code> (day), <code>%H</code> (hour),
-            <code>%M</code> (minute), <code>%S</code> (second), <code>%w</code> (weekday).
-          </p>
+          <div className="overflow-x-auto my-6">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Pattern</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Use Case</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">SQLite Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Days Between</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Calculate date difference</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">JULIANDAY(date2) - JULIANDAY(date1)</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Add/Subtract</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Date arithmetic</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">DATE(date, '+30 days')</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Start of Period</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find month/year start</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">DATE(date, 'start of month')</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Age/Years</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Calculate age</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">(JULIANDAY('now') - JULIANDAY(bday)) / 365.25</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Last Day of Month</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Month-end reports</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">DATE(date, '+1 month', 'start of month', '-1 day')</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <Callout type="info" title="strftime Format Codes Cheat Sheet">
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <strong>Date Components:</strong>
+                <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                  <li><code>%Y</code> - Year (4 digits): 2024</li>
+                  <li><code>%m</code> - Month (01-12): 03</li>
+                  <li><code>%d</code> - Day (01-31): 15</li>
+                  <li><code>%w</code> - Weekday (0-6): 5</li>
+                  <li><code>%j</code> - Day of year (001-366)</li>
+                  <li><code>%W</code> - Week of year (00-53)</li>
+                </ul>
+              </div>
+              <div>
+                <strong>Time Components:</strong>
+                <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                  <li><code>%H</code> - Hour 24h (00-23): 14</li>
+                  <li><code>%I</code> - Hour 12h (01-12): 02</li>
+                  <li><code>%M</code> - Minute (00-59): 30</li>
+                  <li><code>%S</code> - Second (00-59): 45</li>
+                  <li><code>%p</code> - AM/PM</li>
+                  <li><code>%s</code> - Unix timestamp</li>
+                </ul>
+              </div>
+            </div>
+          </Callout>
+
+          <Callout type="warning" title="Timezone Handling: The Hard Part">
+            <p className="mb-2">
+              <strong>SQLite has NO timezone support.</strong> All dates are naive (no timezone info). For timezone-aware 
+              applications:
+            </p>
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li><strong>Store in UTC:</strong> Always store timestamps in UTC (use <code>datetime('now')</code>)</li>
+              <li><strong>Convert in application:</strong> Handle timezone conversions in your app layer (Python, JS, etc.)</li>
+              <li><strong>Or use PostgreSQL:</strong> PostgreSQL's <code>timestamptz</code> type handles timezones natively</li>
+            </ul>
+          </Callout>
         </Subsection>
 
         <Subsection title="NULL Handling: COALESCE and NULLIF">
           <p>
-            SQL provides specialized functions for working with NULLs. We covered <code>IS NULL</code> and <code>IS NOT NULL</code>
-            earlier; now let's explore <code>COALESCE</code> and <code>NULLIF</code>.
+            NULLs are unavoidable in real-world data—optional fields, missing values, failed lookups, or data not yet collected. 
+            SQL provides powerful functions to handle NULLs gracefully: <code>COALESCE</code> (provide fallback values) and 
+            <code>NULLIF</code> (convert specific values to NULL). These functions prevent NULL-related errors and make your 
+            queries more robust.
           </p>
+
+          <Callout type="tip" title="The NULL Problem">
+            Remember: <code>NULL</code> isn't zero or an empty string—it's "unknown." Any arithmetic with NULL yields NULL 
+            (<code>5 + NULL = NULL</code>). Any comparison with NULL yields UNKNOWN (<code>x = NULL</code> is always UNKNOWN, 
+            never TRUE). This breaks calculations and filters unexpectedly. COALESCE and NULLIF help you handle this gracefully.
+          </Callout>
 
           <CodeExample
             title="NULL Handling Functions"
-            code={`-- COALESCE: Return first non-NULL value
-COALESCE(column1, column2, ..., default_value)
+            code={`-- COALESCE: Return first non-NULL value from a list
+COALESCE(value1, value2, value3, ..., default_value)
+-- Evaluates left-to-right, returns first non-NULL
 
 -- NULLIF: Return NULL if two values are equal
-NULLIF(value1, value2)  -- NULL if equal, else value1`}
+NULLIF(expression1, expression2)
+-- Returns NULL if expression1 = expression2, else returns expression1
+
+-- Common Pattern: Clean then Default
+COALESCE(NULLIF(column, ''), 'default')
+-- Converts empty strings to NULL, then provides default`}
           />
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Let's see these functions in action with realistic scenarios. Notice how COALESCE prevents NULL from breaking 
+            calculations, and NULLIF converts sentinel values (like empty strings or zeros) into proper NULLs for cleaner logic:
+          </p>
 
           <SQLPlayground
             preset={EMPLOYEES_PRESET}
-            defaultQuery={`-- NULL handling examples
+            defaultQuery={`-- Practical NULL handling patterns
 
 SELECT 
   name,
   department,
   salary,
-  -- COALESCE: Provide default for potential NULLs
+  
+  -- COALESCE: Single fallback
   COALESCE(department, 'Unassigned') AS dept_with_default,
-  -- Multiple fallbacks
+  
+  -- COALESCE: Multiple fallbacks (cascade)
+  -- "Try column1, if NULL try column2, if NULL try column3, else use default"
   COALESCE(NULL, NULL, department, 'Unknown') AS multi_fallback,
+  
   -- NULLIF: Convert specific values to NULL
+  -- "If department is 'Engineering', treat it as NULL"
   NULLIF(department, 'Engineering') AS non_eng_dept,
-  -- Combining: Replace empty strings with NULL, then with default
+  
+  -- Practical Pattern 1: Clean empty strings
+  -- Problem: Empty strings ('') aren't NULL, but should be treated as missing
+  -- Solution: NULLIF converts '' to NULL, then COALESCE provides default
   COALESCE(NULLIF(department, ''), 'Not Specified') AS cleaned_dept,
-  -- Practical: Avoid division by zero
+  
+  -- Practical Pattern 2: Avoid division by zero
+  -- NULLIF converts 0 to NULL, preventing division error
+  100000.0 / NULLIF(salary, 0) AS salary_ratio,
+  
+  -- Alternative division by zero handling with CASE
   CASE 
-    WHEN NULLIF(salary, 0) IS NULL THEN NULL
+    WHEN salary = 0 THEN NULL
     ELSE 100000.0 / salary 
-  END AS salary_ratio
-FROM employees;`}
+  END AS salary_ratio_case,
+  
+  -- COALESCE in calculations: Treat NULL as 0 in sums
+  salary + COALESCE(NULL, 0) AS salary_with_bonus,
+  
+  -- Real-world: Default values for display
+  'Employee: ' || name || ', Dept: ' || COALESCE(department, 'TBD') AS summary
+  
+FROM employees
+LIMIT 10;
+
+-- Pro Pattern: Safe average that handles NULLs
+-- SELECT 
+--   department,
+--   AVG(COALESCE(bonus, 0)) AS avg_bonus  -- Treat NULL bonus as 0
+-- FROM employees
+-- GROUP BY department;`}
           />
 
-          <p className="mt-4">
-            <strong>Common pattern:</strong> <code>COALESCE(NULLIF(column, ''), 'default')</code> converts empty strings
-            to NULL, then replaces NULL with a default value.
-          </p>
+          <div className="overflow-x-auto my-6">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Problem</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Solution Pattern</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">NULL breaks display</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">COALESCE for default</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">COALESCE(phone, 'N/A')</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Division by zero</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">NULLIF to convert 0 → NULL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">total / NULLIF(count, 0)</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Empty string ≠ NULL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">NULLIF then COALESCE</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">COALESCE(NULLIF(col, ''), 'default')</td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cascade fallbacks</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Multiple COALESCE args</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">COALESCE(email, phone, 'No contact')</td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Sentinel values</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">NULLIF to normalize</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">NULLIF(status, 'UNKNOWN')</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <Callout type="warning" title="Common NULL Handling Mistakes">
+            <div className="space-y-2 text-sm">
+              <div>
+                <strong>❌ Using COALESCE in WHERE:</strong> <code>WHERE COALESCE(status, 'active') = 'active'</code> 
+                can be slow—it prevents index use. Better: <code>WHERE status = 'active' OR status IS NULL</code>
+              </div>
+              <div>
+                <strong>❌ Not considering NULL in AVG:</strong> <code>AVG(bonus)</code> ignores NULLs (divides by 
+                count of non-NULLs). If you want NULLs as zeros: <code>AVG(COALESCE(bonus, 0))</code>
+              </div>
+              <div>
+                <strong>❌ Forgetting NULLIF can return NULL:</strong> Always handle the NULL result from NULLIF, 
+                especially in division or aggregations.
+              </div>
+            </div>
+          </Callout>
         </Subsection>
 
-        <p className="mt-6">
-          These advanced techniques—conditional logic, set operations, string/date functions, and NULL handling—form the
-          polish on your SQL skills. Combined with JOINs, aggregations, subqueries, and window functions, you now have a
-          comprehensive SQL toolkit. Next, we'll learn how to make your queries fast through optimization.
+        <p className="mt-8 text-lg font-semibold text-gray-900 dark:text-white">
+          Mastering the Swiss Army Knife
         </p>
+
+        <p className="mt-3 text-gray-700 dark:text-gray-300">
+          These utility functions—<strong>CASE expressions</strong> (conditional logic), <strong>set operations</strong> 
+          (UNION/INTERSECT/EXCEPT), <strong>string functions</strong> (text manipulation), <strong>date/time functions</strong> 
+          (temporal operations), and <strong>NULL handling</strong> (COALESCE/NULLIF)—are the tools you'll use daily 
+          to transform raw, messy data into clean, actionable insights.
+        </p>
+
+        <p className="mt-3 text-gray-700 dark:text-gray-300">
+          Combined with the core SQL techniques you learned earlier—JOINs for combining data, aggregations for summarizing, 
+          subqueries and CTEs for complex logic, and window functions for analytics—you now have a comprehensive SQL toolkit 
+          that handles 95% of real-world data challenges. The remaining 5% is knowing when to optimize for performance, 
+          which we'll cover in the next section.
+        </p>
+
+        <Callout type="ai" title="AI-Assisted SQL Utility Functions: Practical Prompts">
+          <p className="mb-3">
+            Use these prompt patterns to leverage AI for data cleaning, transformation, and complex conditional logic:
+          </p>
+
+          <div className="space-y-3">
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Data Cleaning with String Functions</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "I have a customers table with names in ALL CAPS and emails with extra spaces. Write SQL (SQLite) to: 
+                (1) Convert names to Title Case, (2) Trim whitespace from emails, (3) Extract email domain for grouping. 
+                Show the transformation clearly."
+              </p>
+            </div>
+
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Complex CASE Logic</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "Create a SQL CASE expression to categorize customers: 'VIP' if spent &gt;$10K OR orders &gt;50 in past year, 
+                'Loyal' if orders &gt;20, 'Active' if ordered in last 90 days, else 'At Risk'. Schema: customers(customer_id), 
+                orders(customer_id, order_date, total_amount)."
+              </p>
+            </div>
+
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Date/Time Analysis</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "Write SQLite query to analyze orders: (1) Group by month, (2) Calculate days since first order per customer, 
+                (3) Find customers who haven't ordered in 90+ days. Use strftime for date formatting. orders table has 
+                order_date and customer_id."
+              </p>
+            </div>
+
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: NULL Handling Strategy</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "I have a products table where some prices are NULL (coming soon) and some stock quantities are 0. 
+                Write SQL to: (1) Display 'TBD' for NULL prices, (2) Avoid division by zero when calculating price per unit, 
+                (3) Treat NULL stock as 0 in calculations. Use COALESCE and NULLIF."
+              </p>
+            </div>
+
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Cross-Dialect Conversion</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "Convert this SQLite query to PostgreSQL: [paste query with SUBSTR, INSTR, ||, strftime]. 
+                Preserve functionality but use PostgreSQL-specific functions where appropriate."
+              </p>
+            </div>
+          </div>
+
+          <p className="text-sm mt-3 text-teal-800 dark:text-teal-200">
+            <strong>Pro tip:</strong> When asking AI for SQL transformations, always specify: (1) your database dialect, 
+            (2) table schema, (3) desired output format. Include example input/output data to make the transformation 
+            crystal clear.
+          </p>
+        </Callout>
       </Section>
 
       {/* ============================================
