@@ -50,7 +50,7 @@ export function IndexVisual({ type }: IndexVisualProps) {
                   {/* Step number */}
                   <div className="flex-shrink-0 w-9 h-9 rounded-full bg-red-100 dark:bg-red-900/40 border border-red-400 dark:border-red-600 flex items-center justify-center">
                     <div className="text-center leading-none">
-                      <div className="text-[8px] font-semibold text-red-700 dark:text-red-300">STEP</div>
+                      <div className="text-[7px] font-semibold text-red-700 dark:text-red-300">STEP</div>
                       <div className="text-sm font-bold text-red-800 dark:text-red-200">{stepNum}</div>
                     </div>
                   </div>
@@ -134,37 +134,35 @@ export function IndexVisual({ type }: IndexVisualProps) {
         <div className="space-y-2.5">
           {/* STEP 1: Root Node */}
           <div className="space-y-1">
-            <div className="flex items-start gap-1.5">
-              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 border border-blue-500 dark:border-blue-600 flex items-center justify-center mt-1">
+            <div className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 mb-1">
+              Root Node
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 border border-blue-500 dark:border-blue-600 flex items-center justify-center">
                 <div className="text-center leading-none">
-                  <div className="text-[8px] font-semibold text-blue-700 dark:text-blue-300">STEP</div>
+                  <div className="text-[7px] font-semibold text-blue-700 dark:text-blue-300">STEP</div>
                   <div className="text-sm font-bold text-blue-800 dark:text-blue-200">1</div>
                 </div>
               </div>
               
-              <div className="text-blue-500 dark:text-blue-400 text-sm mt-2">→</div>
+              <div className="text-blue-500 dark:text-blue-400 text-sm">→</div>
 
-              <div className="flex-1 min-w-0">
-                <div className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 mb-1">
-                  Root Node
+              <div className="flex-1 min-w-0 bg-gradient-to-r from-indigo-100 to-indigo-50 dark:from-indigo-900/50 dark:to-indigo-900/30 border border-indigo-400 dark:border-indigo-600 rounded p-1.5">
+                <div className="flex justify-around items-center text-[9px]">
+                  <div className="text-center">
+                    <div className="font-mono font-semibold text-indigo-900 dark:text-indigo-100">A–H</div>
+                  </div>
+                  <div className="text-indigo-400 dark:text-indigo-500">|</div>
+                  <div className="text-center">
+                    <div className="font-mono font-semibold text-indigo-900 dark:text-indigo-100">I–P</div>
+                  </div>
+                  <div className="text-indigo-400 dark:text-indigo-500">|</div>
+                  <div className="text-center bg-green-200 dark:bg-green-800/60 px-1 rounded border border-green-500 dark:border-green-500">
+                    <div className="font-mono font-bold text-green-900 dark:text-green-100">Q–Z</div>
+                  </div>
                 </div>
-                <div className="bg-gradient-to-r from-indigo-100 to-indigo-50 dark:from-indigo-900/50 dark:to-indigo-900/30 border border-indigo-400 dark:border-indigo-600 rounded p-1.5">
-                  <div className="flex justify-around items-center text-[9px]">
-                    <div className="text-center">
-                      <div className="font-mono font-semibold text-indigo-900 dark:text-indigo-100">A–H</div>
-                    </div>
-                    <div className="text-indigo-400 dark:text-indigo-500">|</div>
-                    <div className="text-center">
-                      <div className="font-mono font-semibold text-indigo-900 dark:text-indigo-100">I–P</div>
-                    </div>
-                    <div className="text-indigo-400 dark:text-indigo-500">|</div>
-                    <div className="text-center bg-green-200 dark:bg-green-800/60 px-1 rounded border border-green-500 dark:border-green-500">
-                      <div className="font-mono font-bold text-green-900 dark:text-green-100">Q–Z</div>
-                    </div>
-                  </div>
-                  <div className="text-[8px] text-indigo-700 dark:text-indigo-300 text-center mt-1 leading-tight">
-                    'S' → Q–Z range
-                  </div>
+                <div className="text-[8px] text-indigo-700 dark:text-indigo-300 text-center mt-1 leading-tight">
+                  'S' → Q–Z range
                 </div>
               </div>
             </div>
@@ -172,37 +170,35 @@ export function IndexVisual({ type }: IndexVisualProps) {
 
           {/* STEP 2: Internal Node */}
           <div className="ml-6 space-y-1">
-            <div className="flex items-start gap-1.5">
-              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 border border-blue-500 dark:border-blue-600 flex items-center justify-center mt-1">
+            <div className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 mb-1">
+              Internal Node
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 border border-blue-500 dark:border-blue-600 flex items-center justify-center">
                 <div className="text-center leading-none">
-                  <div className="text-[8px] font-semibold text-blue-700 dark:text-blue-300">STEP</div>
+                  <div className="text-[7px] font-semibold text-blue-700 dark:text-blue-300">STEP</div>
                   <div className="text-sm font-bold text-blue-800 dark:text-blue-200">2</div>
                 </div>
               </div>
               
-              <div className="text-blue-500 dark:text-blue-400 text-sm mt-2">→</div>
+              <div className="text-blue-500 dark:text-blue-400 text-sm">→</div>
 
-              <div className="flex-1 min-w-0">
-                <div className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 mb-1">
-                  Internal Node
+              <div className="flex-1 min-w-0 bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/50 dark:to-purple-900/30 border border-purple-400 dark:border-purple-600 rounded p-1.5">
+                <div className="flex justify-around items-center text-[9px]">
+                  <div className="text-center">
+                    <div className="font-mono font-semibold text-purple-900 dark:text-purple-100">Q–R</div>
+                  </div>
+                  <div className="text-purple-400 dark:text-purple-500">|</div>
+                  <div className="text-center bg-green-200 dark:bg-green-800/60 px-1 rounded border border-green-500 dark:border-green-500">
+                    <div className="font-mono font-bold text-green-900 dark:text-green-100">S–T</div>
+                  </div>
+                  <div className="text-purple-400 dark:text-purple-500">|</div>
+                  <div className="text-center">
+                    <div className="font-mono font-semibold text-purple-900 dark:text-purple-100">U–Z</div>
+                  </div>
                 </div>
-                <div className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/50 dark:to-purple-900/30 border border-purple-400 dark:border-purple-600 rounded p-1.5">
-                  <div className="flex justify-around items-center text-[9px]">
-                    <div className="text-center">
-                      <div className="font-mono font-semibold text-purple-900 dark:text-purple-100">Q–R</div>
-                    </div>
-                    <div className="text-purple-400 dark:text-purple-500">|</div>
-                    <div className="text-center bg-green-200 dark:bg-green-800/60 px-1 rounded border border-green-500 dark:border-green-500">
-                      <div className="font-mono font-bold text-green-900 dark:text-green-100">S–T</div>
-                    </div>
-                    <div className="text-purple-400 dark:text-purple-500">|</div>
-                    <div className="text-center">
-                      <div className="font-mono font-semibold text-purple-900 dark:text-purple-100">U–Z</div>
-                    </div>
-                  </div>
-                  <div className="text-[8px] text-purple-700 dark:text-purple-300 text-center mt-1 leading-tight">
-                    'Sales' in S–T
-                  </div>
+                <div className="text-[8px] text-purple-700 dark:text-purple-300 text-center mt-1 leading-tight">
+                  'Sales' in S–T
                 </div>
               </div>
             </div>
@@ -210,29 +206,27 @@ export function IndexVisual({ type }: IndexVisualProps) {
 
           {/* STEP 3: Leaf Node */}
           <div className="ml-12 space-y-1">
-            <div className="flex items-start gap-1.5">
-              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 border border-blue-500 dark:border-blue-600 flex items-center justify-center mt-1">
+            <div className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 mb-1">
+              Leaf Node
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 border border-blue-500 dark:border-blue-600 flex items-center justify-center">
                 <div className="text-center leading-none">
-                  <div className="text-[8px] font-semibold text-blue-700 dark:text-blue-300">STEP</div>
+                  <div className="text-[7px] font-semibold text-blue-700 dark:text-blue-300">STEP</div>
                   <div className="text-sm font-bold text-blue-800 dark:text-blue-200">3</div>
                 </div>
               </div>
               
-              <div className="text-blue-500 dark:text-blue-400 text-sm mt-2">→</div>
+              <div className="text-blue-500 dark:text-blue-400 text-sm">→</div>
 
-              <div className="flex-1 min-w-0">
-                <div className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 mb-1">
-                  Leaf Node
+              <div className="flex-1 min-w-0 bg-gradient-to-r from-amber-100 to-amber-50 dark:from-amber-900/50 dark:to-amber-900/30 border border-amber-400 dark:border-amber-600 rounded p-1.5">
+                <div className="bg-green-200 dark:bg-green-800/60 border border-green-500 dark:border-green-600 rounded px-1.5 py-1">
+                  <div className="font-mono text-[9px] font-semibold text-green-900 dark:text-green-100">
+                    Sales → [6,7,8]
+                  </div>
                 </div>
-                <div className="bg-gradient-to-r from-amber-100 to-amber-50 dark:from-amber-900/50 dark:to-amber-900/30 border border-amber-400 dark:border-amber-600 rounded p-1.5">
-                  <div className="bg-green-200 dark:bg-green-800/60 border border-green-500 dark:border-green-600 rounded px-1.5 py-1">
-                    <div className="font-mono text-[9px] font-semibold text-green-900 dark:text-green-100">
-                      Sales → [6,7,8]
-                    </div>
-                  </div>
-                  <div className="text-[8px] text-amber-700 dark:text-amber-300 text-center mt-1 leading-tight">
-                    Found rows!
-                  </div>
+                <div className="text-[8px] text-amber-700 dark:text-amber-300 text-center mt-1 leading-tight">
+                  Found rows!
                 </div>
               </div>
             </div>

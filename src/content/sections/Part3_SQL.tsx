@@ -5452,6 +5452,79 @@ LIMIT 10;
             1,000,000 rows versus ~20 index lookups—a <strong>50,000× speedup</strong>.
           </p>
 
+          <Callout type="success" title="Historical Note: The Invention of B-Trees">
+            <div className="flex gap-4 items-start">
+              <div className="flex-1">
+                The <strong>B-tree</strong> data structure—which powers virtually all modern database indexes—was invented in 1970 by{' '}
+                <a 
+                  href="https://en.wikipedia.org/wiki/Rudolf_Bayer" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  Rudolf Bayer
+                </a>{' '}
+                and{' '}
+                <a 
+                  href="https://en.wikipedia.org/wiki/Edward_M._McCreight" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  Edward McCreight
+                </a>{' '}
+                at Boeing Research Labs. Their 1972 paper{' '}
+                <a 
+                  href="https://infolab.usc.edu/csci585/Spring2010/den_ar/indexing.pdf" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  "Organization and Maintenance of Large Ordered Indices"
+                </a>{' '}
+                introduced a balanced tree structure optimized for systems that read and write large blocks of data—exactly what 
+                databases do with disk I/O.
+                <br /><br />
+                The "B" in B-tree has been interpreted as "balanced," "broad," or "Boeing" (where it was invented), but Bayer himself 
+                never specified! What's certain is that B-trees revolutionized database performance. Unlike binary search trees, 
+                B-trees have many children per node (hundreds, not just 2), minimizing disk seeks. This design made databases 
+                practical for real-world use, enabling the explosion of data-driven applications that followed.
+              </div>
+              <div className="flex gap-3 flex-shrink-0">
+                <div className="text-center">
+                  <img 
+                    src="https://i1.rgstatic.net/ii/profile.image/277706571829272-1443221815023_Q512/Rudolf-Bayer.jpg" 
+                    alt="Rudolf Bayer"
+                    className="h-24 w-auto object-contain rounded border border-emerald-300 dark:border-emerald-600"
+                  />
+                  <p className="text-xs mt-1 mb-0 text-emerald-800 dark:text-emerald-200">Rudolf Bayer</p>
+                </div>
+                <div className="text-center">
+                  <img 
+                    src="https://www.mccreight.com/people/ed_mcc/photo.JPG" 
+                    alt="Edward McCreight"
+                    className="h-24 w-auto object-contain rounded border border-emerald-300 dark:border-emerald-600"
+                  />
+                  <p className="text-xs mt-1 mb-0 text-emerald-800 dark:text-emerald-200">Edward McCreight</p>
+                </div>
+              </div>
+            </div>
+          </Callout>
+
+          <p className="mt-6 text-gray-700 dark:text-gray-300">
+            Now that you understand the history, let's see <em>exactly</em> how these B-tree indexes work in practice. The visualization 
+            below compares two approaches to finding records in a database table: sequential search (the slow way, without an index) versus 
+            B-tree search (the fast way, using an index).
+          </p>
+
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            Imagine you need to find all employees in the "Sales" department from a table with thousands of records. Without an index, 
+            the database must check <strong>every single row</strong>—one by one—to see if the department matches "Sales". This is like 
+            flipping through every page of a phone book to find people with a specific last name. With a B-tree index, however, the database 
+            navigates through a sorted tree structure, making only a handful of comparisons to jump directly to the matching records. 
+            Watch how the number of operations differs dramatically:
+          </p>
+
           <IndexFigure />
 
           <p className="mt-4 text-gray-700 dark:text-gray-300">
@@ -5487,32 +5560,210 @@ SELECT name, sql FROM sqlite_master
 WHERE type = 'index' AND tbl_name = 'employees';`}
           />
 
-          <Callout type="warning" title="Index Trade-offs: The Cost of Speed">
-            <p>
-              <strong>Pros:</strong>
-            </p>
-            <ul className="list-disc pl-5 mt-1 space-y-1 text-sm">
-              <li>10x–1000x faster SELECT queries on large tables</li>
-              <li>Speeds up JOIN operations (especially on foreign keys)</li>
-              <li>Enables fast ORDER BY without sorting</li>
-              <li>Can enforce uniqueness (UNIQUE indexes)</li>
-            </ul>
-            
-            <p className="mt-3">
-              <strong>Cons:</strong>
-            </p>
-            <ul className="list-disc pl-5 mt-1 space-y-1 text-sm">
-              <li>Slower INSERT/UPDATE/DELETE (every write must update the index)</li>
-              <li>Increased storage (indexes are duplicated, sorted data)</li>
-              <li>Memory overhead (indexes compete for cache space)</li>
-              <li>Diminishing returns: The 10th index helps far less than the 1st</li>
-            </ul>
+          <p className="mt-6 text-gray-700 dark:text-gray-300">
+            To truly understand the power of indexes, let's create a demonstration database from scratch with 100,000 rows. 
+            We'll create two identical tables—one without an index and one with an index—so you can see the dramatic 
+            performance difference firsthand.
+          </p>
 
-            <p className="mt-3 font-semibold">
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            But how do we generate 100,000 rows efficiently? We'll use SQL's <strong><code>WITH RECURSIVE</code></strong> feature—a 
+            powerful technique for generating data programmatically. This is the same SQL construct used for recursive queries like 
+            organizational hierarchies and graph traversals, but here we're using it to generate synthetic data.
+          </p>
+
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            A <code>WITH RECURSIVE</code> Common Table Expression (CTE) works like a loop in programming: it starts with a base case 
+            (the number 1), then repeatedly adds to itself (incrementing by 1) until a condition is met (n reaches 100,000). Each 
+            iteration can generate synthetic data using formulas—we'll use modulo arithmetic (<code>%</code>) to create different 
+            categories, vary prices, and generate stock quantities.
+          </p>
+
+          <SQLPlayground
+            preset={EMPTY_PRESET}
+            defaultQuery={`-- Let's build a performance demo database from scratch!
+-- We'll create 2 identical tables: one WITH an index, one WITHOUT
+
+-- Step 1: Create the first table (no index)
+CREATE TABLE products_no_index (
+  product_id INTEGER PRIMARY KEY,
+  product_name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price REAL NOT NULL,
+  stock_quantity INTEGER NOT NULL
+);
+
+-- Step 2: Create the second table (with index)
+CREATE TABLE products_with_index (
+  product_id INTEGER PRIMARY KEY,
+  product_name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price REAL NOT NULL,
+  stock_quantity INTEGER NOT NULL
+);
+
+-- Create the index on category column
+CREATE INDEX idx_products_category ON products_with_index(category);
+
+-- Step 3: Generate 100,000 rows using WITH RECURSIVE
+-- This is a powerful technique for creating synthetic data
+WITH RECURSIVE
+-- Base case: start with number 1
+-- Recursive case: keep adding 1 until we reach 100,000
+numbers(n) AS (
+  SELECT 1
+  UNION ALL
+  SELECT n + 1 FROM numbers WHERE n < 100000
+),
+-- Transform numbers into product data
+synthetic_data AS (
+  SELECT 
+    n AS product_id,
+    'Product ' || n AS product_name,
+    -- Use modulo to create 10 different categories
+    CASE (n % 10)
+      WHEN 0 THEN 'Electronics'
+      WHEN 1 THEN 'Books'
+      WHEN 2 THEN 'Clothing'
+      WHEN 3 THEN 'Home & Garden'
+      WHEN 4 THEN 'Sports'
+      WHEN 5 THEN 'Toys'
+      WHEN 6 THEN 'Automotive'
+      WHEN 7 THEN 'Health'
+      WHEN 8 THEN 'Beauty'
+      WHEN 9 THEN 'Food'
+    END AS category,
+    -- Generate prices between $9.99 and $109.99
+    ROUND((n % 1000) / 10.0 + 9.99, 2) AS price,
+    -- Generate stock quantities between 1 and 500
+    (n % 500) + 1 AS stock_quantity
+  FROM numbers
+)
+-- Insert into the first table (no index)
+INSERT INTO products_no_index 
+SELECT * FROM synthetic_data;
+
+-- Step 4: Copy all data to the indexed table
+INSERT INTO products_with_index 
+SELECT * FROM products_no_index;
+
+-- Step 5: Verify the data was created
+SELECT 
+  'products_no_index' AS table_name,
+  COUNT(*) AS row_count,
+  COUNT(DISTINCT category) AS unique_categories
+FROM products_no_index
+
+UNION ALL
+
+SELECT 
+  'products_with_index' AS table_name,
+  COUNT(*) AS row_count,
+  COUNT(DISTINCT category) AS unique_categories
+FROM products_with_index;
+
+-- 🎯 Success! We now have 100,000 rows in each table
+-- One table has an index on 'category', the other doesn't
+-- Next, we'll query both and compare execution times!`}
+          />
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Take a moment to study this query. The <code>WITH RECURSIVE</code> CTE generates numbers 1 through 100,000, then 
+            transforms each number into a product record with synthetic but realistic-looking data. The modulo operator (<code>%</code>) 
+            creates variety: <code>(n % 10)</code> cycles through 0-9 for categories, <code>(n % 1000)</code> creates price variation, 
+            and <code>(n % 500)</code> varies stock quantities.
+          </p>
+
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            Now let's see the dramatic performance difference that index makes:
+          </p>
+
+          <SQLPlayground
+            preset={INDEX_DEMO_PRESET}
+            defaultQuery={`-- Query 1: WITHOUT index (Table Scan)
+-- This will scan all 100,000 rows to find Electronics products
+SELECT COUNT(*), AVG(price), MIN(price), MAX(price)
+FROM products_no_index
+WHERE category = 'Electronics';
+
+-- Query 2: WITH index (Index Scan)
+-- This uses the index to jump directly to Electronics products
+SELECT COUNT(*), AVG(price), MIN(price), MAX(price)
+FROM products_with_index
+WHERE category = 'Electronics';
+
+-- 🎯 Compare the execution times above!
+-- The indexed query should be 10-50x faster even with "just" 100K rows.
+-- With millions of rows, the difference would be 1000x or more!`}
+          />
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            The timing difference you see is the index at work. The first query scans all 100,000 rows sequentially—the database 
+            must check every single record to see if its category is "Electronics". The second query uses the B-tree index to 
+            jump directly to "Electronics" entries, examining maybe a few hundred tree nodes instead of 100,000 rows. This is 
+            exactly what we visualized in the diagram above: <strong>O(n) vs O(log n) in action</strong>.
+          </p>
+
+          <Callout type="tip" title="Experiment Further">
+            <p>Try these variations to explore index behavior:</p>
+            <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+              <li>
+                <strong>Range queries:</strong> <code>WHERE category IN ('Electronics', 'Books')</code> – indexes help here too!
+              </li>
+              <li>
+                <strong>Anti-pattern:</strong> <code>WHERE price &gt; 50</code> on the indexed table – this can't use the category
+                index, so performance is similar to the non-indexed table
+              </li>
+              <li>
+                <strong>Combining conditions:</strong> <code>WHERE category = 'Sports' AND price &lt; 30</code> – the index helps
+                filter by category first, then scans the smaller result set for price
+              </li>
+            </ul>
+          </Callout>
+
+          <p className="mt-6 text-lg font-semibold text-gray-900 dark:text-white">
+            Understanding Index Trade-offs
+          </p>
+
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            While indexes dramatically speed up queries, they're not free. Every index comes with costs that you must weigh against 
+            the benefits. Understanding these trade-offs is crucial for database design.
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+            {/* Pros Card */}
+            <div className="bg-green-50 dark:bg-green-950/20 border border-green-300 dark:border-green-700 rounded-lg p-6">
+              <h4 className="font-semibold text-lg text-green-900 dark:text-green-100 mb-4">
+                ✅ Pros
+              </h4>
+              <ul className="space-y-2 text-sm text-green-800 dark:text-green-200">
+                <li>• 10x–1000x faster SELECT queries on large tables</li>
+                <li>• Speeds up JOIN operations (especially on foreign keys)</li>
+                <li>• Enables fast ORDER BY without sorting</li>
+                <li>• Can enforce uniqueness (UNIQUE indexes)</li>
+              </ul>
+            </div>
+
+            {/* Cons Card */}
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-700 rounded-lg p-6">
+              <h4 className="font-semibold text-lg text-amber-900 dark:text-amber-100 mb-4">
+                ⚠️ Cons
+              </h4>
+              <ul className="space-y-2 text-sm text-amber-800 dark:text-amber-200">
+                <li>• Slower INSERT/UPDATE/DELETE (every write must update the index)</li>
+                <li>• Increased storage (indexes are duplicated, sorted data)</li>
+                <li>• Memory overhead (indexes compete for cache space)</li>
+                <li>• Diminishing returns: The 10th index helps far less than the 1st</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r my-6">
+            <p className="text-sm text-blue-900 dark:text-blue-100">
               <strong>Rule of thumb:</strong> Index columns in WHERE, JOIN ON, and ORDER BY that are queried frequently and are 
               selective (many distinct values). Don't index everything—each index has overhead. Start with 2–5 key indexes per table.
             </p>
-          </Callout>
+          </div>
 
           <div className="overflow-x-auto my-6">
             <table className="min-w-full text-sm border-collapse">
@@ -5591,61 +5842,6 @@ WHERE type = 'index' AND tbl_name = 'employees';`}
             </p>
           </Callout>
 
-          <p className="mt-6 text-gray-700 dark:text-gray-300">
-            Let's see the dramatic performance difference between indexed and non-indexed queries in action. This playground contains
-            two identical tables with 100,000 rows each—one without an index, one with an index on the <code>category</code> column.
-            Notice the execution times when you run the queries!
-          </p>
-
-          <Callout type="info" title="💡 Generating Synthetic Data with WITH RECURSIVE">
-            <p>
-              The database in this playground was created using SQL's <code>WITH RECURSIVE</code> feature—a powerful technique for
-              generating large datasets programmatically. This is the same SQL feature used for recursive queries like organizational
-              hierarchies and graph traversals. Check the "Explorer" tab to see the 100,000 rows we generated!
-            </p>
-          </Callout>
-
-          <SQLPlayground
-            preset={INDEX_DEMO_PRESET}
-            defaultQuery={`-- Query 1: WITHOUT index (Table Scan)
--- This will scan all 100,000 rows to find Electronics products
-SELECT COUNT(*), AVG(price), MIN(price), MAX(price)
-FROM products_no_index
-WHERE category = 'Electronics';
-
--- Query 2: WITH index (Index Scan)
--- This uses the index to jump directly to Electronics products
-SELECT COUNT(*), AVG(price), MIN(price), MAX(price)
-FROM products_with_index
-WHERE category = 'Electronics';
-
--- 🎯 Compare the execution times above!
--- The indexed query should be 10-50x faster even with "just" 100K rows.
--- With millions of rows, the difference would be 1000x or more!`}
-          />
-
-          <p className="mt-4 text-gray-700 dark:text-gray-300">
-            The timing difference you see is the index at work. The first query scans all 100,000 rows sequentially. The second
-            query uses the B-tree index to jump directly to "Electronics" entries—examining maybe a few hundred nodes instead of
-            100,000 rows. This is exactly what we visualized in the diagram above: <strong>O(n) vs O(log n) in action</strong>.
-          </p>
-
-          <Callout type="tip" title="Experiment Further">
-            <p>Try these variations to explore index behavior:</p>
-            <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
-              <li>
-                <strong>Range queries:</strong> <code>WHERE category IN ('Electronics', 'Books')</code> – indexes help here too!
-              </li>
-              <li>
-                <strong>Anti-pattern:</strong> <code>WHERE price &gt; 50</code> on the indexed table – this can't use the category
-                index, so performance is similar to the non-indexed table
-              </li>
-              <li>
-                <strong>Combining conditions:</strong> <code>WHERE category = 'Sports' AND price &lt; 30</code> – the index helps
-                filter by category first, then scans the smaller result set for price
-              </li>
-            </ul>
-          </Callout>
         </Subsection>
 
         <Subsection title="EXPLAIN QUERY PLAN: See What the Optimizer Sees">
@@ -5997,6 +6193,17 @@ CREATE INDEX idx_orders_date_cust_amt
 -- This covering index eliminates table lookups for the orders table`}
           />
 
+          <p className="mt-6 text-gray-700 dark:text-gray-300">
+            This playground demonstrates the iterative optimization process you'll use in real projects. Notice how we started with 
+            the unoptimized query, used <code>EXPLAIN QUERY PLAN</code> to identify the bottleneck (the table scan on <code>orders</code>), 
+            added a strategic index, and then verified the improvement. The query went from scanning every order to using the index 
+            to jump directly to recent orders—a massive performance gain with just one line of SQL.
+          </p>
+
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            Let's formalize this process into a repeatable workflow you can apply to any slow query:
+          </p>
+
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg p-4 my-6">
             <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
               The Optimization Recipe: A Step-by-Step Process
@@ -6030,6 +6237,12 @@ CREATE INDEX idx_orders_date_cust_amt
             </ol>
           </div>
 
+          <p className="mt-6 text-gray-700 dark:text-gray-300">
+            This seven-step recipe is your roadmap for optimization. But here's an equally important question: when should you 
+            <em>avoid</em> optimizing? Not every slow query deserves immediate attention. Optimization takes time, and indexes 
+            have costs. Knowing when to stop is just as valuable as knowing how to optimize.
+          </p>
+
           <Callout type="tip" title="When NOT to Optimize">
             <p>
               Optimization has diminishing returns. <strong>Don't</strong> optimize if:
@@ -6044,6 +6257,11 @@ CREATE INDEX idx_orders_date_cust_amt
               Focus optimization efforts where they matter: frequent queries, large tables, user-facing features where every 100ms counts.
             </p>
           </Callout>
+
+          <p className="mt-6 text-gray-700 dark:text-gray-300">
+            With the workflow mastered and boundaries understood, there's one final piece that transforms good developers into 
+            great ones: building intuition through practice.
+          </p>
         </Subsection>
 
         <p className="mt-8 text-lg font-semibold text-gray-900 dark:text-white">
