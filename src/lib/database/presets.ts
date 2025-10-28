@@ -205,3 +205,90 @@ export const UNIVERSITY_PRESET: DatabasePreset = {
   ],
 };
 
+/**
+ * Index demonstration database - for teaching query optimization with timing
+ * Creates two identical large tables: one without index, one with index
+ * Uses WITH RECURSIVE to generate 100,000 synthetic rows
+ */
+export const INDEX_DEMO_PRESET: DatabasePreset = {
+  name: 'Index Performance Demo',
+  description: 'Large synthetic dataset for demonstrating index performance (100K rows)',
+  schemas: [
+    (db) => {
+      // Create table WITHOUT index
+      db.run(`
+        CREATE TABLE products_no_index (
+          product_id INTEGER PRIMARY KEY,
+          product_name TEXT NOT NULL,
+          category TEXT NOT NULL,
+          price REAL NOT NULL,
+          stock_quantity INTEGER NOT NULL
+        );
+      `);
+      
+      // Create identical table WITH index
+      db.run(`
+        CREATE TABLE products_with_index (
+          product_id INTEGER PRIMARY KEY,
+          product_name TEXT NOT NULL,
+          category TEXT NOT NULL,
+          price REAL NOT NULL,
+          stock_quantity INTEGER NOT NULL
+        );
+      `);
+      
+      // Create index on the second table
+      db.run(`
+        CREATE INDEX idx_products_category ON products_with_index(category);
+      `);
+    }
+  ],
+  seeds: [
+    (db) => {
+      // Generate 100,000 rows using WITH RECURSIVE CTE
+      // This demonstrates SQL's iterative data generation capability
+      db.run(`
+        WITH RECURSIVE 
+        -- Generate numbers from 1 to 100000
+        numbers(n) AS (
+          SELECT 1
+          UNION ALL
+          SELECT n + 1 FROM numbers WHERE n < 100000
+        ),
+        -- Generate synthetic product data
+        synthetic_data AS (
+          SELECT 
+            n AS product_id,
+            'Product ' || n AS product_name,
+            CASE (n % 10)
+              WHEN 0 THEN 'Electronics'
+              WHEN 1 THEN 'Books'
+              WHEN 2 THEN 'Clothing'
+              WHEN 3 THEN 'Home & Garden'
+              WHEN 4 THEN 'Sports'
+              WHEN 5 THEN 'Toys'
+              WHEN 6 THEN 'Automotive'
+              WHEN 7 THEN 'Health'
+              WHEN 8 THEN 'Beauty'
+              WHEN 9 THEN 'Food'
+            END AS category,
+            ROUND((n % 1000) / 10.0 + 9.99, 2) AS price,
+            (n % 500) + 1 AS stock_quantity
+          FROM numbers
+        )
+        -- Insert into table WITHOUT index
+        INSERT INTO products_no_index (product_id, product_name, category, price, stock_quantity)
+        SELECT product_id, product_name, category, price, stock_quantity
+        FROM synthetic_data;
+      `);
+      
+      // Copy all data to table WITH index
+      db.run(`
+        INSERT INTO products_with_index (product_id, product_name, category, price, stock_quantity)
+        SELECT product_id, product_name, category, price, stock_quantity
+        FROM products_no_index;
+      `);
+    }
+  ],
+};
+

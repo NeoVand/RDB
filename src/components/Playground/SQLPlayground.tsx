@@ -72,8 +72,39 @@ export function SQLPlayground({
     setResults(null);
     
     try {
-      const queryResults = db.exec(query);
-      setResults(queryResults.length > 0 ? queryResults : []);
+      // Split queries by semicolon to time them individually
+      const queries = query.split(';').map(q => q.trim()).filter(q => q.length > 0);
+      const resultsWithTiming: QueryResult[] = [];
+      
+      // Execute each query separately and capture individual timing
+      for (const singleQuery of queries) {
+        // Remove comment-only lines but keep the actual SQL
+        const sqlLines = singleQuery.split('\n')
+          .filter(line => {
+            const trimmed = line.trim();
+            return trimmed.length > 0 && !trimmed.startsWith('--');
+          })
+          .join('\n')
+          .trim();
+        
+        // Skip if no actual SQL remains after removing comments
+        if (!sqlLines) continue;
+        
+        const startTime = performance.now();
+        const queryResults = db.exec(sqlLines);
+        const endTime = performance.now();
+        const executionTimeMs = Number((endTime - startTime).toFixed(3));
+        
+        // Add timing to each result from this query
+        queryResults.forEach(result => {
+          resultsWithTiming.push({
+            ...result,
+            executionTimeMs
+          });
+        });
+      }
+      
+      setResults(resultsWithTiming.length > 0 ? resultsWithTiming : []);
       // Increment version to trigger DataViewer refresh
       setDataVersion(v => v + 1);
     } catch (err) {

@@ -3,6 +3,7 @@ import type { Database } from 'sql.js';
 export interface QueryResult {
   columns: string[];
   values: (string | number | null | Uint8Array)[][];
+  executionTimeMs?: number; // Optional: query execution time in milliseconds
 }
 
 export interface DatabasePreset {

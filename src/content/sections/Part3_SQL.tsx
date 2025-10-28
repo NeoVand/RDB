@@ -12,7 +12,8 @@ import {
   EMPLOYEES_PRESET, 
   EMPTY_PRESET,
   ECOMMERCE_PRESET,
-  FINANCIAL_FULL_PRESET
+  FINANCIAL_FULL_PRESET,
+  INDEX_DEMO_PRESET
 } from '../../lib/database/presets';
 
 export function Part3_SQL() {
@@ -5588,6 +5589,62 @@ WHERE type = 'index' AND tbl_name = 'employees';`}
               used alone. Think of a phone book: sorted by <code>(last_name, first_name)</code> lets you find "Smith" or "Smith, John", 
               but not "John" alone.
             </p>
+          </Callout>
+
+          <p className="mt-6 text-gray-700 dark:text-gray-300">
+            Let's see the dramatic performance difference between indexed and non-indexed queries in action. This playground contains
+            two identical tables with 100,000 rows each—one without an index, one with an index on the <code>category</code> column.
+            Notice the execution times when you run the queries!
+          </p>
+
+          <Callout type="info" title="💡 Generating Synthetic Data with WITH RECURSIVE">
+            <p>
+              The database in this playground was created using SQL's <code>WITH RECURSIVE</code> feature—a powerful technique for
+              generating large datasets programmatically. This is the same SQL feature used for recursive queries like organizational
+              hierarchies and graph traversals. Check the "Explorer" tab to see the 100,000 rows we generated!
+            </p>
+          </Callout>
+
+          <SQLPlayground
+            preset={INDEX_DEMO_PRESET}
+            defaultQuery={`-- Query 1: WITHOUT index (Table Scan)
+-- This will scan all 100,000 rows to find Electronics products
+SELECT COUNT(*), AVG(price), MIN(price), MAX(price)
+FROM products_no_index
+WHERE category = 'Electronics';
+
+-- Query 2: WITH index (Index Scan)
+-- This uses the index to jump directly to Electronics products
+SELECT COUNT(*), AVG(price), MIN(price), MAX(price)
+FROM products_with_index
+WHERE category = 'Electronics';
+
+-- 🎯 Compare the execution times above!
+-- The indexed query should be 10-50x faster even with "just" 100K rows.
+-- With millions of rows, the difference would be 1000x or more!`}
+          />
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            The timing difference you see is the index at work. The first query scans all 100,000 rows sequentially. The second
+            query uses the B-tree index to jump directly to "Electronics" entries—examining maybe a few hundred nodes instead of
+            100,000 rows. This is exactly what we visualized in the diagram above: <strong>O(n) vs O(log n) in action</strong>.
+          </p>
+
+          <Callout type="tip" title="Experiment Further">
+            <p>Try these variations to explore index behavior:</p>
+            <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+              <li>
+                <strong>Range queries:</strong> <code>WHERE category IN ('Electronics', 'Books')</code> – indexes help here too!
+              </li>
+              <li>
+                <strong>Anti-pattern:</strong> <code>WHERE price &gt; 50</code> on the indexed table – this can't use the category
+                index, so performance is similar to the non-indexed table
+              </li>
+              <li>
+                <strong>Combining conditions:</strong> <code>WHERE category = 'Sports' AND price &lt; 30</code> – the index helps
+                filter by category first, then scans the smaller result set for price
+              </li>
+            </ul>
           </Callout>
         </Subsection>
 
