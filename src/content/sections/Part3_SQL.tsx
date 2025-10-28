@@ -7,6 +7,7 @@ import { Callout } from '../../components/Callout';
 import { CRUDFigure } from '../../components/Content/CRUDFigure';
 import { JoinFigure } from '../../components/Content/JoinFigure';
 import { WindowFunctionFigure } from '../../components/Content/WindowFunctionFigure';
+import { IndexFigure } from '../../components/Content/IndexFigure';
 import { 
   EMPLOYEES_PRESET, 
   EMPTY_PRESET,
@@ -5418,151 +5419,358 @@ LIMIT 10;
       {/* ============================================
           SECTION 8: Query Optimization and Performance
           ============================================ */}
-      <Section id="section13" title="9. Query Optimization: Making SQL Fast">
-        <p>
-          A working query is good. A <em>fast</em> query is great. Query optimization is the art and science of making your
-          SQL execute efficiently, even on massive datasets. Understanding how databases execute queries and how to leverage
-          indexes is essential for production systems.
+      <Section id="section13" title="Query Optimization" level={2}>
+        <p className="text-gray-700 dark:text-gray-300">
+          You've learned how to write SQL that <em>works</em>—now let's make it <em>fast</em>. In production systems, the difference 
+          between a 5-second query and a 50-millisecond query isn't just nice-to-have—it's the difference between a usable application 
+          and one that users abandon. Query optimization is the art and science of making your SQL execute efficiently, even on massive datasets.
         </p>
 
-        <p className="mt-4">
-          The database's <strong>query optimizer</strong> automatically chooses an execution plan, but you can guide it with
-          proper schema design, indexes, and query structure.
-        </p>
-
-        <Subsection title="Understanding Indexes: The Roadmap to Your Data">
+        <Callout type="info" title="Real-World Impact: When Speed Matters">
           <p>
-            An <strong>index</strong> is a data structure that speeds up data retrieval at the cost of additional storage and
-            slower writes. Think of it like a book's index: instead of scanning every page to find "SQL" mentions, you look
-            it up in the index and jump directly to the relevant pages.
+            Consider an e-commerce site with 10 million products. A customer searches for "wireless headphones"—do they wait 
+            8 seconds while your database scans every row, or do they get results in 100 milliseconds because you have the right indexes? 
+            Amazon found that <strong>every 100ms of latency costs 1% in sales</strong>. Google found an extra 500ms in search page 
+            load time reduced traffic by 20%.
+          </p>
+          <p className="mt-2">
+            The database's <strong>query optimizer</strong> tries to find the best execution plan automatically, but <em>you</em> guide it 
+            with proper schema design, strategic indexes, and well-structured queries. Understanding indexes is your superpower.
+          </p>
+        </Callout>
+
+        <Subsection title="Indexes: The Secret to Fast Queries">
+          <p className="text-gray-700 dark:text-gray-300">
+            An <strong>index</strong> is a data structure (typically a B-tree) that maintains a sorted, searchable copy of one or more 
+            columns. Without an index, the database must perform a <strong>table scan</strong>—reading every single row to find matches. 
+            With an index, it performs an <strong>index scan</strong>—using the sorted structure to jump directly to matching rows.
           </p>
 
-          <Callout type="tip" title="Analogy: Library Card Catalog">
-            <p>
-              Imagine a library with 10,000 books arranged randomly on shelves. Without a catalog (index), finding "Database
-              Systems" requires checking every book—O(n) complexity. With a catalog organized alphabetically by title, you
-              can find it in seconds—O(log n) with binary search.
-            </p>
-            <p className="mt-2">
-              Database indexes work the same way: they maintain an ordered structure (typically a B-tree) that allows fast
-              lookups, range scans, and sorted retrieval.
-            </p>
-          </Callout>
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            The difference is dramatic: O(n) linear scan versus O(log n) tree traversal. For a table with 1 million rows, that's scanning 
+            1,000,000 rows versus ~20 index lookups—a <strong>50,000× speedup</strong>.
+          </p>
 
-          <p className="mt-4">
-            Most databases automatically create an index on PRIMARY KEY columns. You'll want to create additional indexes on
-            columns frequently used in <code>WHERE</code>, <code>JOIN</code>, or <code>ORDER BY</code> clauses.
+          <IndexFigure />
+
+          <p className="mt-4 text-gray-700 dark:text-gray-300">
+            Let's see how to create and use indexes effectively. Most databases automatically create an index on <code>PRIMARY KEY</code> columns, 
+            but you'll want to add indexes for columns frequently used in <code>WHERE</code>, <code>JOIN</code>, and <code>ORDER BY</code> clauses.
           </p>
 
           <CodeExample
-            title="Creating Indexes"
-            code={`-- Single-column index
+            title="Creating Indexes: Syntax and Types"
+            code={`-- Basic single-column index
 CREATE INDEX idx_employees_department ON employees(department);
 
--- Multi-column index (order matters!)
+-- Composite/multi-column index (order matters!)
+-- Good for: WHERE dept = 'Sales' AND salary > 50000
+-- Also works for: WHERE dept = 'Sales' (leftmost prefix rule)
 CREATE INDEX idx_employees_dept_salary ON employees(department, salary);
 
--- Unique index (enforces uniqueness)
+-- Unique index (enforces uniqueness + provides fast lookups)
 CREATE UNIQUE INDEX idx_customers_email ON customers(email);
 
--- Drop index
-DROP INDEX idx_employees_department;`}
+-- Partial/filtered index (smaller, faster for specific conditions)
+-- SQLite doesn't support this directly, but PostgreSQL does:
+-- CREATE INDEX idx_active_users ON users(last_login) WHERE active = true;
+
+-- Functional/expression index (index on computed values)
+-- CREATE INDEX idx_lower_email ON customers(LOWER(email));
+
+-- Drop an index
+DROP INDEX idx_employees_department;
+
+-- View all indexes on a table (SQLite)
+SELECT name, sql FROM sqlite_master 
+WHERE type = 'index' AND tbl_name = 'employees';`}
           />
 
-          <Callout type="warning" title="Index Trade-offs">
+          <Callout type="warning" title="Index Trade-offs: The Cost of Speed">
             <p>
-              <strong>Pros:</strong> Dramatically faster SELECT queries (10x-1000x for large tables)
-              <br />
-              <strong>Cons:</strong> Slower INSERT/UPDATE/DELETE (index must be updated), increased storage
+              <strong>Pros:</strong>
             </p>
+            <ul className="list-disc pl-5 mt-1 space-y-1 text-sm">
+              <li>10x–1000x faster SELECT queries on large tables</li>
+              <li>Speeds up JOIN operations (especially on foreign keys)</li>
+              <li>Enables fast ORDER BY without sorting</li>
+              <li>Can enforce uniqueness (UNIQUE indexes)</li>
+            </ul>
+            
+            <p className="mt-3">
+              <strong>Cons:</strong>
+            </p>
+            <ul className="list-disc pl-5 mt-1 space-y-1 text-sm">
+              <li>Slower INSERT/UPDATE/DELETE (every write must update the index)</li>
+              <li>Increased storage (indexes are duplicated, sorted data)</li>
+              <li>Memory overhead (indexes compete for cache space)</li>
+              <li>Diminishing returns: The 10th index helps far less than the 1st</li>
+            </ul>
+
+            <p className="mt-3 font-semibold">
+              <strong>Rule of thumb:</strong> Index columns in WHERE, JOIN ON, and ORDER BY that are queried frequently and are 
+              selective (many distinct values). Don't index everything—each index has overhead. Start with 2–5 key indexes per table.
+            </p>
+          </Callout>
+
+          <div className="overflow-x-auto my-6">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Index Type</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">When to Use</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Single-Column</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Frequent lookups or filters on one column
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    WHERE email = '...'
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Composite/Multi-Column</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Queries filter on multiple columns together
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    WHERE dept = 'Sales' AND active = true
+                  </td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Covering Index</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Index contains all columns in SELECT (no table lookup!)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    INDEX(dept, salary) for SELECT dept, salary
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Unique Index</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Enforce uniqueness + fast lookups
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    UNIQUE INDEX on email
+                  </td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Functional Index</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Index computed expressions
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">
+                    INDEX on LOWER(email)
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <Callout type="tip" title="Composite Index Order: The Leftmost Prefix Rule">
+            <p>
+              For a composite index like <code>INDEX(dept, salary, hire_date)</code>, the database can use it for queries filtering on:
+            </p>
+            <ul className="list-disc pl-5 mt-2 space-y-1 text-sm font-mono">
+              <li>✅ <code>WHERE dept = 'Sales'</code></li>
+              <li>✅ <code>WHERE dept = 'Sales' AND salary &gt; 50000</code></li>
+              <li>✅ <code>WHERE dept = 'Sales' AND salary &gt; 50000 AND hire_date &gt; '2020-01-01'</code></li>
+              <li>❌ <code>WHERE salary &gt; 50000</code> (doesn't start with dept)</li>
+              <li>❌ <code>WHERE hire_date &gt; '2020-01-01'</code> (skips dept)</li>
+            </ul>
             <p className="mt-2">
-              <strong>Rule of thumb:</strong> Index columns used in WHERE, JOIN, and ORDER BY frequently. Don't index
-              everything—each index has overhead.
+              <strong>Strategy:</strong> Put the most selective (highest cardinality) columns first, or the columns most frequently 
+              used alone. Think of a phone book: sorted by <code>(last_name, first_name)</code> lets you find "Smith" or "Smith, John", 
+              but not "John" alone.
             </p>
           </Callout>
         </Subsection>
 
-        <Subsection title="EXPLAIN QUERY PLAN: Seeing How Queries Execute">
-          <p>
-            SQLite's <code>EXPLAIN QUERY PLAN</code> shows you how the database will execute your query: which tables it scans,
-            which indexes it uses, and what order it processes operations. This is your primary tool for query optimization.
+        <Subsection title="EXPLAIN QUERY PLAN: See What the Optimizer Sees">
+          <p className="text-gray-700 dark:text-gray-300">
+            Your most powerful optimization tool is <code>EXPLAIN QUERY PLAN</code>. It shows you <em>exactly</em> how the database 
+            will execute your query: which tables it scans, which indexes it uses, in what order, and what algorithms it chooses for joins. 
+            Always check the query plan when optimizing!
+          </p>
+
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            The workflow is simple: write your query, run <code>EXPLAIN QUERY PLAN</code>, identify bottlenecks (table scans, missing indexes, 
+            expensive sorts), add indexes or restructure the query, and verify improvement. Let's see it in action:
           </p>
 
           <SQLPlayground
             preset={EMPLOYEES_PRESET}
-            defaultQuery={`-- First, see the query plan WITHOUT an index
+            defaultQuery={`-- Step 1: Check the query plan WITHOUT an index
+-- Look for "SCAN" (bad) vs "SEARCH" (good)
 
 EXPLAIN QUERY PLAN
 SELECT * FROM employees
 WHERE department = 'Engineering'
 ORDER BY salary DESC;
 
--- You'll see "SCAN employees" - a full table scan (slow for large tables)
+-- Expected output: "SCAN employees" (reads every row - slow!)
 
--- Now create an index and see the difference
+-- Step 2: Create an index on the filtered column
 CREATE INDEX idx_emp_dept ON employees(department);
 
+-- Step 3: Check the plan again - see the improvement!
 EXPLAIN QUERY PLAN
 SELECT * FROM employees
 WHERE department = 'Engineering'
 ORDER BY salary DESC;
 
--- Now you'll see "SEARCH employees USING INDEX" - much faster!`}
+-- Expected output: "SEARCH employees USING INDEX idx_emp_dept" (fast!)
+
+-- Step 4: Can we optimize further? Let's create a covering index
+-- A covering index includes ALL columns needed by the query
+DROP INDEX idx_emp_dept;
+CREATE INDEX idx_emp_dept_salary ON employees(department, salary);
+
+EXPLAIN QUERY PLAN
+SELECT department, salary FROM employees
+WHERE department = 'Engineering'
+ORDER BY salary DESC;
+
+-- Expected output: "SEARCH ... USING COVERING INDEX" (fastest!)
+-- No table lookup needed - everything is in the index`}
           />
 
-          <p className="mt-4">
-            Key things to look for in query plans:
-          </p>
-
-          <ul className="list-disc pl-6 space-y-2 mt-2 text-sm">
-            <li><strong>SCAN vs SEARCH:</strong> SCAN means full table scan (reads every row). SEARCH means index is used.</li>
-            <li><strong>USING INDEX:</strong> Confirms index usage—exactly what you want for WHERE/JOIN conditions.</li>
-            <li><strong>USING COVERING INDEX:</strong> Even better—all needed columns are in the index (no table lookup needed).</li>
-            <li><strong>TEMP B-TREE FOR ORDER BY:</strong> Expensive temporary sort. Consider index on ORDER BY column.</li>
-          </ul>
+          <div className="overflow-x-auto my-6">
+            <table className="min-w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Query Plan Term</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">What It Means</th>
+                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Speed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">SCAN table</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Full table scan—reads every row (no index used)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-red-600 dark:text-red-400 font-semibold">
+                    🐢 O(n) Slow
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">SEARCH ... USING INDEX</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Uses index to find rows (much faster)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-green-600 dark:text-green-400 font-semibold">
+                    ⚡ O(log n) Fast
+                  </td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">USING COVERING INDEX</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    All columns in SELECT are in index (no table access!)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-blue-600 dark:text-blue-400 font-semibold">
+                    🚀 Fastest
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">USE TEMP B-TREE FOR ORDER BY</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Must sort results (expensive for large datasets)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-orange-600 dark:text-orange-400 font-semibold">
+                    ⚠️ Costly
+                  </td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">AUTOMATIC COVERING INDEX</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    SQLite creates temporary covering index (smart!)
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-green-600 dark:text-green-400 font-semibold">
+                    ✅ Good
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </Subsection>
 
-        <Subsection title="Query Anti-Patterns: Common Performance Killers">
-          <p>
-            Certain query patterns prevent index usage or cause unnecessary work. Recognizing and avoiding these anti-patterns
-            is key to writing performant SQL.
+        <Subsection title="Query Anti-Patterns: What Breaks Indexes">
+          <p className="text-gray-700 dark:text-gray-300">
+            You've created indexes—but certain query patterns prevent the optimizer from using them. These <strong>anti-patterns</strong> 
+            force table scans even when indexes exist. Recognizing and avoiding them is crucial for fast queries.
+          </p>
+
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            Let's explore the most common performance killers and how to fix them:
           </p>
 
           <SQLPlayground
             preset={ECOMMERCE_PRESET}
-            defaultQuery={`-- ❌ Anti-pattern: Function on indexed column prevents index use
+            defaultQuery={`-- ❌ Anti-pattern 1: Function on indexed column
+-- Problem: Wrapping a column in a function prevents index use
 
--- Bad: Can't use index on email
+-- Bad: Index on email can't be used
 SELECT * FROM customers
 WHERE LOWER(email) = 'john@example.com';
 
--- Good: Store emails lowercase or create functional index
+-- Good: Store data in a consistent format or use functional index
 SELECT * FROM customers
 WHERE email = 'john@example.com';
 
--- ❌ Anti-pattern: Leading wildcard in LIKE prevents index use
+-- ❌ Anti-pattern 2: Leading wildcard in LIKE
+-- Problem: Can't traverse B-tree from arbitrary middle position
 
--- Bad: Can't use index (must scan all rows)
+-- Bad: Must scan all rows to find emails ending with @gmail.com
 SELECT * FROM customers
 WHERE email LIKE '%@gmail.com';
 
--- Good: Index can help (if database supports prefix search)
+-- Good: Trailing wildcard allows index scan (prefix search)
 SELECT * FROM customers
 WHERE email LIKE 'john%';
 
--- ❌ Anti-pattern: OR conditions can prevent index use
+-- Alternative: Use full-text search for substring matching
+-- CREATE VIRTUAL TABLE customers_fts USING fts5(email, ...);
 
--- Bad: May not use indexes efficiently
+-- ❌ Anti-pattern 3: OR conditions on different columns
+-- Problem: Can't efficiently use multiple indexes simultaneously
+
+-- Bad: Must scan or merge multiple index scans
 SELECT * FROM customers
 WHERE first_name = 'John' OR last_name = 'Smith';
 
--- Good: Use UNION (if selective enough)
+-- Good: Use UNION for selective queries (if both are indexed)
 SELECT * FROM customers WHERE first_name = 'John'
 UNION
-SELECT * FROM customers WHERE last_name = 'Smith';`}
+SELECT * FROM customers WHERE last_name = 'Smith';
+
+-- ❌ Anti-pattern 4: SELECT *
+-- Problem: Retrieves unnecessary columns, prevents covering indexes
+
+-- Bad: Fetches all columns even if you only need 2
+SELECT * FROM customers
+WHERE email = 'john@example.com';
+
+-- Good: Select only what you need (enables covering indexes)
+SELECT customer_id, first_name, email FROM customers
+WHERE email = 'john@example.com';
+
+-- ❌ Anti-pattern 5: Implicit type conversion
+-- Problem: Forces conversion on every row
+
+-- Bad: Comparing string column to number (if customer_id is TEXT)
+-- SELECT * FROM customers WHERE customer_id = 12345;
+
+-- Good: Match types exactly
+-- SELECT * FROM customers WHERE customer_id = '12345';`}
           />
 
-          <div className="overflow-x-auto my-4">
+          <div className="overflow-x-auto my-6">
             <table className="min-w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gray-100 dark:bg-gray-800">
@@ -5574,44 +5782,106 @@ SELECT * FROM customers WHERE last_name = 'Smith';`}
               <tbody>
                 <tr className="bg-white dark:bg-gray-900">
                   <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">SELECT *</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Retrieves unnecessary columns</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SELECT only needed columns</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Retrieves unnecessary columns, prevents covering indexes
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    SELECT only needed columns
+                  </td>
                 </tr>
                 <tr className="bg-gray-50 dark:bg-gray-800">
                   <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">WHERE func(col) = val</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prevents index usage</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">WHERE col = val (no function)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Function prevents index usage
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    WHERE col = val (or functional index)
+                  </td>
                 </tr>
                 <tr className="bg-white dark:bg-gray-900">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">LIKE '%val%'</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Can't use index (leading wildcard)</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Full-text search index or LIKE 'val%'</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">LIKE '%value%'</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Leading wildcard forces full scan
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    LIKE 'value%' or full-text search
+                  </td>
                 </tr>
                 <tr className="bg-gray-50 dark:bg-gray-800">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">NOT IN (subquery)</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Can be slow with NULLs</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">NOT EXISTS or LEFT JOIN ... WHERE IS NULL</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">col1 = X OR col2 = Y</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Can't use indexes efficiently
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    UNION queries if selective
+                  </td>
                 </tr>
                 <tr className="bg-white dark:bg-gray-900">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">Implicit type conversion</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prevents index use</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Match column types in comparisons</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">NOT IN (subquery)</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Slow with NULLs, hard to optimize
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    NOT EXISTS or LEFT JOIN ... WHERE IS NULL
+                  </td>
+                </tr>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">Type mismatch</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Implicit conversion on every row
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Match column types in comparisons
+                  </td>
+                </tr>
+                <tr className="bg-white dark:bg-gray-900">
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono text-xs">Large OFFSET</td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Must process all skipped rows
+                  </td>
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    Keyset pagination (WHERE id &gt; last_id)
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
+
+          <Callout type="warning" title="Common Indexing Mistakes">
+            <div className="space-y-2 text-sm">
+              <div>
+                <strong>❌ Over-indexing:</strong> Creating 20 indexes on a table slows down writes dramatically and wastes memory. 
+                Start with 2–5 strategic indexes per table, focusing on your most frequent queries.
+              </div>
+              <div>
+                <strong>❌ Wrong column order in composite indexes:</strong> <code>INDEX(salary, department)</code> won't help 
+                <code>WHERE department = 'Sales'</code>. Always put the most selective or most frequently filtered columns first.
+              </div>
+              <div>
+                <strong>❌ Indexing low-cardinality columns:</strong> Indexing a boolean <code>is_active</code> column (only 2 values) 
+                rarely helps. Focus on high-cardinality columns like email, user_id, or timestamps.
+              </div>
+              <div>
+                <strong>❌ Not testing with realistic data:</strong> A query might seem fast with 100 rows but crawl with 10 million. 
+                Always test optimization with production-scale data.
+              </div>
+            </div>
+          </Callout>
         </Subsection>
 
-        <Subsection title="Practical Optimization Example">
-          <p>
-            Let's take a real-world query and optimize it step by step.
+        <Subsection title="Real-World Optimization Workflow">
+          <p className="text-gray-700 dark:text-gray-300">
+            Let's walk through a complete optimization scenario you'll encounter in production: a slow analytical query that retrieves 
+            high-value customers. We'll diagnose the problem, apply strategic indexes, and measure the improvement—exactly how you'd 
+            approach it in a real application.
           </p>
 
           <SQLPlayground
             preset={ECOMMERCE_PRESET}
-            defaultQuery={`-- Scenario: Find high-value customers who ordered recently
+            defaultQuery={`-- Real-World Scenario: Dashboard Query Taking 5+ Seconds
+-- Task: Find high-value customers who ordered in the last 6 months
 
--- ❌ Unoptimized version
+-- Step 1: Initial query (unoptimized)
 SELECT 
   c.first_name || ' ' || c.last_name AS customer_name,
   COUNT(*) AS order_count,
@@ -5619,11 +5889,12 @@ SELECT
 FROM customers c
 JOIN orders o ON c.customer_id = o.customer_id
 WHERE o.order_date >= DATE('now', '-6 months')
-GROUP BY c.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name
 HAVING SUM(o.total_amount) > 500
-ORDER BY lifetime_value DESC;
+ORDER BY lifetime_value DESC
+LIMIT 10;
 
--- Check the query plan
+-- Step 2: Diagnose with EXPLAIN QUERY PLAN
 EXPLAIN QUERY PLAN
 SELECT 
   c.first_name || ' ' || c.last_name AS customer_name,
@@ -5632,22 +5903,160 @@ SELECT
 FROM customers c
 JOIN orders o ON c.customer_id = o.customer_id
 WHERE o.order_date >= DATE('now', '-6 months')
-GROUP BY c.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name
 HAVING SUM(o.total_amount) > 500
-ORDER BY lifetime_value DESC;
+ORDER BY lifetime_value DESC
+LIMIT 10;
 
--- ✅ Optimized: Add index on order_date
+-- Observation: Look for "SCAN orders" - that's our bottleneck!
+-- The WHERE clause filters on order_date but there's no index.
+
+-- Step 3: Create index on filtered column
 CREATE INDEX idx_orders_date ON orders(order_date);
 
--- Now run EXPLAIN QUERY PLAN again to see improvement`}
+-- Step 4: Re-check the plan
+EXPLAIN QUERY PLAN
+SELECT 
+  c.first_name || ' ' || c.last_name AS customer_name,
+  COUNT(*) AS order_count,
+  SUM(o.total_amount) AS lifetime_value
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+WHERE o.order_date >= DATE('now', '-6 months')
+GROUP BY c.customer_id, c.first_name, c.last_name
+HAVING SUM(o.total_amount) > 500
+ORDER BY lifetime_value DESC
+LIMIT 10;
+
+-- Expected improvement: "SEARCH orders USING INDEX idx_orders_date"
+-- Result: Query time drops from 5s to ~200ms (25x faster!)
+
+-- Step 5: Can we optimize further? Try a covering index
+-- Include frequently selected/grouped columns
+DROP INDEX idx_orders_date;
+CREATE INDEX idx_orders_date_cust_amt 
+  ON orders(order_date, customer_id, total_amount);
+
+-- This covering index eliminates table lookups for the orders table`}
           />
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg p-4 my-6">
+            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              The Optimization Recipe: A Step-by-Step Process
+            </h4>
+            <ol className="list-decimal pl-5 space-y-2 text-sm text-blue-800 dark:text-blue-200">
+              <li>
+                <strong>Identify slow queries:</strong> Use database logs, APM tools (like New Relic, Datadog), or your application's 
+                query logger to find queries taking &gt;100ms.
+              </li>
+              <li>
+                <strong>Run EXPLAIN QUERY PLAN:</strong> See how the database executes the query. Look for SCAN (bad) vs SEARCH (good).
+              </li>
+              <li>
+                <strong>Identify bottlenecks:</strong> Table scans on large tables, missing JOIN indexes, expensive sorts without indexes.
+              </li>
+              <li>
+                <strong>Add strategic indexes:</strong> Focus on WHERE, JOIN ON, and ORDER BY columns. Start with single-column, 
+                then consider composite if needed.
+              </li>
+              <li>
+                <strong>Verify improvement:</strong> Re-run EXPLAIN QUERY PLAN. Confirm it now uses the index. Measure actual query time.
+              </li>
+              <li>
+                <strong>Consider covering indexes:</strong> If the query is still slow and critical, add a covering index that includes 
+                all SELECT columns.
+              </li>
+              <li>
+                <strong>Monitor in production:</strong> Deploy and monitor. Indexes help most queries but might slow down writes. 
+                Adjust based on real-world performance.
+              </li>
+            </ol>
+          </div>
+
+          <Callout type="tip" title="When NOT to Optimize">
+            <p>
+              Optimization has diminishing returns. <strong>Don't</strong> optimize if:
+            </p>
+            <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+              <li>The query runs infrequently (e.g., monthly reports)</li>
+              <li>It's already fast enough (&lt;50ms for user-facing, &lt;1s for analytics)</li>
+              <li>The table is tiny (&lt;1000 rows—scans are fine)</li>
+              <li>The index would slow down critical write operations</li>
+            </ul>
+            <p className="mt-2">
+              Focus optimization efforts where they matter: frequent queries, large tables, user-facing features where every 100ms counts.
+            </p>
+          </Callout>
         </Subsection>
 
-        <p className="mt-6">
-          Query optimization is an iterative process: write the query, check the plan with <code>EXPLAIN QUERY PLAN</code>,
-          add strategic indexes, and verify improvement. With practice, you'll develop intuition for writing efficient SQL
-          from the start.
+        <p className="mt-8 text-lg font-semibold text-gray-900 dark:text-white">
+          From Theory to Intuition
         </p>
+
+        <p className="mt-3 text-gray-700 dark:text-gray-300">
+          Query optimization isn't about memorizing rules—it's about building intuition. After optimizing a few dozen queries, you'll 
+          instinctively know which columns to index, spot anti-patterns before they cause problems, and structure queries for performance 
+          from the start. The key is the feedback loop: write query → check plan → add index → verify → learn.
+        </p>
+
+        <p className="mt-3 text-gray-700 dark:text-gray-300">
+          Remember: premature optimization is wasted effort, but <em>informed</em> optimization—guided by <code>EXPLAIN QUERY PLAN</code> 
+          and real performance data—is a superpower. With the right indexes and well-structured queries, you can handle millions of rows 
+          with millisecond response times.
+        </p>
+
+        <Callout type="ai" title="AI-Assisted Query Optimization: Practical Prompts">
+          <p className="mb-3">
+            Use these prompt patterns to leverage AI for diagnosing slow queries and designing optimal indexes:
+          </p>
+
+          <div className="space-y-3">
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Diagnose Slow Query</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "I have a SQLite query that's slow: [paste query]. Here's the EXPLAIN QUERY PLAN output: [paste plan]. 
+                What's causing the performance issue? Suggest specific indexes or query rewrites to optimize it."
+              </p>
+            </div>
+
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Design Optimal Indexes</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "I have these frequent queries on a users table (10M rows): [list 3-5 queries]. Schema: users(user_id PK, email, 
+                last_login, status, country). Suggest 2-3 strategic indexes that would optimize all of these. Explain the tradeoffs."
+              </p>
+            </div>
+
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Anti-Pattern Detection</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "Review this query for performance anti-patterns: [paste query]. Identify issues like functions on columns, 
+                SELECT *, leading wildcards, etc. Provide a rewritten version with explanations."
+              </p>
+            </div>
+
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Composite Index Design</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "I need a composite index for: WHERE status = 'active' AND country = 'US' AND last_login &gt; '2024-01-01'. 
+                What's the optimal column order? Explain why based on selectivity and query patterns."
+              </p>
+            </div>
+
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Index vs Query Rewrite Trade-off</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "This query is slow: [paste query]. Should I add an index or rewrite the query? Consider: table has heavy writes 
+                (10K inserts/sec), query runs 100 times/day. What's the best approach?"
+              </p>
+            </div>
+          </div>
+
+          <p className="text-sm mt-3 text-teal-800 dark:text-teal-200">
+            <strong>Pro tip:</strong> When asking AI about optimization, always provide: (1) the query, (2) EXPLAIN QUERY PLAN output, 
+            (3) table sizes and write frequency, (4) how often the query runs. This context helps AI give targeted, practical advice.
+          </p>
+        </Callout>
       </Section>
 
       {/* SECTION 9: How SQL Really Works */}
