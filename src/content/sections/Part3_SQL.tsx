@@ -8,6 +8,8 @@ import { CRUDFigure } from '../../components/Content/CRUDFigure';
 import { JoinFigure } from '../../components/Content/JoinFigure';
 import { WindowFunctionFigure } from '../../components/Content/WindowFunctionFigure';
 import { IndexFigure } from '../../components/Content/IndexFigure';
+import { JoinAlgorithmFigure } from '../../components/Content/JoinAlgorithmFigure';
+import { ExecutionOrderVisual } from '../../components/Content/ExecutionOrderVisual';
 import { 
   EMPLOYEES_PRESET, 
   EMPTY_PRESET,
@@ -3951,7 +3953,7 @@ Add comments explaining each CTE's purpose.`}
       {/* ============================================
           SECTION 6: Window Functions - Advanced Analytics
           ============================================ */}
-      <Section id="section11" title="7. Window Functions: Analytics Without Grouping">
+      <Section id="section11" title="Window Functions: Analytics Without Grouping" level={2}>
         <p>
           <strong>Window functions</strong> are one of SQL's most powerful modern features, introduced in SQL:2003. They solve 
           a fundamental limitation of SQL: how to perform calculations across related rows <em>without losing the individual row 
@@ -6437,22 +6439,33 @@ flowchart TD
           </p>
         </Subsection>
 
-        <Callout type="info" title="Historical Note: System R and Cost-Based Optimization">
-          <p>
-            IBM's <strong>System R</strong> project (1974-1979) was a watershed moment in database history. The System R
-            query optimizer, designed by <strong>Patricia Selinger</strong>, <strong>Morton Astrahan</strong>, and colleagues,
-            introduced <strong>cost-based optimization</strong>—the technique of estimating query execution costs and choosing
-            the cheapest plan.
-          </p>
-          <p className="mt-2">
-            This innovation made SQL practical for real-world use. Before cost-based optimization, queries could be prohibitively
-            slow because the system couldn't automatically find efficient execution strategies. System R's optimizer is the
-            ancestor of every modern query optimizer.
-          </p>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            The original paper, "Access Path Selection in a Relational Database Management System" (1979), remains one of the
-            most cited papers in database literature.
-          </p>
+        <Callout type="success" title="Historical Note: System R and the Birth of Cost-Based Optimization">
+          <div className="flex gap-4 items-start">
+            <div className="flex-1">
+              IBM's <strong>System R</strong> project (1974-1979) was a watershed moment in database history. The System R
+              query optimizer, designed by <strong>Patricia Selinger</strong>, <strong>Morton Astrahan</strong>, <strong>Donald
+              Chamberlin</strong>, <strong>Raymond Lorie</strong>, and <strong>Thomas Price</strong>, introduced 
+              <strong> cost-based optimization</strong>—the revolutionary technique of estimating query execution costs and 
+              automatically choosing the cheapest plan.
+              <br /><br />
+              Before System R, database systems relied on rigid, rule-based query execution. Programmers had to manually specify 
+              how to retrieve data, often writing complex navigation code. System R's optimizer changed everything: developers could 
+              simply declare <em>what</em> data they wanted, and the system would figure out <em>how</em> to get it efficiently.
+              <br /><br />
+              The groundbreaking 1979 paper{' '}
+              <a 
+                href="https://courses.cs.duke.edu/compsci516/cps216/spring03/papers/selinger-etal-1979.pdf" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+              >
+                "Access Path Selection in a Relational Database Management System"
+              </a>{' '}
+              remains one of the most cited papers in database literature. Every modern query optimizer—from PostgreSQL to Oracle 
+              to SQL Server—builds on the foundational techniques pioneered by the System R team. The optimizer you're using today, 
+              running your queries in milliseconds, is the direct descendant of their work nearly 50 years ago.
+            </div>
+          </div>
         </Callout>
 
         <Subsection title="Stage 2: The Rewriter - Transforming the Query">
@@ -6479,15 +6492,23 @@ flowchart TD
             answer a critical question: "Of all the ways we could execute this query, which is fastest?"
           </p>
 
-          <Callout type="tip" title="The Optimization Problem">
+          <Callout type="tip" title="The Optimization Problem: A Needle in a Factorial Haystack">
             <p>
               For a query joining multiple tables, the number of possible execution plans grows factorially. A join of 10 tables
               has over 3.6 million possible join orders alone—and that's before considering different join algorithms, index usage,
               and other choices!
             </p>
             <p className="mt-2">
+              Imagine planning a road trip through 10 cities: there are 3,628,800 different routes you could take. Now imagine that for 
+              each route, you could also choose between driving, flying, or taking a train between each city pair. The number of options 
+              explodes combinatorially. The query optimizer faces exactly this problem—but instead of cities and transportation, it's 
+              choosing table join orders and access methods.
+            </p>
+            <p className="mt-2">
               Modern optimizers use sophisticated techniques—dynamic programming, heuristics, and genetic algorithms—to explore
-              the most promising plans without exhaustively evaluating every possibility.
+              the most promising plans without exhaustively evaluating every possibility. They estimate the "cost" of each option
+              (I/O operations, CPU cycles, memory usage) and intelligently prune unpromising paths, finding near-optimal solutions 
+              in milliseconds.
             </p>
           </Callout>
 
@@ -6567,43 +6588,22 @@ flowchart LR
 
         <Subsection title="Join Algorithms: Three Ways to Match Rows">
           <p>
-            When your query joins tables, the optimizer must choose how to physically match rows. Each algorithm has different
-            performance characteristics:
+            When your query joins tables, the optimizer must choose how to physically match rows. This is one of the most critical
+            decisions in query execution—the wrong join algorithm can turn a millisecond query into a multi-second one.
           </p>
 
-          <MermaidDiagram
-            caption="Join Algorithms Comparison: Nested Loop, Hash Join, and Merge Join"
-            chart={`
-flowchart TB
-    subgraph NL["🔄 Nested Loop Join"]
-        direction TB
-        NL1["For each row in A"]
-        NL2["Scan all rows in B"]
-        NL3["Check condition"]
-        NL1 --> NL2 --> NL3
-        NLNote["✅ Small outer table<br/>❌ No indexes = slow"]
-    end
-    
-    subgraph HJ["# Hash Join"]
-        direction TB
-        HJ1["Build hash from A"]
-        HJ2["Probe with B"]
-        HJ3["Match on hash"]
-        HJ1 --> HJ2 --> HJ3
-        HJNote["✅ Large tables<br/>⚠️ Needs memory"]
-    end
-    
-    subgraph MJ["⚡ Merge Join"]
-        direction TB
-        MJ1["Sort A"]
-        MJ2["Sort B"]
-        MJ3["Merge streams"]
-        MJ1 --> MJ3
-        MJ2 --> MJ3
-        MJNote["✅ Pre-sorted data<br/>⚠️ Needs sort key"]
-    end
-            `}
-          />
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            Think of it like finding mutual friends between two people. You could check every friend of Person A against every friend 
+            of Person B (nested loop), create a quick-lookup list of Person A's friends then check each of Person B's friends against 
+            it (hash join), or if both friends lists are alphabetically sorted, scan through both simultaneously (merge join). The best 
+            approach depends on how many friends each person has and whether the lists are organized.
+          </p>
+
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            Let's visualize how each algorithm works:
+          </p>
+
+          <JoinAlgorithmFigure />
 
           <div className="overflow-x-auto my-4">
             <table className="min-w-full text-sm border-collapse">
@@ -6675,66 +6675,75 @@ flowchart TB
             from the order the database executes it</strong>. This logical execution order explains many SQL quirks.
           </p>
 
-          <MermaidDiagram
-            caption="Logical SQL Execution Order: How the Database Actually Processes Your Query"
-            chart={`
-flowchart LR
-    Start(["📝 Query"]) ==> Step1["1️⃣ FROM/JOIN"]
-    Step1 ==> Step2["2️⃣ WHERE"]
-    Step2 ==> Step3["3️⃣ GROUP BY"]
-    Step3 ==> Step4["4️⃣ HAVING"]
-    Step4 ==> Step5["5️⃣ SELECT"]
-    Step5 ==> Step6["6️⃣ DISTINCT"]
-    Step6 ==> Step7["7️⃣ ORDER BY"]
-    Step7 ==> Step8["8️⃣ LIMIT"]
-    Step8 ==> End(["📊 Result"])
-            `}
+          <ExecutionOrderVisual />
+
+          <p className="mt-6 text-lg font-semibold text-gray-900 dark:text-white">
+            Why Execution Order Matters: Common Gotchas
+          </p>
+
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            This execution order explains several SQL behaviors that confuse beginners. Understanding <em>when</em> each clause 
+            executes reveals why certain operations work in some contexts but fail in others.
+          </p>
+
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            ❌ You CANNOT use column aliases in WHERE
+          </p>
+
+          <CodeExample
+            code={`SELECT salary * 1.1 AS new_salary
+FROM employees
+WHERE new_salary > 100000; -- ERROR!`}
           />
 
-          <Callout type="warning" title="Why Execution Order Matters: Common Gotchas">
-            <p className="font-semibold">This execution order explains several SQL behaviors that confuse beginners:</p>
-            
-            <div className="mt-3 space-y-3">
-              <div>
-                <p className="font-medium">❌ You CANNOT use column aliases in WHERE:</p>
-                <code className="block mt-1 bg-gray-100 dark:bg-gray-900 p-2 rounded text-sm">
-                  SELECT salary * 1.1 AS new_salary<br/>
-                  FROM employees<br/>
-                  WHERE new_salary &gt; 100000; -- ERROR!
-                </code>
-                <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
-                  Because WHERE executes <em>before</em> SELECT, the alias doesn't exist yet.
-                </p>
-              </div>
+          <p className="mt-2 text-gray-700 dark:text-gray-300">
+            <strong>Why it fails:</strong> WHERE executes at step 2, but SELECT (which creates the alias <code>new_salary</code>) 
+            doesn't run until step 5. The alias doesn't exist yet when WHERE tries to use it.
+          </p>
 
-              <div>
-                <p className="font-medium">✅ You CAN use aliases in ORDER BY:</p>
-                <code className="block mt-1 bg-gray-100 dark:bg-gray-900 p-2 rounded text-sm">
-                  SELECT salary * 1.1 AS new_salary<br/>
-                  FROM employees<br/>
-                  ORDER BY new_salary DESC; -- Works!
-                </code>
-                <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
-                  ORDER BY executes <em>after</em> SELECT, so aliases are available.
-                </p>
-              </div>
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            ✅ You CAN use aliases in ORDER BY
+          </p>
 
-              <div>
-                <p className="font-medium">❌ You CANNOT use aggregate functions in WHERE:</p>
-                <code className="block mt-1 bg-gray-100 dark:bg-gray-900 p-2 rounded text-sm">
-                  SELECT department, AVG(salary) AS avg_sal<br/>
-                  FROM employees<br/>
-                  WHERE AVG(salary) &gt; 80000 -- ERROR!<br/>
-                  GROUP BY department;
-                </code>
-                <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
-                  Use HAVING instead—it executes after GROUP BY.
-                </p>
-              </div>
-            </div>
-          </Callout>
+          <CodeExample
+            code={`SELECT salary * 1.1 AS new_salary
+FROM employees
+ORDER BY new_salary DESC; -- Works!`}
+          />
 
-          <p className="mt-4">
+          <p className="mt-2 text-gray-700 dark:text-gray-300">
+            <strong>Why it works:</strong> ORDER BY executes at step 7, <em>after</em> SELECT (step 5) has created the alias. 
+            By the time ORDER BY runs, <code>new_salary</code> exists and is available.
+          </p>
+
+          <p className="mt-6 font-semibold text-gray-900 dark:text-white">
+            ❌ You CANNOT use aggregate functions in WHERE
+          </p>
+
+          <CodeExample
+            code={`SELECT department, AVG(salary) AS avg_sal
+FROM employees
+WHERE AVG(salary) > 80000 -- ERROR!
+GROUP BY department;`}
+          />
+
+          <p className="mt-2 text-gray-700 dark:text-gray-300">
+            <strong>Why it fails:</strong> WHERE executes at step 2, before GROUP BY (step 3) creates the groups. Aggregate 
+            functions like <code>AVG()</code> operate on groups, which don't exist yet at the WHERE stage.
+          </p>
+
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            <strong>Solution:</strong> Use HAVING instead—it executes at step 4, <em>after</em> GROUP BY has created the groups:
+          </p>
+
+          <CodeExample
+            code={`SELECT department, AVG(salary) AS avg_sal
+FROM employees
+GROUP BY department
+HAVING AVG(salary) > 80000; -- Works!`}
+          />
+
+          <p className="mt-6 text-gray-700 dark:text-gray-300">
             Understanding this execution order transforms you from memorizing SQL syntax to reasoning about how queries work.
             It's the difference between knowing <em>what</em> to type and understanding <em>why</em> it works.
           </p>
@@ -6786,7 +6795,7 @@ LIMIT 5;                               -- Step 8: Take top 5
       {/* ============================================
           SECTION 10: AI-Assisted SQL Development
           ============================================ */}
-      <Section id="section15" title="10. AI-Assisted SQL Development">
+      <Section id="section15" title="AI-Assisted SQL Development" level={2}>
         <p>
           The intersection of AI and SQL is transforming how we work with databases. From writing complex queries via natural
           language to building intelligent SQL assistants, AI amplifies your database productivity—but only if you understand
@@ -7196,7 +7205,7 @@ GROUP BY c.customer_id, c.first_name, c.last_name;`}
       {/* ============================================
           SECTION 11: Transactions and ACID
           ============================================ */}
-      <Section id="section16" title="11. Transactions and ACID: Ensuring Data Consistency">
+      <Section id="section16" title="Transactions and ACID: Ensuring Data Consistency" level={2}>
         <p>
           So far, we've focused on reading and writing individual records. But real-world applications often require multiple
           operations to succeed or fail <em>together</em>. This is where <strong>transactions</strong> come in.
@@ -7333,7 +7342,7 @@ COMMIT;
       {/* ============================================
           SECTION 12: Practice and Real-World Scenarios
           ============================================ */}
-      <Section id="section17" title="12. Practice: Putting It All Together">
+      <Section id="section17" title="Practice: Putting It All Together" level={2}>
         <p>
           You've learned a tremendous amount: from basic SELECT statements to window functions, query optimization, and
           AI-assisted development. Now it's time to apply this knowledge to realistic scenarios that mirror real-world
