@@ -50,15 +50,8 @@ const tocStructure: TOCItem[] = [
       { id: 'section14', title: 'How SQL Really Works', level: 2 },
       { id: 'section15', title: 'AI-Assisted SQL Development', level: 2 },
       { id: 'section16', title: 'Transactions and ACID', level: 2 },
+      { id: 'section18', title: 'Strategic Database Design', level: 2 },
       { id: 'section17', title: 'Practice and Exercises', level: 2 },
-    ],
-  },
-  {
-    id: 'part4',
-    title: 'Part IV: Advanced Concepts',
-    level: 1,
-    children: [
-      { id: 'section18', title: 'Advanced Topics', level: 2 },
     ],
   },
   {

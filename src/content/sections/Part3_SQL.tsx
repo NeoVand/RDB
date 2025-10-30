@@ -12,6 +12,7 @@ import { JoinAlgorithmFigure } from '../../components/Content/JoinAlgorithmFigur
 import { ExecutionOrderVisual } from '../../components/Content/ExecutionOrderVisual';
 import { QueryLifecycleVisual } from '../../components/Content/QueryLifecycleVisual';
 import { ASTVisual } from '../../components/Content/ASTVisual';
+import { IsolationLevelsFigure } from '../../components/Visuals/IsolationLevelsFigure';
 import { 
   EMPLOYEES_PRESET, 
   EMPTY_PRESET,
@@ -7584,72 +7585,250 @@ def safe_execute_ai_query(sql, db_connection, max_rows=1000, timeout_seconds=30)
       <Section id="section16" title="Transactions and ACID: Ensuring Data Consistency" level={2}>
         <p>
           So far, we've focused on reading and writing individual records. But real-world applications often require multiple
-          operations to succeed or fail <em>together</em>. This is where <strong>transactions</strong> come in.
+          operations to succeed or fail <em>together</em>. This is where <strong>transactions</strong> come in—arguably the
+          most important concept in database systems after the relational model itself.
         </p>
 
         <p className="mt-4">
-          A <strong>transaction</strong> is a logical unit of work that consists of one or more SQL statements. Transactions
-          guarantee that either all operations succeed (<strong>commit</strong>) or none do (<strong>rollback</strong>),
-          maintaining database consistency even in the face of errors or crashes.
+          Consider an online store processing thousands of orders simultaneously. When a customer clicks "Buy Now," the system must:
+          deduct inventory, charge the credit card, create an order record, update customer purchase history, and trigger shipping.
+          What happens if the inventory deduction succeeds but the payment fails? Or if the database crashes halfway through? Without
+          transactions, you'd have inconsistent data—lost inventory, charged customers with no orders, or orphaned shipping labels.
         </p>
 
-        <Callout type="tip" title="Analogy: Bank Transfer">
-          <p>
-            Imagine transferring $100 from your checking account to savings:
-          </p>
-          <ol className="list-decimal pl-5 space-y-1 mt-2">
-            <li>Deduct $100 from checking</li>
-            <li>Add $100 to savings</li>
-          </ol>
-          <p className="mt-2">
-            If step 1 succeeds but step 2 fails (power outage, crash), you've lost $100! A transaction ensures both steps
-            happen atomically—either both succeed or neither happens. Your money is never lost in limbo.
-          </p>
-        </Callout>
+        <p className="mt-4">
+          In the context of a database, a <strong>transaction</strong> is a sequence of operations performed as a single, 
+          logical unit of work. For a transaction to be considered complete, all of its operations must succeed. If any 
+          operation fails—whether due to a constraint violation, network error, or system crash—the entire transaction is 
+          rolled back, as if none of the operations ever happened. This "all or nothing" guarantee is what makes reliable 
+          applications possible.
+        </p>
 
-        <Subsection title="ACID Properties: The Foundation of Reliability">
+        <p className="mt-6">
+          To understand why transactions are so critical, consider the classic example of transferring $100 from your checking 
+          account to savings. This requires two operations: (1) Deduct $100 from checking, and (2) Add $100 to savings. What 
+          happens if step 1 succeeds but step 2 fails due to a power outage or crash? You've lost $100! A transaction ensures 
+          both steps happen atomically—either both succeed or neither happens. Your money is never lost in limbo.
+        </p>
+
+        <p className="mt-4">
+          This concept of atomic operations didn't emerge fully formed. The term <strong>ACID</strong> (Atomicity, Consistency, 
+          Isolation, Durability) was coined by Andreas Reuter and Theo Härder in their 1983 paper{' '}
+          <a
+            href="https://sites.fas.harvard.edu/~cs265/papers/haerder-1983.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+          >
+            "Principles of Transaction-Oriented Database Recovery"
+          </a>, though the underlying concepts emerged earlier from IBM's work on System R and IMS in the 1970s. Before ACID 
+          formalization, databases were essentially file systems with queries—data corruption was common, and developers had to 
+          manually implement recovery logic. Jim Gray, a Turing Award winner for his work on database transaction processing, 
+          crystallized these ideas with his definition: "A transaction is a transformation of state which has the properties of 
+          atomicity, consistency, isolation, and durability." This seemingly simple definition enabled the explosion of reliable 
+          distributed systems we depend on today—from ATMs to airline reservations to e-commerce platforms.
+        </p>
+
+        <Subsection title="The ACID Properties">
           <p>
-            Transactions adhere to four key properties, known by the acronym <strong>ACID</strong>:
+            Transactions adhere to four key properties, known by the acronym <strong>ACID</strong>. These properties work 
+            together to ensure data reliability—miss even one, and you risk data corruption or loss. Understanding these 
+            properties is fundamental to building applications that users can trust with their critical data.
           </p>
 
-          <div className="overflow-x-auto my-4">
-            <table className="min-w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-gray-100 dark:bg-gray-800">
-                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Property</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Meaning</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Guarantee</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="bg-white dark:bg-gray-900">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Atomicity</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All or nothing</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Either all operations succeed (commit) or none do (rollback)</td>
-                </tr>
-                <tr className="bg-gray-50 dark:bg-gray-800">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Consistency</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Valid state transitions</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Database goes from one valid state to another (constraints enforced)</td>
-                </tr>
-                <tr className="bg-white dark:bg-gray-900">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Isolation</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Independent execution</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Concurrent transactions don't interfere with each other</td>
-                </tr>
-                <tr className="bg-gray-50 dark:bg-gray-800">
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-semibold">Durability</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Permanent once committed</td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Committed changes survive system failures (written to disk)</td>
-                </tr>
-              </tbody>
-            </table>
+          <p className="mt-4">
+            Before diving into each property, let's visualize the journey a transaction takes from start to finish. A transaction
+            begins in an <strong>Active</strong> state when you execute <code>BEGIN TRANSACTION</code>, proceeds through its
+            operations, and eventually reaches one of two terminal states: <strong>Committed</strong> (success) or <strong>Aborted</strong>
+            (failure). This state machine is the foundation of transaction processing:
+          </p>
+
+          <MermaidDiagram
+            caption="Transaction Lifecycle: From BEGIN to COMMIT or ROLLBACK"
+            chart={`
+stateDiagram-v2
+    [*] --> Active: BEGIN TRANSACTION
+    
+    Active --> PartiallyCommitted: All operations complete
+    Active --> Failed: Operation error
+    
+    PartiallyCommitted --> Committed: COMMIT
+    PartiallyCommitted --> Failed: Commit error
+    
+    Failed --> Aborted: ROLLBACK
+    
+    Committed --> [*]: Changes permanent
+    Aborted --> [*]: Changes undone
+    
+    note right of Active
+        Operations being executed
+        Changes in memory only
+    end note
+    
+    note right of Committed
+        Changes written to disk
+        DURABILITY guaranteed
+    end note
+    
+    note right of Aborted
+        All changes rolled back
+        ATOMICITY preserved
+    end note
+            `}
+          />
+
+          <p className="mt-6">
+            Now let's examine each ACID property in detail:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-300 text-sm mb-1">Atomicity</h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">
+                    All operations in a transaction succeed or none do. It's an "all or nothing" proposition.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-green-800 dark:text-green-300 text-sm mb-1">Consistency</h4>
+                  <p className="text-sm text-green-700 dark:text-green-400">
+                    Transactions can only bring the database from one valid state to another, maintaining all rules and constraints.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-purple-800 dark:text-purple-300 text-sm mb-1">Isolation</h4>
+                  <p className="text-sm text-purple-700 dark:text-purple-400">
+                    Concurrent transactions don't interfere with each other. Each appears to run in isolation.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-600 p-4 rounded-r">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-orange-800 dark:text-orange-300 text-sm mb-1">Durability</h4>
+                  <p className="text-sm text-orange-700 dark:text-orange-400">
+                    Once a transaction is committed, it remains committed permanently, even after system failure.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
+
+          <p className="mt-6">
+            Let's unpack each property with real-world implications:
+          </p>
+
+          <p className="mt-4">
+            <strong className="text-blue-600 dark:text-blue-400">Atomicity</strong> means transactions are indivisible. Think of
+            it as a quantum leap—you're either in the initial state or the final state, never in between. In practice, this is
+            implemented using a <strong>transaction log</strong> (also called a write-ahead log or WAL). Before any changes touch
+            the actual database, they're written to this log. If a crash occurs mid-transaction, the database uses the log to undo
+            partial changes on restart. It's like having an "undo" button that works even after the power goes out.
+          </p>
+
+          <p className="mt-4">
+            <strong className="text-green-600 dark:text-green-400">Consistency</strong> is your database's immune system—it enforces
+            all your constraints (PRIMARY KEY, FOREIGN KEY, CHECK, UNIQUE) and ensures no transaction can leave the database in an
+            invalid state. If you try to insert a duplicate primary key or violate a foreign key constraint mid-transaction, the
+            database immediately aborts the transaction. This is why you define constraints at the database level, not just in
+            application code—the database is the ultimate authority.
+          </p>
+
+          <p className="mt-4">
+            <strong className="text-purple-600 dark:text-purple-400">Isolation</strong> is the most complex property and the source
+            of many performance trade-offs. Perfect isolation (SERIALIZABLE level) means transactions appear to run one at a time,
+            with no interference. But perfect isolation is slow—it's like having a single-lane highway where cars must wait for the
+            one ahead to completely finish before starting. In practice, databases offer multiple isolation levels (which we'll explore
+            shortly) that trade some consistency guarantees for better concurrent performance.
+          </p>
+
+          <Callout type="tip" title="Analogy: The Hotel Room Cleaning Problem">
+            <p>
+              Think of database transactions like hotel rooms and isolation levels like cleaning policies:
+            </p>
+            <p className="mt-2">
+              <strong>SERIALIZABLE (Strictest):</strong> The hotel only allows one guest to check in/out at a time. While Alice 
+              is checking out of Room 101, Bob must wait in the lobby even though he wants to check into Room 305. Maximum safety 
+              (no conflicts), minimum throughput (frustrated guests).
+            </p>
+            <p className="mt-2">
+              <strong>READ COMMITTED (Balanced):</strong> Multiple guests can check in/out simultaneously, but you can't enter 
+              a room that's currently being cleaned (uncommitted). You might see a room's status change from "dirty" to "clean" 
+              while you're walking down the hall (non-repeatable read), but at least you'll never walk in on someone still in 
+              their bathrobe (no dirty reads).
+            </p>
+            <p className="mt-2">
+              <strong>READ UNCOMMITTED (Riskiest):</strong> Chaos mode—you can walk into any room at any time, even if someone's 
+              mid-shower. Fast? Yes. Safe? Absolutely not.
+            </p>
+            <p className="mt-2">
+              Isolation levels are all about deciding: how much chaos can your application tolerate in exchange for speed?
+            </p>
+          </Callout>
+
+          <p className="mt-4">
+            <strong className="text-orange-600 dark:text-orange-400">Durability</strong> means once COMMIT succeeds, your data
+            survives anything—power failures, OS crashes, even hardware failures (with proper replication). This is achieved through
+            the transaction log again: when you commit, the database ensures the log is flushed to disk (using <code>fsync()</code>
+            system calls) before returning success. Even if the database crashes a millisecond later, it can replay the log on restart
+            and recover your committed transaction. This is why COMMITs are slower than in-memory operations—durability requires
+            touching physical storage.
+          </p>
+
+          <Callout type="ai" title="AI Prompt: Generating Transaction Code">
+            <p className="mb-3">
+              Use these prompt patterns to get AI help with transaction design and implementation:
+            </p>
+
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Generate Transaction Logic</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "I have a database with these tables: orders (order_id, customer_id, total_amount, status), order_items (item_id, order_id FK, product_id, quantity, price), inventory (product_id, stock_quantity). Write a SQL transaction that: (1) Creates a new order, (2) Adds 3 items to the order, (3) Decrements inventory for each product, (4) Ensures all steps succeed or all roll back. Include error handling comments and use proper transaction syntax for PostgreSQL."
+              </p>
+            </div>
+
+            <p className="text-sm mt-3 text-teal-800 dark:text-teal-200">
+              <strong>Why this works:</strong> You've provided the schema context, clearly listed the steps, specified the atomicity
+              requirement, and mentioned the database dialect. AI will generate a well-structured transaction with proper BEGIN/COMMIT/ROLLBACK
+              and will likely include integrity checks (e.g., ensuring sufficient inventory before decrementing).
+            </p>
+            <p className="text-sm mt-2 text-teal-800 dark:text-teal-200">
+              <strong>Common AI mistake to watch for:</strong> AI might forget to lock rows during inventory checks, leading to race
+              conditions. Always review generated transactions for concurrency issues, especially when multiple transactions might
+              access the same rows simultaneously.
+            </p>
+          </Callout>
         </Subsection>
 
-        <Subsection title="Transaction Commands">
+        <Subsection title="Transaction Commands: Putting Theory into Practice">
           <p>
-            SQL provides three key commands for transaction control:
+            Now that you understand <em>why</em> transactions matter, let's see <em>how</em> to use them. SQL provides three
+            fundamental commands for transaction control, and mastering their use is essential for building reliable applications.
           </p>
 
           <CodeExample
@@ -7693,6 +7872,13 @@ COMMIT;
 -- Note: In this playground, the transaction is auto-committed when successful.
 -- In production, you'd have explicit control over COMMIT/ROLLBACK.`}
           />
+
+          <p className="mt-6">
+            In production applications, you'll typically wrap transactions in try-catch blocks (or similar error handling) in your
+            application code. If any operation raises an exception, you catch it and issue a ROLLBACK; if all operations succeed,
+            you COMMIT. This pattern ensures atomicity even when dealing with complex business logic that involves multiple
+            database operations and external API calls.
+          </p>
         </Subsection>
 
         <Callout type="info" title="SQLite Transaction Behavior">
@@ -7705,14 +7891,657 @@ COMMIT;
             <li>SQLite supports three transaction modes: DEFERRED (default), IMMEDIATE, EXCLUSIVE</li>
             <li>Write-ahead logging (WAL mode) allows concurrent reads during writes</li>
           </ul>
+          <p className="mt-2 text-sm">
+            <strong>Important:</strong> While SQLite is single-writer (only one write transaction at a time), it's perfect for
+            learning transaction concepts. In production multi-user databases like PostgreSQL or MySQL, you'll encounter the full
+            complexity of concurrent transactions, which brings us to isolation levels...
+          </p>
+        </Callout>
+
+        <Subsection title="Isolation Levels: Balancing Concurrency and Consistency">
+          <p>
+            When multiple transactions run concurrently, how much should they know about each other's changes? Should Transaction A
+            see the uncommitted changes Transaction B is making? What if Transaction B rolls back—does A now have "phantom" data?
+            These aren't academic questions—they're critical design decisions that affect both correctness and performance.
+          </p>
+
+          <p className="mt-4">
+            <strong>Isolation levels</strong> define the degree to which one transaction's changes are visible to other concurrent
+            transactions. Stricter isolation (SERIALIZABLE) means better consistency but lower concurrency—transactions must wait
+            for each other, reducing throughput. Looser isolation (READ UNCOMMITTED) allows maximum concurrency but risks reading
+            invalid data. The four standard isolation levels represent different points on this spectrum, and choosing the right
+            level is one of the most important performance tuning decisions you'll make.
+          </p>
+
+          <IsolationLevelsFigure />
+
+          <p className="mt-6">
+            Understanding these concurrency problems is essential for choosing the right isolation level. Let's examine each
+            anomaly with both technical definitions and real-world impacts:
+          </p>
+
+          <p className="mt-4">
+            <strong className="text-lg">🚫 Dirty Reads</strong>
+          </p>
+          <p className="mt-2">
+            Transaction A reads uncommitted changes from Transaction B. If B rolls back, A has read invalid data that never 
+            actually existed in the database—like reading a draft document that gets deleted before publication.
+          </p>
+          <p className="mt-2 text-gray-700 dark:text-gray-300">
+            <strong>Real-world impact:</strong> An e-commerce site calculates inventory totals by reading uncommitted
+            order-in-progress data. An order gets rolled back (payment declined), but the inventory calculation already used
+            the phantom data, showing incorrect stock levels. Customers see "out of stock" when items are actually available.
+          </p>
+
+          <p className="mt-6">
+            <strong className="text-lg">🔄 Non-Repeatable Reads</strong>
+          </p>
+          <p className="mt-2">
+            Transaction A reads a row, Transaction B updates it and commits, Transaction A reads the same row again and 
+            gets different data. The read isn't "repeatable"—same query, different results within one transaction.
+          </p>
+          <p className="mt-2 text-gray-700 dark:text-gray-300">
+            <strong>Real-world impact:</strong> A financial reporting transaction reads an account balance ($1000), performs
+            calculations, then reads the same account again ($1500) because another transaction deposited money mid-report. The
+            report now has inconsistent numbers—some calculations based on $1000, others on $1500.
+          </p>
+
+          <p className="mt-6">
+            <strong className="text-lg">👻 Phantom Reads</strong>
+          </p>
+          <p className="mt-2">
+            Transaction A runs a query with a WHERE clause, Transaction B inserts rows matching that WHERE clause and commits, 
+            Transaction A runs the same query again and sees new "phantom" rows that weren't there before.
+          </p>
+          <p className="mt-2 text-gray-700 dark:text-gray-300">
+            <strong>Real-world impact:</strong> A batch job queries orders with <code>WHERE status = 'pending'</code> to calculate
+            totals (finds 100 orders), processes them, then re-queries to mark them complete (now finds 120 orders because new
+            orders arrived mid-batch). The batch processing logic breaks because it expects a stable set of rows.
+          </p>
+
+          <Callout type="ai" title="AI Guidance: Choosing Isolation Levels">
+            <p className="mb-3">
+              Get AI recommendations for the right isolation level based on your workload:
+            </p>
+
+            <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+              <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Recommend Isolation Level</p>
+              <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                "I'm building a [describe application: e.g., 'e-commerce checkout system']. Users perform these operations: [list operations: e.g., 'place orders, check inventory, process payments']. Concurrent load: [estimate: e.g., '500 transactions per second peak']. What SQL isolation level should I use and why? Consider: (1) Does the reporting dashboard need real-time data or is slightly stale okay? (2) Can two users buy the last item in stock simultaneously? (3) What happens if a transaction reads data that another transaction is updating?"
+              </p>
+            </div>
+
+            <p className="text-sm mt-3 text-teal-800 dark:text-teal-200">
+              <strong>Typical AI recommendations:</strong>
+            </p>
+            <ul className="list-disc pl-5 space-y-2 mt-2 text-sm text-teal-800 dark:text-teal-200">
+              <li><strong>READ COMMITTED (most common):</strong> AI will suggest this for 80% of applications. Prevents dirty reads
+              while allowing good concurrency. Works for most e-commerce, SaaS, and web applications.</li>
+              <li><strong>REPEATABLE READ:</strong> AI will recommend this for financial reports, analytics dashboards, or any scenario
+              where you need consistent snapshots of data across multiple queries in one transaction.</li>
+              <li><strong>SERIALIZABLE:</strong> AI will only suggest this for critical operations like money transfers, inventory
+              reservations, or seat bookings where any anomaly is unacceptable—and will warn about performance costs.</li>
+              <li><strong>READ UNCOMMITTED:</strong> AI will almost never recommend this (and will warn you if you ask) except for
+              approximate analytics where performance is critical and slightly wrong data is acceptable.</li>
+            </ul>
+            <p className="text-sm mt-3 text-teal-800 dark:text-teal-200">
+              <strong>Pro tip:</strong> Ask AI "What are the trade-offs of REPEATABLE READ vs READ COMMITTED for my use case?"
+              to get a detailed analysis of consistency vs performance for your specific scenario.
+            </p>
+          </Callout>
+
+          <p className="mt-6">
+            Now let's see isolation levels in action with a practical example:
+          </p>
+
+          <SQLPlayground
+            preset={EMPLOYEES_PRESET}
+            defaultQuery={`-- Demonstrating transaction isolation
+-- Scenario: Two transactions updating the same data
+
+-- Transaction 1: Update salary
+BEGIN TRANSACTION;
+UPDATE employees SET salary = 90000 WHERE name = 'Alice Smith';
+
+-- At this point, changes are not committed
+-- Other transactions won't see this change (READ COMMITTED+)
+SELECT salary FROM employees WHERE name = 'Alice Smith';
+
+COMMIT;
+
+-- Now the change is visible to all transactions
+SELECT salary FROM employees WHERE name = 'Alice Smith';`}
+          />
+        </Subsection>
+
+        <Subsection title="Practical Transaction Examples: ACID in the Real World">
+          <p>
+            Theory is valuable, but seeing transactions solve real problems cements understanding. The classic example—and for
+            good reason—is a bank transfer. This single operation touches multiple accounts and must maintain the fundamental
+            invariant: money is never created or destroyed, only moved. Without transactions, this seemingly simple operation
+            becomes a minefield of potential corruption.
+          </p>
+
+          <p className="mt-4">
+            Let's implement a transfer using a transaction, then examine how each ACID property protects us from different
+            failure scenarios:
+          </p>
+
+          <SQLPlayground
+            preset={EMPTY_PRESET}
+            defaultQuery={`-- Banking Example: Transfer money between accounts
+CREATE TABLE accounts (
+  account_id INTEGER PRIMARY KEY,
+  account_holder TEXT NOT NULL,
+  balance DECIMAL(10, 2) NOT NULL CHECK (balance >= 0)
+);
+
+INSERT INTO accounts VALUES
+  (1, 'Alice', 1000.00),
+  (2, 'Bob', 500.00);
+
+-- Transfer $200 from Alice to Bob (BOTH must succeed)
+BEGIN TRANSACTION;
+
+-- Debit from Alice
+UPDATE accounts
+SET balance = balance - 200
+WHERE account_id = 1;
+
+-- Credit to Bob
+UPDATE accounts
+SET balance = balance + 200
+WHERE account_id = 2;
+
+-- Verify both changes before committing
+SELECT * FROM accounts;
+
+-- If everything looks good, commit
+COMMIT;
+
+-- Final verification
+SELECT * FROM accounts;`}
+          />
+
+          <Callout type="success" title="ACID in Action">
+            This transaction demonstrates all ACID properties protecting your data:
+            <ul className="list-disc pl-5 mt-2 space-y-2">
+              <li><strong>Atomicity:</strong> Both updates succeed or both fail—no partial transfer. If a power failure occurs
+              between the two UPDATEs, the database rolls back on restart. Alice never loses $200 into the void.</li>
+              <li><strong>Consistency:</strong> The CHECK constraint (<code>balance &gt;= 0</code>) is enforced throughout. If
+              Alice tries to transfer more than she has, the transaction aborts before Bob receives anything. The total
+              balance ($1500) is preserved—money isn't created or destroyed.</li>
+              <li><strong>Isolation:</strong> Other transactions don't see Alice's balance drop to $800 until after COMMIT.
+              No other transaction sees a state where Alice has $800 but Bob still has $500 (total of $1300—money disappeared!).</li>
+              <li><strong>Durability:</strong> After COMMIT returns, the transfer is permanent. Even if the database server
+              crashes one millisecond later, the transaction log ensures the transfer is recovered on restart. Banks can't lose
+              transactions.</li>
+            </ul>
+          </Callout>
+
+          <p className="mt-6">
+            This example might seem trivial—just two UPDATEs—but it represents a pattern used billions of times daily across
+            financial systems worldwide. The same principles apply whether you're transferring $100 or $100 million, processing
+            one transaction or one million per second.
+          </p>
+        </Subsection>
+
+        <Callout type="ai" title="AI Guidance: Testing Transaction Rollback">
+          <p className="mb-3">
+            Use AI to generate comprehensive transaction tests that cover failure scenarios:
+          </p>
+
+          <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+            <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Generate Transaction Tests</p>
+            <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+              "Write test code for this SQL transaction: [paste your transaction code]. The tests should verify: (1) Success case: All operations complete and COMMIT succeeds, (2) Rollback on constraint violation: CHECK or FOREIGN KEY failure triggers ROLLBACK, (3) Rollback on application error: Exception in middle of transaction triggers ROLLBACK, (4) Isolation: Concurrent transactions don't see uncommitted changes. Use Python with pytest and a database library like psycopg2 or SQLAlchemy."
+            </p>
+          </div>
+
+          <p className="text-sm mt-3 text-teal-800 dark:text-teal-200">
+            <strong>Why this matters:</strong> Most developers write the happy path (COMMIT) but forget to test failure scenarios.
+            AI can generate comprehensive tests that verify your ROLLBACK logic works correctly—critical for data integrity. The
+            generated tests will typically include fixtures for setting up test data, transaction context managers, and assertions
+            that verify the database state after rollback.
+          </p>
+          <p className="text-sm mt-2 text-teal-800 dark:text-teal-200">
+            <strong>Common test gap:</strong> AI-generated tests might not cover the scenario where the database connection drops
+            mid-transaction. Ask specifically: "Add a test that simulates connection loss during transaction" to ensure your
+            application handles this gracefully.
+          </p>
         </Callout>
 
         <p className="mt-6">
-          Transactions are crucial for data integrity in multi-user systems and complex operations. While we've covered the
-          basics here, transaction management in production involves isolation levels, deadlock handling, and concurrency
-          control—topics for advanced database courses. For now, remember: when multiple operations must succeed together,
-          wrap them in a transaction.
+          Transactions are the foundation of reliable database systems—they're what separates a professional database application
+          from a fragile pile of race conditions and data corruption risks. Whether you're building an e-commerce platform 
+          (inventory + orders + payments), a banking application (transfers + interest + fees), a reservation system (seats + 
+          bookings + payments), or any system where data consistency matters, understanding and properly using transactions 
+          is non-negotiable.
         </p>
+
+        <p className="mt-4">
+          The key question to ask yourself during design: <strong>Which operations must succeed together?</strong> If operation
+          A succeeding without operation B would leave your database in an invalid or inconsistent state, wrap them in a
+          transaction. When in doubt, err on the side of more transactions—the performance cost is usually negligible compared
+          to the cost of data corruption.
+        </p>
+
+        <p className="mt-4">
+          As you build more complex applications, you'll encounter advanced transaction concepts: distributed transactions (spanning
+          multiple databases), saga patterns (long-running business processes), optimistic vs pessimistic locking, and deadlock
+          detection. But master the fundamentals here—ACID properties and proper transaction boundaries—and you'll have a solid
+          foundation for tackling those advanced topics.
+        </p>
+      </Section>
+
+      {/* ============================================
+          SECTION 17: Strategic Database Design
+          ============================================ */}
+      <Section id="section18" title="Strategic Database Design: Views, Normalization, and Architecture" level={2}>
+        <p>
+          Beyond individual queries and transactions, professional database development requires strategic thinking about 
+          system architecture. How should you structure your schema? When should you denormalize? What tools can simplify 
+          complex queries? This section explores these architectural decisions.
+        </p>
+
+        <Subsection title="Views: Stored Queries for Simplicity and Security">
+          <p>
+            A <strong>VIEW</strong> is a stored, named SELECT query that can be queried like a regular table. It's a virtual 
+            table whose contents are defined by a query—no data is actually stored; the view executes its underlying query each
+            time you query it. Views are one of the most underutilized features in SQL, yet they solve numerous real-world problems
+            elegantly.
+          </p>
+
+          <p className="mt-4">
+            Think of views like saved filters in your email client. You could manually construct the query "from:boss AND 
+            subject:urgent AND unread:true" every time, or you can save it as a "Boss Urgent" folder that updates automatically.
+            Views work the same way—saved queries that appear as tables. You query them with simple <code>SELECT * FROM view_name</code>, 
+            but behind the scenes they're executing whatever complex logic you defined.
+          </p>
+
+          <p className="mt-4">
+            <strong>Why use views? They solve four critical problems:</strong>
+          </p>
+
+          <ul className="list-disc pl-6 space-y-2 mt-3 text-gray-700 dark:text-gray-300">
+            <li><strong>Simplification:</strong> Turn a complex 10-line query with multiple JOINs into <code>SELECT * FROM customer_summary</code>.
+            New developers can write queries without understanding the underlying complexity.</li>
+            <li><strong>Reusability:</strong> Write the query once, use it in 50 different reports. Change the view definition once,
+            all 50 reports update automatically. No hunting through application code to find every instance.</li>
+            <li><strong>Security:</strong> Grant users access to views (filtered, sanitized data) instead of base tables (all data,
+            including sensitive columns). A view can hide salary data from HR, or show users only their own orders.</li>
+            <li><strong>Abstraction:</strong> Hide schema changes—refactor table structures, update the view definition, but
+            application code querying the view never breaks. This is database-level backwards compatibility.</li>
+          </ul>
+
+          <p className="mt-6">
+            Let's see views in action. The example below creates a view that simplifies a 3-table JOIN, then queries it like
+            a regular table:
+          </p>
+
+          <SQLPlayground
+            preset={FINANCIAL_FULL_PRESET}
+            defaultQuery={`-- Create a view for latest company revenues
+CREATE VIEW LatestCompanyRevenue AS
+SELECT
+  c.CompanyName,
+  li.Value AS Revenue,
+  fs.Year
+FROM Companies c
+JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
+JOIN Line_Items li ON fs.StatementID = li.StatementID
+WHERE li.ItemName = 'Revenue';
+
+-- Query the view like a regular table
+SELECT * FROM LatestCompanyRevenue
+WHERE Year = 2024
+ORDER BY Revenue DESC;
+
+-- You can even join views with other tables
+SELECT 
+  lcr.CompanyName,
+  lcr.Revenue,
+  c.StockTicker
+FROM LatestCompanyRevenue lcr
+JOIN Companies c ON lcr.CompanyName = c.CompanyName
+WHERE lcr.Year = 2024
+LIMIT 5;`}
+          />
+
+          <p className="mt-6">
+            Views are particularly powerful in multi-user applications. You can create role-specific views that show only 
+            the data each user type needs, without exposing sensitive information.
+          </p>
+
+          <CodeExample
+            title="Security Example: Role-Based Views"
+            code={`-- Create a public view (safe for all users)
+CREATE VIEW PublicCompanyInfo AS
+SELECT CompanyName, StockTicker, SectorID
+FROM Companies;
+-- Hides internal IDs, addresses, sensitive metadata
+
+-- Create a finance team view (more detailed)
+CREATE VIEW FinanceCompanyInfo AS
+SELECT c.CompanyName, c.StockTicker, 
+       li.Value AS Revenue, fs.Year
+FROM Companies c
+JOIN Financial_Statements fs ON c.CompanyID = fs.CompanyID
+JOIN Line_Items li ON fs.StatementID = li.StatementID
+WHERE li.ItemName = 'Revenue';
+-- Shows financial data but still hides raw IDs
+
+-- Grant different access levels
+-- GRANT SELECT ON PublicCompanyInfo TO public_users;
+-- GRANT SELECT ON FinanceCompanyInfo TO finance_team;`}
+          />
+
+          <Callout type="ai" title="AI Guidance: Generating Views">
+            <p className="mb-3">
+              Get AI help creating well-designed views with proper naming and optimization:
+            </p>
+
+            <div className="space-y-3">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Create View from Query</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                  "I have this complex query that I run frequently: [paste your complex query]. Create a VIEW for this query with: (1) A descriptive name following naming conventions, (2) Clear column aliases, (3) Comments explaining what it returns, (4) Suggestions for indexes that would help performance. Also suggest 2-3 additional views that would be useful for this schema."
+                </p>
+              </div>
+
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Materialized View Strategy</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                  "Show me how to create a materialized view instead of a regular view for this expensive aggregation query: [paste query]. Include refresh logic and explain when to use REFRESH MATERIALIZED VIEW. Consider: query runs 1000x/day but underlying data updates only hourly."
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm mt-3 text-teal-800 dark:text-teal-200">
+              <strong>Why this works:</strong> AI will analyze your query, suggest an appropriate view name following naming
+              conventions, add helpful column aliases, and identify performance optimizations. It will also look at your schema
+              holistically and suggest other views that would be useful (e.g., "You should also create a view for active customers"
+              or "Consider a view for monthly sales aggregates").
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="Normalization vs. Denormalization: The Art of Strategic Redundancy">
+          <p>
+            We've discussed normalization extensively in Part II, but strategic database design often requires knowing 
+            <em>when to break the rules</em>. Denormalization—intentionally introducing redundancy—can dramatically 
+            improve read performance at the cost of write complexity. The key question is: which workload matters more 
+            for your application?
+          </p>
+
+          <p className="mt-4">
+            Think of normalization vs. denormalization like two different library organization strategies. A <strong>normalized</strong> 
+            library has each book in exactly one location. To find all science fiction books by female authors published after 2000, 
+            you must visit the catalog to look up author genders (one location), cross-reference with publication dates (another 
+            location), cross-reference with genre classifications (a third location), and finally navigate to the physical shelves. 
+            This is slow for reading but <em>perfect</em> for maintaining accuracy—if an author's information changes, you update 
+            one record. No contradictions possible.
+          </p>
+
+          <p className="mt-4">
+            A <strong>denormalized</strong> library, by contrast, maintains a special "Sci-Fi by Women 2000+" section with duplicated 
+            books. Readers get instant answers (one location!) but now when an author's information changes, you must update multiple 
+            locations. Miss one, and you have inconsistent data. This is the essence of the normalization vs. denormalization trade-off: 
+            <em>read speed vs. write complexity</em>, <em>query simplicity vs. data integrity risk</em>.
+          </p>
+
+          <p className="mt-6">
+            This trade-off manifests in two fundamental database workload patterns that drive architectural decisions: 
+            <strong>OLTP</strong> (Online Transaction Processing) and <strong>OLAP</strong> (Online Analytical Processing). 
+            Understanding the difference between these patterns is crucial for choosing the right design for your application:
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+            {/* OLTP Card */}
+            <div className="border-2 border-blue-300 dark:border-blue-700 rounded-lg p-6 bg-blue-50 dark:bg-blue-950/20">
+              <h4 className="font-bold text-xl text-blue-900 dark:text-blue-100 mb-4">
+                💳 OLTP: Online Transaction Processing
+              </h4>
+              
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                The operational heartbeat of your business. Every order, payment, and user action flows through OLTP systems.
+              </p>
+
+              <div className="space-y-3">
+                <div>
+                  <p className="font-semibold text-blue-900 dark:text-blue-100 text-sm mb-1">📊 Characteristics</p>
+                  <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 pl-4">
+                    <li>• Many short, frequent transactions</li>
+                    <li>• INSERT/UPDATE/DELETE heavy</li>
+                    <li>• Current, "hot" data</li>
+                    <li>• Normalized schema (3NF+)</li>
+                    <li>• Hundreds of concurrent users</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-blue-900 dark:text-blue-100 text-sm mb-1">🎯 Real-World Examples</p>
+                  <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 pl-4">
+                    <li>• E-commerce checkout systems</li>
+                    <li>• Banking transactions (ATM, transfers)</li>
+                    <li>• Social media posts and likes</li>
+                    <li>• Ticket booking systems</li>
+                    <li>• Inventory management</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-blue-900 dark:text-blue-100 text-sm mb-1">⚡ Optimized For</p>
+                  <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 pl-4">
+                    <li>• <strong>Data integrity</strong> (ACID compliance)</li>
+                    <li>• <strong>Write performance</strong> (fast INSERTs/UPDATEs)</li>
+                    <li>• <strong>Concurrent access</strong> (row-level locking)</li>
+                    <li>• <strong>Real-time updates</strong> (immediate consistency)</li>
+                  </ul>
+                </div>
+
+                <div className="bg-blue-100 dark:bg-blue-900 rounded p-3 mt-3">
+                  <p className="text-xs text-blue-900 dark:text-blue-100">
+                    <strong>Design Pattern:</strong> Keep it normalized! Each piece of data stored once, protected by constraints.
+                    Fast writes, acceptable read performance for operational queries.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* OLAP Card */}
+            <div className="border-2 border-amber-300 dark:border-amber-700 rounded-lg p-6 bg-amber-50 dark:bg-amber-950/20">
+              <h4 className="font-bold text-xl text-amber-900 dark:text-amber-100 mb-4">
+                📈 OLAP: Online Analytical Processing
+              </h4>
+              
+              <p className="text-sm text-amber-800 dark:text-amber-200 mb-4">
+                The analytical brain of your business. Historical data, complex queries, and insights that drive strategy.
+              </p>
+
+              <div className="space-y-3">
+                <div>
+                  <p className="font-semibold text-amber-900 dark:text-amber-100 text-sm mb-1">📊 Characteristics</p>
+                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1 pl-4">
+                    <li>• Few, complex, long-running queries</li>
+                    <li>• SELECT heavy (read-mostly)</li>
+                    <li>• Historical, "cold" data</li>
+                    <li>• Denormalized schema (star/snowflake)</li>
+                    <li>• Batch updates (nightly ETL jobs)</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-amber-900 dark:text-amber-100 text-sm mb-1">🎯 Real-World Examples</p>
+                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1 pl-4">
+                    <li>• Business intelligence dashboards</li>
+                    <li>• Data warehouses (Snowflake, BigQuery)</li>
+                    <li>• Sales reporting and forecasting</li>
+                    <li>• Customer behavior analytics</li>
+                    <li>• Historical trend analysis</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-amber-900 dark:text-amber-100 text-sm mb-1">⚡ Optimized For</p>
+                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1 pl-4">
+                    <li>• <strong>Read performance</strong> (complex aggregations)</li>
+                    <li>• <strong>Query throughput</strong> (scan billions of rows)</li>
+                    <li>• <strong>Columnar storage</strong> (compress and scan)</li>
+                    <li>• <strong>Eventual consistency</strong> (stale data okay)</li>
+                  </ul>
+                </div>
+
+                <div className="bg-amber-100 dark:bg-amber-900 rounded p-3 mt-3">
+                  <p className="text-xs text-amber-900 dark:text-amber-100">
+                    <strong>Design Pattern:</strong> Denormalize aggressively! Duplicate data to avoid JOINs. Pre-compute aggregates.
+                    Slow writes (batch), blazing fast reads.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p className="mt-6">
+            Most organizations run <strong>both</strong> systems: an OLTP database for day-to-day operations, and an OLAP data 
+            warehouse for analytics. Data flows from OLTP → OLAP through nightly ETL (Extract, Transform, Load) jobs. The OLTP 
+            database stays lean and fast, while the OLAP warehouse accumulates historical data and pre-computes expensive aggregations.
+          </p>
+
+          <p className="mt-4">
+            <strong>Real-world example: E-Commerce Platform Architecture</strong>
+          </p>
+          <ul className="list-disc pl-6 space-y-2 mt-2 text-gray-700 dark:text-gray-300">
+            <li><strong>OLTP Database (PostgreSQL):</strong> Handles customer orders, inventory updates, payment processing. 
+            Normalized schema, 1000s of writes per second, sub-100ms latency required. This is where the business <em>operates</em>.</li>
+            <li><strong>OLAP Data Warehouse (Snowflake):</strong> Receives nightly data dumps from OLTP. Denormalized star schema
+            with fact tables (orders, page_views) and dimension tables (customers, products). Executives run complex reports:
+            "Show me customer lifetime value by cohort, segmented by acquisition channel, for the past 3 years"—a query that would
+            cripple the OLTP database but executes in seconds on OLAP. This is where the business gains <em>insights</em>.</li>
+          </ul>
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            <strong>Key insight:</strong> You don't choose OLTP <em>or</em> OLAP—you choose the right tool for each job and
+            build a pipeline between them. This dual-database architecture is industry standard for any application serving both
+            operational and analytical needs.
+          </p>
+
+          <p className="mt-6">
+            <strong>When to Denormalize (Within OLTP Systems)</strong>
+          </p>
+          <p className="mt-2">
+            Even in OLTP systems, selective denormalization can be justified. The key is being <em>strategic</em>—denormalize
+            specific fields where the read/write trade-off clearly favors performance over complexity. Consider it when:
+          </p>
+          <ul className="list-disc pl-6 space-y-2 mt-3 text-gray-700 dark:text-gray-300">
+            <li><strong>Read performance is critical and writes are infrequent:</strong> Example: Storing a user's post count
+            directly on the users table instead of COUNT(*)ing the posts table every time. Posts are written occasionally, but
+            post count is read constantly (profile pages, leaderboards).</li>
+            <li><strong>The same complex JOIN appears in hundreds of queries:</strong> Example: Storing product category names
+            directly in the products table to avoid JOIN with categories on every product list page.</li>
+            <li><strong>Query response time matters more than storage cost:</strong> Example: Pre-computing and caching aggregate
+            values (total sales per day) rather than SUM()ming millions of transactions on every dashboard load.</li>
+            <li><strong>Data is mostly static:</strong> Example: Copying historical tax rates into order records. Once an order
+            is placed, the tax rate at that moment is locked—even if tax rates change later, historical orders stay accurate.</li>
+          </ul>
+
+          <Callout type="warning" title="Critical Rule: Measure Before Denormalizing">
+            <p>
+              Always measure before denormalizing. Use <code>EXPLAIN QUERY PLAN</code> to confirm the JOIN is actually 
+              the bottleneck. Premature optimization is the root of all evil—and premature denormalization is doubly evil 
+              because it's hard to undo once application code depends on it.
+            </p>
+            <p className="mt-2">
+              <strong>The danger:</strong> You denormalize a field, deploy it to production, and then discover the performance 
+              gain is negligible (2ms → 1ms) but you've introduced complexity. Now every write to that field requires updating 
+              multiple tables. Six months later, someone adds a new feature that writes to that field but forgets one of the 
+              denormalized copies. Data inconsistency creeps in. Debugging takes days. Rolling back the denormalization requires 
+              rewriting dozens of queries. You're stuck with the technical debt.
+            </p>
+          </Callout>
+
+          <p className="mt-6">
+            These architectural decisions—normalized vs. denormalized, OLTP vs. OLAP, which fields to duplicate—are complex 
+            and context-dependent. AI assistants can help analyze your specific workload and recommend strategies:
+          </p>
+
+          <Callout type="ai" title="AI Guidance: Schema Design Decisions">
+            <p className="mb-3">
+              Get AI recommendations for normalization vs. denormalization trade-offs:
+            </p>
+
+            <div className="space-y-3">
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Schema Architecture Strategy</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                  "I'm designing a database for [describe application: e.g., 'social media platform with posts, users, likes, comments']. Current workload: Writes [estimate: e.g., '10,000 new posts/day, 100,000 likes/day'], Reads [estimate: e.g., '1 million page views/day showing post feeds'], Critical queries: [list: e.g., 'user timeline, trending posts, user profile with stats']. Should I: (1) Keep a fully normalized schema? (2) Denormalize certain fields? If so, which ones? (3) Use materialized views for aggregates? (4) Split into OLTP + OLAP architecture? Consider: performance requirements, data consistency needs, and maintenance complexity."
+                </p>
+              </div>
+
+              <div className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded p-3">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 text-sm mb-1">Prompt: Before/After Schema Comparison</p>
+                <p className="text-xs text-teal-800 dark:text-teal-200 font-mono">
+                  "Show me a before/after schema comparison with normalized vs. recommended denormalized structure for this workload: [describe]. Include the UPDATE triggers needed to maintain consistency between denormalized copies. Explain the maintenance burden and potential for data drift."
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm mt-3 text-teal-800 dark:text-teal-200">
+              <strong>What AI will analyze:</strong> AI will evaluate your read/write ratio, identify which queries would benefit
+              from denormalization, suggest specific fields to duplicate, and warn about consistency challenges. For high-read scenarios
+              (like social media), AI will likely suggest: denormalizing like/follower counts, using materialized views for trending
+              calculations, and separating analytics (OLAP) from operational data (OLTP).
+            </p>
+          </Callout>
+        </Subsection>
+
+        <Subsection title="Common Database Design Pitfalls">
+          <p>
+            Even experienced developers make these mistakes. Recognizing them early can save months of refactoring pain.
+          </p>
+
+          <ul className="list-disc pl-6 space-y-3 text-gray-700 dark:text-gray-300">
+            <li>
+              <strong>Poor planning and documentation:</strong> "We'll document it later" never happens. Lack of ERDs and 
+              schema documentation leads to confusion, duplicate work, and costly mistakes.
+            </li>
+            <li>
+              <strong>Ignoring normalization:</strong> Spreadsheets-as-tables with repeated groups of columns (address1, 
+              address2, address3...) lead to update anomalies and wasted space.
+            </li>
+            <li>
+              <strong>Inconsistent naming standards:</strong> Mixing camelCase, snake_case, and PascalCase. Using singular 
+              and plural table names randomly. Leads to constant typos and wasted time.
+            </li>
+            <li>
+              <strong>Neglecting database constraints:</strong> Relying on application-level validation only. When the 
+              application has a bug (it will), invalid data corrupts the database.
+            </li>
+            <li>
+              <strong>Insufficient or improper indexing:</strong> Either no indexes (everything slow) or too many indexes 
+              (writes slow, storage bloated). Index strategically based on actual query patterns.
+            </li>
+            <li>
+              <strong>The N+1 query problem:</strong> Fetching a list of 100 orders, then making 100 separate queries to 
+              get customer details for each. Use JOINs or batch fetches instead.
+            </li>
+            <li>
+              <strong>Premature denormalization:</strong> Denormalizing before measuring. You don't have a performance 
+              problem until you measure and confirm it.
+            </li>
+          </ul>
+
+          <Callout type="success" title="Best Practices Summary">
+            <ul className="list-disc pl-5 space-y-1 mt-2">
+              <li>Start normalized (3NF), denormalize only when measurements justify it</li>
+              <li>Document your schema with ERDs and clear comments</li>
+              <li>Establish naming conventions early and enforce them</li>
+              <li>Use database constraints—never trust application code alone</li>
+              <li>Index based on real query patterns, not guesses</li>
+              <li>Use views to simplify complex queries and enforce security</li>
+              <li>Understand your workload: OLTP or OLAP? Design accordingly</li>
+            </ul>
+          </Callout>
+        </Subsection>
       </Section>
 
       {/* ============================================
