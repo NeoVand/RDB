@@ -10,6 +10,8 @@ import { WindowFunctionFigure } from '../../components/Content/WindowFunctionFig
 import { IndexFigure } from '../../components/Content/IndexFigure';
 import { JoinAlgorithmFigure } from '../../components/Content/JoinAlgorithmFigure';
 import { ExecutionOrderVisual } from '../../components/Content/ExecutionOrderVisual';
+import { QueryLifecycleVisual } from '../../components/Content/QueryLifecycleVisual';
+import { ASTVisual } from '../../components/Content/ASTVisual';
 import { 
   EMPLOYEES_PRESET, 
   EMPTY_PRESET,
@@ -6361,18 +6363,7 @@ CREATE INDEX idx_orders_date_cust_amt
             Each stage transforms the query from one representation to another, ultimately producing the results you see.
           </p>
 
-          <MermaidDiagram
-            caption="SQL Query Lifecycle: The Five Stages of Execution"
-            chart={`
-flowchart LR
-    Start(["📝 SQL"]) ==> Parser["1️⃣ Parser"]
-    Parser ==> Rewriter["2️⃣ Rewriter"]
-    Rewriter ==> Planner["3️⃣ Planner"]
-    Planner ==> Optimizer["4️⃣ Optimizer"]
-    Optimizer ==> Executor["5️⃣ Executor"]
-    Executor ==> Result(["📊 Result"])
-            `}
-          />
+          <QueryLifecycleVisual />
 
           <p className="mt-4">
             Let's walk through each stage with a concrete example. Consider this query:
@@ -6410,32 +6401,12 @@ ORDER BY c.CompanyName;`}
             representation of your query's logical structure:
           </p>
 
-          <MermaidDiagram
-            caption="Abstract Syntax Tree: How the Parser Understands Your Query"
-            chart={`
-flowchart TD
-    Root(["🎯 SELECT<br/>Statement"]) --> Cols
-    Root --> From
-    Root --> Where
-    Root --> Order
-    
-    Cols["📋 Column List"] --> Col1["c.CompanyName"]
-    Cols --> Col2["c.StockTicker"]
-    Cols --> Col3["s.SectorName"]
-    
-    From["📦 FROM Clause"] --> Join["🔗 INNER JOIN"]
-    Join --> T1["Companies c"]
-    Join --> T2["Sectors s"]
-    Join --> JoinCond["ON c.SectorID<br/>= s.SectorID"]
-    
-    Where["🔍 WHERE Clause"] --> Comp["c.Founded > 2000"]
-    
-    Order["⬆️ ORDER BY"] --> OrdCol["c.CompanyName ASC"]
-            `}
-          />
+          <ASTVisual />
 
           <p className="mt-4">
-            This tree structure makes it easy for subsequent stages to analyze and transform the query.
+            This tree structure makes it easy for subsequent stages to analyze and transform the query. The ellipses represent
+            operators and clauses, while the rectangles contain actual values like column names, table names, and constants.
+            This normalized representation allows the database to efficiently analyze and optimize your query.
           </p>
         </Subsection>
 
@@ -6516,10 +6487,10 @@ flowchart TD
             The optimizer considers:
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Scan Methods</h4>
-              <ul className="text-sm space-y-1">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 my-6">
+            <div className="border-2 border-blue-300 dark:border-blue-700 rounded-lg p-5 bg-blue-50 dark:bg-blue-950/20">
+              <h4 className="font-bold text-lg text-blue-900 dark:text-blue-100 mb-3">Scan Methods</h4>
+              <ul className="text-sm space-y-2 text-blue-800 dark:text-blue-200">
                 <li>• Sequential Scan (read every row)</li>
                 <li>• Index Scan (use B-tree)</li>
                 <li>• Index-Only Scan (covering index)</li>
@@ -6527,27 +6498,27 @@ flowchart TD
               </ul>
             </div>
 
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Join Algorithms</h4>
-              <ul className="text-sm space-y-1">
+            <div className="border-2 border-purple-300 dark:border-purple-700 rounded-lg p-5 bg-purple-50 dark:bg-purple-950/20">
+              <h4 className="font-bold text-lg text-purple-900 dark:text-purple-100 mb-3">Join Algorithms</h4>
+              <ul className="text-sm space-y-2 text-purple-800 dark:text-purple-200">
                 <li>• Nested Loop Join</li>
                 <li>• Hash Join</li>
                 <li>• Merge Join (Sort-Merge)</li>
               </ul>
             </div>
 
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Join Orders</h4>
-              <ul className="text-sm space-y-1">
+            <div className="border-2 border-emerald-300 dark:border-emerald-700 rounded-lg p-5 bg-emerald-50 dark:bg-emerald-950/20">
+              <h4 className="font-bold text-lg text-emerald-900 dark:text-emerald-100 mb-3">Join Orders</h4>
+              <ul className="text-sm space-y-2 text-emerald-800 dark:text-emerald-200">
                 <li>• Left-deep trees</li>
                 <li>• Right-deep trees</li>
                 <li>• Bushy trees</li>
               </ul>
             </div>
 
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Cost Factors</h4>
-              <ul className="text-sm space-y-1">
+            <div className="border-2 border-amber-300 dark:border-amber-700 rounded-lg p-5 bg-amber-50 dark:bg-amber-950/20">
+              <h4 className="font-bold text-lg text-amber-900 dark:text-amber-100 mb-3">Cost Factors</h4>
+              <ul className="text-sm space-y-2 text-amber-800 dark:text-amber-200">
                 <li>• I/O operations (disk reads)</li>
                 <li>• CPU processing time</li>
                 <li>• Memory usage</li>
@@ -6826,6 +6797,10 @@ LIMIT 5;                               -- Step 8: Take top 5
             </ol>
           </Callout>
 
+          <p className="mt-6">
+            Let's see these principles in action with concrete examples:
+          </p>
+
           <CodeExample
             title="Poor vs. Excellent SQL Prompts"
             code={`❌ POOR PROMPT:
@@ -6849,6 +6824,10 @@ Optimization: Include any indexes that would help this query.
 Expected output columns: customer_name, order_count, total_spent`}
           />
 
+          <p className="mt-6">
+            To make prompt engineering easier, here are reusable templates for common scenarios. First, for analytical queries:
+          </p>
+
           <CodeExample
             title="Template: Analytical Query Prompt"
             code={`Schema:
@@ -6869,6 +6848,10 @@ Requirements:
 Expected Output:
 [Column names and sample row]`}
           />
+
+          <p className="mt-6">
+            When you have a query that's not working correctly or needs optimization, use this debugging template:
+          </p>
 
           <CodeExample
             title="Template: Debugging/Optimization Prompt"
@@ -6897,28 +6880,55 @@ Request: [Fix the query | Optimize for performance | Explain what's wrong]`}
             better the results. Here are three strategies:
           </p>
 
-          <div className="mt-4 space-y-4">
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4">
-              <p className="font-semibold text-gray-900 dark:text-gray-100">Strategy 1: Inline Schema Description</p>
-              <p className="text-sm mt-2">
-                For one-off queries, paste your schema directly into the prompt. Use <code>CREATE TABLE</code> statements
-                or a concise text description.
+          <div className="mt-6 space-y-4">
+            <div className="border-2 border-blue-300 dark:border-blue-700 rounded-lg p-5 bg-blue-50 dark:bg-blue-950/20">
+              <p className="font-bold text-lg text-blue-900 dark:text-blue-100 mb-2">
+                📝 Strategy 1: Inline Schema Description
               </p>
+              <p className="text-sm mt-2 text-blue-800 dark:text-blue-200">
+                For one-off queries, paste your schema directly into the prompt. Use <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">CREATE TABLE</code> statements
+                or a concise text description. <strong>Best for:</strong> Quick questions, one-time analysis, prototyping.
+              </p>
+              <CodeExample
+                code={`Schema:
+- users (id, name, email, created_at)
+- orders (id, user_id FK, amount, status, order_date)
+
+Task: Find users who spent over $1000 in 2024`}
+              />
             </div>
 
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4">
-              <p className="font-semibold text-gray-900 dark:text-gray-100">Strategy 2: Schema Files in Project Context</p>
-              <p className="text-sm mt-2">
-                For Copilot/Cursor AI, maintain a <code>schema.sql</code> or <code>SCHEMA.md</code> file in your repository.
-                The AI automatically uses it as context when writing SQL in your codebase.
+            <div className="border-2 border-purple-300 dark:border-purple-700 rounded-lg p-5 bg-purple-50 dark:bg-purple-950/20">
+              <p className="font-bold text-lg text-purple-900 dark:text-purple-100 mb-2">
+                📁 Strategy 2: Schema Files in Project Context
               </p>
+              <p className="text-sm mt-2 text-purple-800 dark:text-purple-200">
+                For Copilot/Cursor AI, maintain a <code className="bg-purple-100 dark:bg-purple-900 px-1 rounded">schema.sql</code> or <code className="bg-purple-100 dark:bg-purple-900 px-1 rounded">SCHEMA.md</code> file in your repository.
+                The AI automatically uses it as context when writing SQL in your codebase. <strong>Best for:</strong> Development workflows, team projects, consistent schemas.
+              </p>
+              <CodeExample
+                code={`-- schema.sql in project root
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- AI sees this file → generates better SQL automatically`}
+              />
             </div>
 
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4">
-              <p className="font-semibold text-gray-900 dark:text-gray-100">Strategy 3: RAG-Enhanced SQL Assistants</p>
-              <p className="text-sm mt-2">
-                For production systems, use Retrieval-Augmented Generation (RAG) to automatically fetch relevant schema
-                information based on the user's question. We'll explore this approach next.
+            <div className="border-2 border-emerald-300 dark:border-emerald-700 rounded-lg p-5 bg-emerald-50 dark:bg-emerald-950/20">
+              <p className="font-bold text-lg text-emerald-900 dark:text-emerald-100 mb-2">
+                🤖 Strategy 3: RAG-Enhanced SQL Assistants
+              </p>
+              <p className="text-sm mt-2 text-emerald-800 dark:text-emerald-200">
+                For production systems with large schemas (50+ tables), use Retrieval-Augmented Generation (RAG) to automatically fetch only
+                the relevant schema information based on the user's question. <strong>Best for:</strong> Production chatbots, large databases, dynamic schema retrieval.
+              </p>
+              <p className="text-sm mt-2 text-emerald-800 dark:text-emerald-200">
+                User asks "revenue by region" → RAG retrieves <code className="bg-emerald-100 dark:bg-emerald-900 px-1 rounded">sales</code>, <code className="bg-emerald-100 dark:bg-emerald-900 px-1 rounded">regions</code>, <code className="bg-emerald-100 dark:bg-emerald-900 px-1 rounded">products</code> tables → LLM generates SQL. We'll explore this approach in detail next.
               </p>
             </div>
           </div>
@@ -6963,7 +6973,7 @@ flowchart TB
 
           <ul className="list-disc pl-6 space-y-2 mt-2">
             <li>
-              <strong>Fine-tuned models:</strong> Train models specifically on SQL generation tasks (e.g., text2sql-t5, CodeT5+)
+              <strong>Fine-tuned models:</strong> Train models specifically on SQL generation tasks (e.g., text2sql-t5, CodeT5+, Defog SQLCoder)
             </li>
             <li>
               <strong>Few-shot prompting:</strong> Provide examples of question→SQL pairs in the prompt to guide the LLM
@@ -6976,21 +6986,261 @@ flowchart TB
             </li>
           </ul>
 
-          <Callout type="info" title="Popular Text-to-SQL Tools">
-            <ul className="list-disc pl-5 space-y-1 mt-2 text-sm">
-              <li><strong>Vanna AI:</strong> Open-source Python library for RAG-based Text-to-SQL</li>
-              <li><strong>Defog.ai:</strong> Fine-tuned models for production Text-to-SQL</li>
-              <li><strong>MindsDB:</strong> AI layer on top of databases with NL query support</li>
-              <li><strong>Waii:</strong> Enterprise Text-to-SQL with governance</li>
-              <li><strong>Custom LLM + RAG:</strong> Build your own with OpenAI/Anthropic APIs + vector DB</li>
+          <Subsection title="Measuring Accuracy: Text-to-SQL Benchmarks">
+            <p>
+              How do we know if a Text-to-SQL system is good? The research community uses standardized benchmarks with
+              thousands of database questions to evaluate accuracy.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+              <div className="border-2 border-blue-300 dark:border-blue-700 rounded-lg p-5 bg-blue-50 dark:bg-blue-950/20">
+                <h4 className="font-bold text-lg text-blue-900 dark:text-blue-100 mb-3">📊 Spider</h4>
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  The gold standard benchmark. 10,000+ questions across 200+ databases with complex queries (JOINs, aggregations, nested queries).
+                </p>
+                <p className="text-xs mt-2 text-blue-700 dark:text-blue-300">
+                  <strong>GPT-4 accuracy:</strong> ~85%<br />
+                  <strong>GPT-3.5 accuracy:</strong> ~70%<br />
+                  <strong>SQLCoder accuracy:</strong> ~82%
+                </p>
+              </div>
+
+              <div className="border-2 border-emerald-300 dark:border-emerald-700 rounded-lg p-5 bg-emerald-50 dark:bg-emerald-950/20">
+                <h4 className="font-bold text-lg text-emerald-900 dark:text-emerald-100 mb-3">🐦 Bird-SQL</h4>
+                <p className="text-sm text-emerald-800 dark:text-emerald-200">
+                  Harder than Spider. Real-world databases with dirty data, large schemas, and ambiguous questions.
+                </p>
+                <p className="text-xs mt-2 text-emerald-700 dark:text-emerald-300">
+                  <strong>GPT-4 accuracy:</strong> ~55%<br />
+                  Tests real-world complexity beyond clean benchmarks.
+                </p>
+              </div>
+
+              <div className="border-2 border-amber-300 dark:border-amber-700 rounded-lg p-5 bg-amber-50 dark:bg-amber-950/20">
+                <h4 className="font-bold text-lg text-amber-900 dark:text-amber-100 mb-3">📖 WikiSQL</h4>
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  Simpler benchmark. Single-table queries only. Good for testing basic NL-to-SQL capabilities.
+                </p>
+                <p className="text-xs mt-2 text-amber-700 dark:text-amber-300">
+                  <strong>GPT-4 accuracy:</strong> ~95%<br />
+                  Most modern LLMs excel at simple queries.
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-4">
+              <strong>Two ways to measure accuracy:</strong>
+            </p>
+
+            <ul className="list-disc pl-6 space-y-1 mt-2 text-sm">
+              <li>
+                <strong>Execution Accuracy:</strong> Does the generated SQL return the correct answer? (More practical)
+              </li>
+              <li>
+                <strong>Exact Match Accuracy:</strong> Does the generated SQL exactly match the reference SQL? (More strict)
+              </li>
             </ul>
-          </Callout>
+
+            <p className="mt-4 text-sm text-gray-700 dark:text-gray-300">
+              <strong>Why queries fail:</strong> Complex nested queries, ambiguous questions, column name confusion, JOIN order issues,
+              or requiring domain knowledge not in the schema. Even with 85% accuracy, always review AI-generated SQL before production use.
+            </p>
+          </Subsection>
+
+          <Subsection title="Advanced Prompting: Few-Shot & Chain-of-Thought">
+            <p>
+              Two powerful techniques dramatically improve SQL generation quality: providing examples and asking the AI to think step-by-step.
+            </p>
+
+            <CodeExample
+              title="Technique 1: Few-Shot Prompting (Providing Examples)"
+              code={`Schema:
+- customers (id, name, email, signup_date)
+- orders (id, customer_id FK, order_date, total_amount)
+
+# Example 1:
+Question: "How many customers signed up in 2023?"
+SQL: SELECT COUNT(*) FROM customers WHERE strftime('%Y', signup_date) = '2023';
+
+# Example 2:
+Question: "What's the average order value?"
+SQL: SELECT AVG(total_amount) FROM orders;
+
+# Now answer this:
+Question: "How many orders were placed in January 2024?"
+SQL: [AI generates, guided by examples above]
+
+Expected output:
+SELECT COUNT(*) FROM orders WHERE strftime('%Y-%m', order_date) = '2024-01';`}
+            />
+
+            <p className="mt-4 text-sm text-gray-700 dark:text-gray-300">
+              Few-shot prompting is especially powerful for domain-specific patterns (e.g., how your company formats dates,
+              handles NULL values, or calculates metrics). Include 2-5 representative examples that cover common query patterns.
+            </p>
+
+            <CodeExample
+              title="Technique 2: Chain-of-Thought (Step-by-Step Reasoning)"
+              code={`Schema:
+- employees (id, name, department_id, salary, hire_date)
+- departments (id, name, budget)
+
+Question: "Find departments where average employee salary exceeds 50% of the department budget"
+
+Prompt: "Think step by step, then write the SQL:"
+
+AI Response:
+Step 1: I need to calculate average salary per department → requires JOIN and GROUP BY
+Step 2: I need to compare that average to 50% of department budget → need budget column
+Step 3: I need to filter departments where avg_salary > (budget * 0.5) → use HAVING clause
+Step 4: I need to join employees and departments on department_id
+
+SQL:
+SELECT 
+  d.name AS department_name,
+  AVG(e.salary) AS avg_salary,
+  d.budget,
+  d.budget * 0.5 AS half_budget
+FROM departments d
+INNER JOIN employees e ON d.id = e.department_id
+GROUP BY d.id, d.name, d.budget
+HAVING AVG(e.salary) > d.budget * 0.5;`}
+            />
+
+            <p className="mt-4 text-sm text-gray-700 dark:text-gray-300">
+              Chain-of-thought prompting reduces errors by 15-30% on complex queries. Simply adding "think step by step" or
+              "explain your reasoning before writing SQL" activates more careful planning in the LLM's generation process.
+            </p>
+
+            <Callout type="tip" title="Combining Both Techniques">
+              <p>
+                For maximum accuracy, combine few-shot prompting AND chain-of-thought:
+              </p>
+              <ol className="list-decimal pl-5 space-y-1 mt-2 text-sm">
+                <li>Provide 2-3 example question→SQL pairs (few-shot)</li>
+                <li>Ask "For the next question, think step-by-step before writing SQL" (chain-of-thought)</li>
+                <li>Provide your actual question</li>
+              </ol>
+              <p className="mt-2 text-sm">
+                This combination is particularly effective for complex analytical queries with multiple JOINs,
+                subqueries, or window functions.
+              </p>
+            </Callout>
+          </Subsection>
+
+          <p className="mt-6 font-semibold text-gray-900 dark:text-gray-100">Popular Text-to-SQL Tools & Platforms</p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 my-6">
+            <div className="border-2 border-cyan-300 dark:border-cyan-700 rounded-lg p-5 bg-cyan-50 dark:bg-cyan-950/20">
+              <h4 className="font-bold text-lg text-cyan-900 dark:text-cyan-100 mb-3">🐍 Vanna AI</h4>
+              <p className="text-sm text-cyan-800 dark:text-cyan-200 mb-3">
+                Open-source Python library for RAG-based Text-to-SQL. Train on your schema + sample queries.
+              </p>
+              <ul className="text-xs space-y-1 text-cyan-700 dark:text-cyan-300">
+                <li><strong>Best for:</strong> Self-hosted solutions</li>
+                <li><strong>Pricing:</strong> Free (open-source)</li>
+                <li><strong>Key feature:</strong> Customizable RAG pipeline</li>
+              </ul>
+            </div>
+
+            <div className="border-2 border-violet-300 dark:border-violet-700 rounded-lg p-5 bg-violet-50 dark:bg-violet-950/20">
+              <h4 className="font-bold text-lg text-violet-900 dark:text-violet-100 mb-3">🔮 Defog.ai</h4>
+              <p className="text-sm text-violet-800 dark:text-violet-200 mb-3">
+                Fine-tuned SQL models (SQLCoder) optimized for accuracy. Production-ready API service.
+              </p>
+              <ul className="text-xs space-y-1 text-violet-700 dark:text-violet-300">
+                <li><strong>Best for:</strong> High-accuracy requirements</li>
+                <li><strong>Pricing:</strong> API credits + hosting</li>
+                <li><strong>Key feature:</strong> 85%+ accuracy on Spider benchmark</li>
+              </ul>
+            </div>
+
+            <div className="border-2 border-pink-300 dark:border-pink-700 rounded-lg p-5 bg-pink-50 dark:bg-pink-950/20">
+              <h4 className="font-bold text-lg text-pink-900 dark:text-pink-100 mb-3">🧠 MindsDB</h4>
+              <p className="text-sm text-pink-800 dark:text-pink-200 mb-3">
+                AI layer on top of databases. Query with natural language directly in SQL syntax.
+              </p>
+              <ul className="text-xs space-y-1 text-pink-700 dark:text-pink-300">
+                <li><strong>Best for:</strong> Existing database integration</li>
+                <li><strong>Pricing:</strong> Free tier + cloud hosting</li>
+                <li><strong>Key feature:</strong> ML models as virtual tables</li>
+              </ul>
+            </div>
+
+            <div className="border-2 border-indigo-300 dark:border-indigo-700 rounded-lg p-5 bg-indigo-50 dark:bg-indigo-950/20">
+              <h4 className="font-bold text-lg text-indigo-900 dark:text-indigo-100 mb-3">🏢 Waii</h4>
+              <p className="text-sm text-indigo-800 dark:text-indigo-200 mb-3">
+                Enterprise Text-to-SQL with governance, audit logs, and role-based access control.
+              </p>
+              <ul className="text-xs space-y-1 text-indigo-700 dark:text-indigo-300">
+                <li><strong>Best for:</strong> Regulated industries</li>
+                <li><strong>Pricing:</strong> Enterprise (contact sales)</li>
+                <li><strong>Key feature:</strong> Compliance & security</li>
+              </ul>
+            </div>
+
+            <div className="border-2 border-teal-300 dark:border-teal-700 rounded-lg p-5 bg-teal-50 dark:bg-teal-950/20">
+              <h4 className="font-bold text-lg teal-indigo-900 dark:text-teal-100 mb-3">🛠️ Custom LLM + RAG</h4>
+              <p className="text-sm text-teal-800 dark:text-teal-200 mb-3">
+                Build your own using OpenAI/Anthropic APIs + vector database (Pinecone, Chroma).
+              </p>
+              <ul className="text-xs space-y-1 text-teal-700 dark:text-teal-300">
+                <li><strong>Best for:</strong> Full customization</li>
+                <li><strong>Pricing:</strong> LLM API costs + infra</li>
+                <li><strong>Key feature:</strong> Complete control</li>
+              </ul>
+            </div>
+
+            <div className="border-2 border-rose-300 dark:border-rose-700 rounded-lg p-5 bg-rose-50 dark:bg-rose-950/20">
+              <h4 className="font-bold text-lg text-rose-900 dark:text-rose-100 mb-3">💬 ChatGPT/Claude</h4>
+              <p className="text-sm text-rose-800 dark:text-rose-200 mb-3">
+                General-purpose LLMs. Paste schema in chat, get SQL back. Simple but effective.
+              </p>
+              <ul className="text-xs space-y-1 text-rose-700 dark:text-rose-300">
+                <li><strong>Best for:</strong> Ad-hoc queries, prototyping</li>
+                <li><strong>Pricing:</strong> $20/mo (Plus/Pro)</li>
+                <li><strong>Key feature:</strong> Zero setup required</li>
+              </ul>
+            </div>
+          </div>
         </Subsection>
 
         <Subsection title="RAG for SQL: Retrieval-Augmented Generation">
           <p>
             For large schemas (50+ tables), including the entire schema in every prompt is impractical. <strong>RAG</strong>
             (Retrieval-Augmented Generation) solves this by retrieving only the relevant schema portions for each question.
+          </p>
+
+          <Callout type="success" title="Historical Note: The Birth of RAG">
+            <div className="flex gap-4 items-start">
+              <div className="flex-1">
+                The <strong>Retrieval-Augmented Generation (RAG)</strong> paradigm was introduced in the 2020 paper{' '}
+                <a
+                  href="https://arxiv.org/abs/2005.11401"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks"
+                </a>{' '}
+                by <strong>Patrick Lewis</strong>, <strong>Ethan Perez</strong>, <strong>Aleksandra Piktus</strong>, and colleagues
+                at Facebook AI Research (now Meta AI). Published at NeurIPS 2020, this groundbreaking work demonstrated that combining
+                neural retrieval with language generation dramatically improved performance on knowledge-intensive tasks.
+                <br /><br />
+                While the original RAG paper focused on open-domain question answering and fact verification, its principles proved
+                transformative for database applications. Text-to-SQL systems using RAG can dynamically retrieve relevant schema
+                information and example queries, enabling them to handle massive databases with hundreds of tables—something impossible
+                with static prompts alone. Today, virtually every production SQL assistant leverages some form of RAG architecture.
+                <br /><br />
+                The paper's core insight—that retrieval and generation should be jointly trained and used together—has become fundamental
+                to modern AI systems, from chatbots to code assistants to database query interfaces.
+              </div>
+            </div>
+          </Callout>
+
+          <p className="mt-6">
+            Let's see how RAG works in practice. The architecture has two phases: an offline phase where knowledge is indexed, 
+            and an online phase where queries are answered:
           </p>
 
           <MermaidDiagram
@@ -7140,6 +7390,11 @@ flowchart LR
             </table>
           </div>
 
+          <p className="mt-6">
+            Let's practice debugging with a real example. The query below looks correct at first glance, but contains a subtle 
+            logical error that's easy to miss. Can you spot the bug before reading the explanation?
+          </p>
+
           <SQLPlayground
             preset={ECOMMERCE_PRESET}
             defaultQuery={`-- Debugging example: AI-generated query with a subtle bug
@@ -7195,10 +7450,131 @@ GROUP BY c.customer_id, c.first_name, c.last_name;`}
           </ol>
         </Subsection>
 
+        <Subsection title="Security & Safety: Protecting Your Database">
+          <p>
+            AI-generated SQL is powerful, but running untrusted queries directly on production databases poses serious risks.
+            Implement these safeguards to protect your data:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+            <div className="border-2 border-red-300 dark:border-red-700 rounded-lg p-5 bg-red-50 dark:bg-red-950/20">
+              <h4 className="font-bold text-lg text-red-900 dark:text-red-100 mb-3">🔒 Access Control</h4>
+              <ul className="text-sm space-y-2 text-red-800 dark:text-red-200">
+                <li>• Use read-only database users for AI queries</li>
+                <li>• Restrict access to sensitive tables (passwords, PII)</li>
+                <li>• Implement row-level security where needed</li>
+                <li>• Never grant DROP, DELETE, or TRUNCATE permissions</li>
+              </ul>
+            </div>
+
+            <div className="border-2 border-orange-300 dark:border-orange-700 rounded-lg p-5 bg-orange-50 dark:bg-orange-950/20">
+              <h4 className="font-bold text-lg text-orange-900 dark:text-orange-100 mb-3">⚠️ Query Validation</h4>
+              <ul className="text-sm space-y-2 text-orange-800 dark:text-orange-200">
+                <li>• Parse and validate SQL before execution</li>
+                <li>• Reject queries with dangerous keywords (DROP, DELETE)</li>
+                <li>• Set query timeout limits (e.g., 30 seconds max)</li>
+                <li>• Limit result set size (e.g., LIMIT 1000)</li>
+              </ul>
+            </div>
+
+            <div className="border-2 border-amber-300 dark:border-amber-700 rounded-lg p-5 bg-amber-50 dark:bg-amber-950/20">
+              <h4 className="font-bold text-lg text-amber-900 dark:text-amber-100 mb-3">💰 Cost Controls</h4>
+              <ul className="text-sm space-y-2 text-amber-800 dark:text-amber-200">
+                <li>• Rate limit API calls to LLM providers</li>
+                <li>• Cache common queries to reduce costs</li>
+                <li>• Monitor token usage and set budget alerts</li>
+                <li>• Use smaller models for simple queries</li>
+              </ul>
+            </div>
+
+            <div className="border-2 border-purple-300 dark:border-purple-700 rounded-lg p-5 bg-purple-50 dark:bg-purple-950/20">
+              <h4 className="font-bold text-lg text-purple-900 dark:text-purple-100 mb-3">🛡️ Data Privacy</h4>
+              <ul className="text-sm space-y-2 text-purple-800 dark:text-purple-200">
+                <li>• Never send raw data to LLM APIs</li>
+                <li>• Use schema metadata only (no sample values)</li>
+                <li>• Anonymize logs and monitoring data</li>
+                <li>• Comply with data residency requirements</li>
+              </ul>
+            </div>
+          </div>
+
+          <p className="mt-6">
+            Beyond these general safeguards, there's one specific security risk that deserves special attention: SQL injection. 
+            While AI-generated SQL is fundamentally different from user-input concatenation, the risk profile has unique characteristics:
+          </p>
+
+          <Callout type="warning" title="SQL Injection Risks">
+            <p>
+              While AI-generated SQL is generally safe (it creates complete queries, not string concatenation), always validate
+              before execution. If your system allows <em>user-supplied parameters</em> in addition to AI-generated queries,
+              use parameterized queries to prevent injection:
+            </p>
+            <CodeExample
+              code={`-- ❌ DANGEROUS: User input directly in query
+query = f"SELECT * FROM users WHERE name = '{user_input}'"
+
+-- ✅ SAFE: Parameterized query
+query = "SELECT * FROM users WHERE name = ?"
+cursor.execute(query, (user_input,))`}
+            />
+            <p className="mt-2">
+              For AI-generated SQL, the risk is different: the AI might generate queries that <em>expose more data than intended</em>.
+              Always review queries before execution, especially in production.
+            </p>
+          </Callout>
+
+          <p className="mt-6">
+            Here's a practical Python implementation that combines all these security principles into a reusable function:
+          </p>
+
+          <CodeExample
+            title="Example: Safe Query Execution Wrapper"
+            code={`import time
+import re
+
+def safe_execute_ai_query(sql, db_connection, max_rows=1000, timeout_seconds=30):
+    """Safely execute AI-generated SQL with guardrails"""
+    
+    # 1. Validate SQL doesn't contain dangerous operations
+    dangerous_keywords = ['DROP', 'DELETE', 'TRUNCATE', 'ALTER', 'CREATE', 'INSERT', 'UPDATE']
+    sql_upper = sql.upper()
+    for keyword in dangerous_keywords:
+        if re.search(rf'\\b{keyword}\\b', sql_upper):
+            raise ValueError(f"Query contains forbidden keyword: {keyword}")
+    
+    # 2. Add/enforce LIMIT clause
+    if 'LIMIT' not in sql_upper:
+        sql += f" LIMIT {max_rows}"
+    
+    # 3. Set query timeout
+    cursor = db_connection.cursor()
+    cursor.execute(f"PRAGMA query_timeout = {timeout_seconds * 1000}")  # SQLite timeout in ms
+    
+    # 4. Execute with timing
+    start = time.time()
+    try:
+        result = cursor.execute(sql)
+        rows = result.fetchall()
+        elapsed = time.time() - start
+        
+        return {
+            'success': True,
+            'rows': rows,
+            'row_count': len(rows),
+            'execution_time': f"{elapsed:.3f}s"
+        }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }`}
+          />
+        </Subsection>
+
         <p className="mt-6">
           AI is a powerful SQL copilot, not autopilot. Use it to accelerate your workflow, but always review, test, and
-          understand the generated queries. The combination of your domain knowledge and AI's pattern recognition creates
-          the best results.
+          understand the generated queries. The combination of your domain knowledge, AI's pattern recognition, and proper
+          security guardrails creates the best and safest results.
         </p>
       </Section>
 
